@@ -23,6 +23,10 @@ For a matter of comparison, you could say that ***Voidstar is the modern C***.
 > ### Current state of development
 > 
 > Voidstar is still on it's early stages of development, the syntax, concepts and everything is still being planned and enhanced.
+>
+> Unfortunately, voidstar is being placed on stand-by, because I'm busy working on my final project with my team.
+>
+> It'll have to be a "weekend" project, because I can't work on it otherwise.
 
 ### Syntax
 
