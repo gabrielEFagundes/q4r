@@ -3,7 +3,7 @@
 
 A Compiled language, born from the stars, destined to become a never-ending void.
 
-<img src="assets/snippet.png" style="border-radius: 25px; width: 35rem" />
+<img src="assets/snippet.png" width="600" />
 </div>
 
 ---
