@@ -22,11 +22,9 @@ For a matter of comparison, you could say that ***Voidstar is the modern C***.
 > [!IMPORTANT]
 > ### Current state of development
 > 
-> Voidstar is still on it's early stages of development, the syntax, concepts and everything is still being planned and enhanced.
+> Voidstar is officially planned, even though a few things might still change, such as some syntaxes, its idea is concrete and finally being initiated.
 >
-> Unfortunately, voidstar is being placed on stand-by, because I'm busy working on my final project with my team.
->
-> It'll have to be a "weekend" project, because I can't work on it otherwise.
+> Unfortunately, voidstar is a "weekend" project, because I can't work on it otherwise. I have other projects to work on aswell.
 
 ### Syntax
 
