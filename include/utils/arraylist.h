@@ -6,6 +6,14 @@
 #define LIST_H
 
 /// @brief The struct that defines the List (don't mind, it'll only be used by Token)
+///
+/// The List struct has the following fields:
+///
+/// - array: Token*
+///
+/// - used: size_t
+///
+/// - size: size_t
 typedef struct {
     Token* array;
     size_t used;

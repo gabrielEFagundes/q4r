@@ -1,6 +1,14 @@
 #include <tokens.h>
 
 /// @brief Defines the structure of the Lexer
+///
+/// The Lexer struct has the following fields:
+///
+/// - cursor: int
+///
+/// - line: int
+///
+/// - source: char*
 typedef struct{
     int cursor;
     int line;

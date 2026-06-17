@@ -51,6 +51,14 @@ typedef enum {
 extern const char* tokenValues[];
 
 /// @brief Token used by the ast
+///
+/// The Token struct has the following fields:
+///
+/// - type: TType
+///
+/// - value: char* (constant)
+///
+/// - line: int
 typedef struct {
     TType type;
     const char* value;
@@ -58,6 +66,12 @@ typedef struct {
 } Token;
 
 /// @brief Defines the keyword structure
+///
+/// The Keyword struct has the following fields:
+///
+/// - name: char* (constant)
+///
+/// - tokenType: TType (constant)
 struct Keyword{
     const char* name;
     const TType tokenType;
