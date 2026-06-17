@@ -1,7 +1,22 @@
 #include <tokens.h>
 
-char currentChar(char* source);
+/// @brief Defines the structure of the Lexer
+typedef struct{
+    int cursor;
+    int line;
+    char* source;
+} Lexer;
 
-Token lexerize(char* source);
+/// @brief Returns the current character based on the lexer's cursor
+/// @param lexer The lexer struct
+/// @return The current character the cursor is pointing to
+char currentChar(Lexer* lexer);
 
-void loop(char* source);
+/// @brief Lexerizes the raw code into defined tokens
+/// @param lexer The lexer struct
+/// @return The raw code turned into a Token
+Token lexerize(Lexer* lexer);
+
+/// @brief The loop that iterates through each character and line of the raw code
+/// @param lexer The lexer struct
+void loop(Lexer lexer);

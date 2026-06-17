@@ -4,34 +4,31 @@
 #include <stdio.h>
 #include <string.h>
 
-int cursor = 0;
-int line = 1;
-
 // the lexer loops over the code's lines and turns everything into tokens.
-char currentChar(char* source){
-    if(cursor >= strlen(source)){
+char currentChar(Lexer* lexer){
+    if(lexer->cursor >= strlen(lexer->source)){
         return '\0';
     }
 
-    return source[cursor];
+    return lexer->source[lexer->cursor];
 }
 
-Token lexerize(char* source){
-    switch (currentChar(source))
+Token lexerize(Lexer* lexer){
+    switch (currentChar(lexer))
     {
     case '+':
-        Token token = {TYPE_PLUS, "+", line};
-        cursor += 1;
+        Token token = {TYPE_PLUS, "+", lexer->line};
+        lexer->cursor += 1;
         return token;
     }
 }
 
-void loop(char* source){
+void loop(Lexer lexer){
     List tokenList;
     list_init(&tokenList, 2);
 
-    while(currentChar(source) != '\0'){
-        Token token = lexerize(source);
+    while(currentChar(&lexer) != '\0'){
+        Token token = lexerize(&lexer);
         list_add(&tokenList, token);
 
         printf("%s\n", list_get(&tokenList, 0).value);

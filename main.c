@@ -4,6 +4,7 @@
 char* TEST_CODE = "+";
 
 int main(){
-    loop(TEST_CODE);
+    Lexer lexer = {0, 1, TEST_CODE};
+    loop(lexer);
     return 0;
 }
