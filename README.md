@@ -1,3 +1,10 @@
+> [!IMPORTANT]
+> ### Current state of development
+>
+> Unfortunately, voidstar is a "weekend" project, because I can't work on it otherwise. I recently found myself on a contributing to a new project to port native linux to the A5 chip, and since I really like a challenge and I happen to have an iPad 2, voidstar is not planned to be finished just yet.
+>
+> Oh yeah, I also have a job and since I don't gain anything to actually feed myself from this, I have to leave it for now.
+
 <div align="center">
 <h1>Voidstar</h1>
 
@@ -18,13 +25,6 @@ It's biggest differential is the syntax, which is modern, simple and robust.
 Voidstar abstracts some concepts for new developers, while also providing complex and useful commands, like pointers and lambdas for the more experienced ones.
 
 For a matter of comparison, you could say that ***Voidstar is the modern C***.
-
-> [!IMPORTANT]
-> ### Current state of development
-> 
-> Voidstar is officially planned, even though a few things might still change, such as some syntaxes, its idea is concrete and finally being initiated.
->
-> Unfortunately, voidstar is a "weekend" project, because I can't work on it otherwise. I have other projects to work on aswell.
 
 ### Syntax
 
