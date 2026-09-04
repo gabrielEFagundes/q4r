@@ -1,0 +1,29 @@
+{
+  "name": "voidstar-lang",
+  "displayName": "Voidstar Language Extension",
+  "description": "Syntax highlighting for the Voidstar language",
+  "version": "0.0.1",
+  "publisher": "gabrielEFagundes",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "voidstar",
+        "aliases": ["Voidstar", "voidstar"],
+        "extensions": [".x"],
+        "configuration": "./language-configuration.json",
+        "icon": {"light": "./favicon.svg", "dark": "./favicon.svg"}
+      }
+    ],
+    "grammars": [
+      {
+        "language": "voidstar",
+        "scopeName": "source.voidstar",
+        "path": "./syntaxes/voidstar.tmLanguage.json"
+      }
+    ]
+  }
+}

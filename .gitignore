@@ -1,2 +1,7 @@
 tests/
 *.exe
+
+
+# Added by cargo
+
+/target

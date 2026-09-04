@@ -1,0 +1,126 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Voidstar",
+  "scopeName": "source.voidstar",
+  "fileTypes": ["x"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#chars" },
+    { "include": "#numbers" },
+    { "include": "#constants-language" },
+    { "include": "#keywords-control" },
+    { "include": "#keyword-function-decl" },
+    { "include": "#storage-types" },
+    { "include": "#pointer-sigil" },
+    { "include": "#support-functions" },
+    { "include": "#functions" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.voidstar",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.voidstar",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+
+    "strings": {
+      "name": "string.quoted.double.voidstar",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.voidstar",
+          "match": "\\\\."
+        },
+        {
+          "name": "meta.embedded.line.interpolation.voidstar",
+          "begin": "\\{",
+          "end": "\\}",
+          "beginCaptures": { "0": { "name": "punctuation.definition.template-expression.begin.voidstar" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.template-expression.end.voidstar" } },
+          "patterns": [
+            { "name": "variable.other.interpolated.voidstar", "match": "[a-zA-Z_][a-zA-Z0-9_]*" }
+          ]
+        }
+      ]
+    },
+
+    "chars": {
+      "name": "string.quoted.single.voidstar",
+      "match": "'(\\\\.|[^'\\\\])'"
+    },
+
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.voidstar",
+          "match": "\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.voidstar",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+
+    "constants-language": {
+      "name": "constant.language.voidstar",
+      "match": "\\b(true|false)\\b"
+    },
+
+    "keywords-control": {
+      "name": "keyword.control.voidstar",
+      "match": "\\b(if|else|while|for|check|return)\\b"
+    },
+
+    "keyword-function-decl": {
+      "name": "storage.type.function.voidstar",
+      "match": "\\bf\\b"
+    },
+
+    "storage-types": {
+      "name": "storage.type.voidstar",
+      "match": "\\b(int|char|float|bool|str|void|i16|i32|i64|f32|f64)\\b"
+    },
+
+    "pointer-sigil": {
+      "comment": "the * in *char, only when glued to a type name (no space) — distinguishes pointer decls from multiplication",
+      "name": "storage.modifier.pointer.voidstar",
+      "match": "\\*(?=[a-zA-Z_])"
+    },
+
+    "support-functions": {
+      "name": "support.function.voidstar",
+      "match": "\\b(writeLine|MAX_VALUE)\\b"
+    },
+
+    "functions": {
+      "name": "entity.name.function.voidstar",
+      "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*(?=\\s*\\()"
+    },
+
+    "operators": {
+      "name": "keyword.operator.voidstar",
+      "match": "(==|!=|<=|>=|&&|\\|\\||[+\\-*/%<>=!])"
+    },
+
+    "punctuation": {
+      "patterns": [
+        { "name": "punctuation.section.block.voidstar", "match": "[{}]" },
+        { "name": "punctuation.section.parens.voidstar", "match": "[()]" },
+        { "name": "punctuation.separator.comma.voidstar", "match": "," },
+        { "name": "punctuation.terminator.statement.voidstar", "match": ";" }
+      ]
+    }
+  }
+}

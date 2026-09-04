@@ -8,7 +8,7 @@
 <div align="center">
 <h1>Voidstar</h1>
 
-A Compiled language, born from the stars, destined to become a never-ending void.
+Ridiculously fast, ASM compiled language.
 
 <img src="assets/snippet.png" width="600" />
 </div>
