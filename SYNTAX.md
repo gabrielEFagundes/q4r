@@ -7,7 +7,7 @@ We should always start out by **importing** external files.
 
 ```rust
 workspace "main"
-use static ("std.st", "math.star") // you can use both .st and .star files
+use static ("std.x", "math.x")
 ```
 
 Importing works a bit like Golang, where you can import multiple files with a single import.
@@ -84,7 +84,7 @@ while true{
 
 ```rust
 bool hasSucceeded = true
-check hasSucceeded{
+cross hasSucceeded{
     true    =      { writeLine("Success!") },
     false   =      { writeLine("Error!") }
 }

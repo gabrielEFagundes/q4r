@@ -80,7 +80,7 @@
 
     "keywords-control": {
       "name": "keyword.control.voidstar",
-      "match": "\\b(if|else|while|for|check|return)\\b"
+      "match": "\\b(if|else|while|for|cross|return|workspace)\\b"
     },
 
     "keyword-function-decl": {
