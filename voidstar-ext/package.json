@@ -13,7 +13,7 @@
       {
         "id": "voidstar",
         "aliases": ["Voidstar", "voidstar"],
-        "extensions": [".x"],
+        "extensions": [".x", ".void", ".voidstar"],
         "configuration": "./language-configuration.json",
         "icon": {"light": "./favicon.svg", "dark": "./favicon.svg"}
       }

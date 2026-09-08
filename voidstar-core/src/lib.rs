@@ -21,9 +21,10 @@ const SEMICOL: u8 = b';';
 
 const PLUS: u8 = b'+';
 const MINUS: u8 = b'-';
-const TIMES: u8 = b'*';
 const SLASH: u8 = b'/';
 
+const GREATER: u8 = b'>';
+const LESSER: u8 = b'<';
 const EQ: u8 = b'=';
 const NOT: u8 = b'!';
 const ASTRSK: u8 = b'*';
@@ -34,12 +35,14 @@ const SPACE: u8 = b' ';
 
 const HALT: u8 = b'\0';
 
-const KEYWORDS: [(&str, VoidstarTokenTypes); 16] = [
+// abcdefghijklmnopqrstuvwxyz
+const KEYWORDS: [(&str, VoidstarTokenTypes); 18] = [
     ("bool",        VoidstarTokenTypes::Bool),
     ("char",        VoidstarTokenTypes::Char),
     ("cross",       VoidstarTokenTypes::Cross),
     ("else",        VoidstarTokenTypes::Else),
     ("f",           VoidstarTokenTypes::Function),
+    ("false",       VoidstarTokenTypes::BoolLiteral),
     ("float",       VoidstarTokenTypes::Float),
     ("for",         VoidstarTokenTypes::For),
     ("goto",        VoidstarTokenTypes::Goto),
@@ -47,6 +50,7 @@ const KEYWORDS: [(&str, VoidstarTokenTypes); 16] = [
     ("int",         VoidstarTokenTypes::Int),
     ("return",      VoidstarTokenTypes::Return),
     ("static",      VoidstarTokenTypes::Static),
+    ("true",        VoidstarTokenTypes::BoolLiteral),
     ("use",         VoidstarTokenTypes::Use),
     ("void",        VoidstarTokenTypes::Void),
     ("while",       VoidstarTokenTypes::While),
