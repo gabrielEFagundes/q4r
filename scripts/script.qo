@@ -1,5 +1,2 @@
-int v = 10
-
-char character = 'a'
-
-float floa = 50.31 
+char ch = 'o'
+int a = 2

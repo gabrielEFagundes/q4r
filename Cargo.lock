@@ -3,12 +3,12 @@
 version = 4
 
 [[package]]
-name = "voidstar-cli"
+name = "quaoar-cli"
 version = "0.1.0"
 dependencies = [
- "voidstar-core",
+ "quaoar-core",
 ]
 
 [[package]]
-name = "voidstar-core"
+name = "quaoar-core"
 version = "0.1.0"

@@ -1,5 +1,6 @@
 [workspace]
-members = ["voidstar-cli",
-    "voidstar-core"
+members = [
+    "quaoar-cli",
+    "quaoar-core"
 ]
 resolver = "2"

@@ -1,39 +1,25 @@
-> [!IMPORTANT]
-> ### Current state of development
->
-> Unfortunately, voidstar is a "weekend" project, because I can't work on it otherwise. I recently found myself on a contributing to a new project to port native linux to the A5 chip, and since I really like a challenge and I happen to have an iPad 2, voidstar is not planned to be finished just yet.
->
-> Oh yeah, I also have a job and since I don't gain anything to actually feed myself from this, I have to leave it for now.
-
-<div align="center">
-<h1>Voidstar</h1>
-
-Ridiculously fast, ASM compiled language.
-
-<img src="assets/snippet.png" width="600" />
+<img align="left" src="assets/carbon.svg" width="350" />
+<div align="left">
+    <h1>Quaoar - Q4r</h1>
 </div>
 
----
+Quaoar (Lowercase u. `/'kwa:wa:r/`, `/ˈkwɑː.oʊ.ɑːr/`) is a small, fast and independent set of instructions forming a programming language.
 
-### What's Voidstar?
+#
 
-Voidstar will be a compiled language, that's all I'm sure of for now.
+Quaoar is a middle ground language, combining the speed and performance of **Rust** with the simplicity of **Go** and a touch of **C**.
 
-This project will be my biggest one so far, it's been inspired by Rust, Zig and C.
+Because Quaoar is an assembled general purpose programming language, you can do all sorts of things, including backends, RESTful apis, desktop apps and even hardware-level integrations.
 
-It's biggest differential is the syntax, which is modern, simple and robust.
-Voidstar abstracts some concepts for new developers, while also providing complex and useful commands, like pointers and lambdas for the more experienced ones.
+### Milestones
 
-For a matter of comparison, you could say that ***Voidstar is the modern C***.
+Keep track of the current state with the [milestones](https://github.com/gabrielEFagundes/q4r/milestones).
 
-### Syntax
-
-For voidstar's syntax, visit [the syntaxes page](SYNTAX.md)
-
-In terms of built-in methods, I'll write a documentation that will encompass all the information you'll need, aswell as new and deprecated methods.
+Each stage of development will be a beta release up until Q4r reaches the last milestone. 
+(Keep in mind that the dates for the milestones are not final.)
 
 ### Contributing
 
-Please feel free to open Pull Requests.
+Please feel free to open Pull Requests and Issues.
 
-Issues are enabled for documentation and to keep track of development/bugs, I'll create a discord server to help you centralize your issue, if they're too complex.
+All contributions must follow a basic code of conduct, such as being polite, direct and, obviously, make sense.

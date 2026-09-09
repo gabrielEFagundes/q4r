@@ -1,7 +1,0 @@
-[package]
-name = "voidstar-cli"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-voidstar-core = {path="../voidstar-core"}

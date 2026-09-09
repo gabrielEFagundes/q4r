@@ -1,6 +1,7 @@
 [package]
-name = "voidstar-core"
+name = "quaoar-cli"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+quaoar-core = {path="../quaoar-core"}

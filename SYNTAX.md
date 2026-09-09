@@ -1,13 +1,15 @@
 ## Syntaxes
 
 > [!IMPORTANT]
-> Most content here is notably inconsistent and WILL change, not much, but it will.
+> Most content here is notably inconsistent and WILL change
+>
+> Do not take this file as final.
 
 We should always start out by **importing** external files.
 
 ```rust
 workspace "main"
-use static ("std.x", "math.x")
+use static ("std", "math")
 ```
 
 Importing works a bit like Golang, where you can import multiple files with a single import.

@@ -25,6 +25,12 @@ impl Lexer{
         self.current
     }
 
+    fn advance_this(&mut self, amount: usize) -> u8{
+        self.cursor+=amount;
+        if self.cursor < self.source.len(){ self.current = self.source[self.cursor]; }
+        self.current
+    }
+
     fn symbol(&mut self) -> VoidstarToken{
         match self.current{
             QUOTES => {
@@ -34,7 +40,7 @@ impl Lexer{
             APOSTROPHE => {
                 self.advance();
                 let v = self.current as char;
-                self.advance();
+                self.advance_this(2);
                 return VoidstarToken::new(VoidstarTokenTypes::Char, v.to_string());
             },
 

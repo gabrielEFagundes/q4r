@@ -1,6 +1,6 @@
 use std::{env::args, fs::self};
 
-use voidstar_core::lexer::Lexer;
+use quaoar_core::lexer::Lexer;
 
 fn main() {
     let args: Vec<String> = args().collect();
