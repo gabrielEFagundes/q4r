@@ -1,7 +1,7 @@
 {
-  "name": "voidstar-lang",
-  "displayName": "Voidstar Language Extension",
-  "description": "Syntax highlighting for the Voidstar language",
+  "name": "quaoar-lang",
+  "displayName": "Q4r Language Extension",
+  "description": "Syntax highlighting for the Quaoar language (or the old Voidstar)",
   "version": "0.0.1",
   "publisher": "gabrielEFagundes",
   "engines": {
@@ -11,18 +11,18 @@
   "contributes": {
     "languages": [
       {
-        "id": "voidstar",
-        "aliases": ["Voidstar", "voidstar"],
-        "extensions": [".x"],
+        "id": "quaoar",
+        "aliases": ["Quaoar", "quaoar"],
+        "extensions": [".qo", ".qoa", ".qua"],
         "configuration": "./language-configuration.json",
-        "icon": {"light": "./favicon.svg", "dark": "./favicon.svg"}
+        "icon": {"light": "./fav-light.svg", "dark": "./fav-dark.svg"}
       }
     ],
     "grammars": [
       {
-        "language": "voidstar",
-        "scopeName": "source.voidstar",
-        "path": "./syntaxes/voidstar.tmLanguage.json"
+        "language": "quaoar",
+        "scopeName": "source.quaoar",
+        "path": "./syntaxes/q4r.tmLanguage.json"
       }
     ]
   }
