@@ -14,6 +14,6 @@ fn main() {
         Ok(_) => source.unwrap(),
         Err(reason) => panic!("{}", reason)
     };
-
+    
     Lexer::new(s).lexerize();
 }

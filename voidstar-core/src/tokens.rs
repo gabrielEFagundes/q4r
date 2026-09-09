@@ -1,6 +1,6 @@
 /// The voidstar token types
 #[derive(Debug, Copy, Clone)]
-pub(crate) enum VoidstarTokenTypes{
+pub enum VoidstarTokenTypes{
     Dot,
     Comma,
 
@@ -24,6 +24,10 @@ pub(crate) enum VoidstarTokenTypes{
     Times,
     Slash,
 
+    Greater,
+    Lesser,
+    GreaterEq,
+    LesserEq,
     Equals,
     Not,
 
@@ -49,6 +53,9 @@ pub(crate) enum VoidstarTokenTypes{
     BoolLiteral,
     CharLiteral,
 
+    Increment,
+    Decrement,
+
     Function,
     Goto,
     Cross,
@@ -64,9 +71,9 @@ pub struct VoidstarToken{
     content: String
 } 
 
-impl VoidstarTokenTypes{
-    /// Creates a new `VoidstarTokenTypes`
-    pub fn new(self, content: String) -> VoidstarToken{
-        VoidstarToken { token_type: self, content }
+impl VoidstarToken{
+    /// Creates a new `VoidstarToken`
+    pub fn new(token_type: VoidstarTokenTypes, content: String) -> VoidstarToken{
+        VoidstarToken { token_type, content }
     }
 }
