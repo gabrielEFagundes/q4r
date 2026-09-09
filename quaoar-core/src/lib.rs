@@ -2,6 +2,7 @@ use crate::tokens::VoidstarTokenTypes;
 
 pub mod tokens;
 pub mod lexer;
+pub mod signatures;
 
 const OPEN_PAREN: u8 = b'(';
 const CLOSE_PAREN: u8 = b')';
@@ -15,6 +16,7 @@ const QUOTES: u8 = b'\"';
 
 const DOT: u8 = b'.';
 const COMMA: u8 = b',';
+const UNDERSCORE: u8 = b'_';
 
 const COLON: u8 = b':';
 const SEMICOL: u8 = b';';
@@ -35,43 +37,42 @@ const SPACE: u8 = b' ';
 
 const HALT: u8 = b'\0';
 
-// abcdefghijklmnopqrstuvwxyz
-const KEYWORDS: [(&str, VoidstarTokenTypes); 18] = [
-    ("bool",        VoidstarTokenTypes::Bool),
-    ("char",        VoidstarTokenTypes::Char),
-    ("cross",       VoidstarTokenTypes::Cross),
-    ("else",        VoidstarTokenTypes::Else),
-    ("f",           VoidstarTokenTypes::Function),
-    ("false",       VoidstarTokenTypes::BoolLiteral),
-    ("float",       VoidstarTokenTypes::Float),
-    ("for",         VoidstarTokenTypes::For),
-    ("goto",        VoidstarTokenTypes::Goto),
-    ("if",          VoidstarTokenTypes::If),
-    ("int",         VoidstarTokenTypes::Int),
-    ("return",      VoidstarTokenTypes::Return),
-    ("static",      VoidstarTokenTypes::Static),
-    ("true",        VoidstarTokenTypes::BoolLiteral),
-    ("use",         VoidstarTokenTypes::Use),
-    ("void",        VoidstarTokenTypes::Void),
-    ("while",       VoidstarTokenTypes::While),
-    ("workspace",   VoidstarTokenTypes::Workspace),
+const KEYWORDS: [(&[u8], VoidstarTokenTypes); 18] = [
+    (b"bool",        VoidstarTokenTypes::Bool),
+    (b"char",        VoidstarTokenTypes::Char),
+    (b"cross",       VoidstarTokenTypes::Cross),
+    (b"else",        VoidstarTokenTypes::Else),
+    (b"f",           VoidstarTokenTypes::Function),
+    (b"false",       VoidstarTokenTypes::BoolLiteral),
+    (b"float",       VoidstarTokenTypes::Float),
+    (b"for",         VoidstarTokenTypes::For),
+    (b"goto",        VoidstarTokenTypes::Goto),
+    (b"if",          VoidstarTokenTypes::If),
+    (b"int",         VoidstarTokenTypes::Int),
+    (b"return",      VoidstarTokenTypes::Return),
+    (b"static",      VoidstarTokenTypes::Static),
+    (b"true",        VoidstarTokenTypes::BoolLiteral),
+    (b"use",         VoidstarTokenTypes::Use),
+    (b"void",        VoidstarTokenTypes::Void),
+    (b"while",       VoidstarTokenTypes::While),
+    (b"workspace",   VoidstarTokenTypes::Workspace),
 ];
 
-const SYMBOLS: [(char, VoidstarTokenTypes); 16] = [
-    ('!', VoidstarTokenTypes::Not),
-    ('(', VoidstarTokenTypes::OpenParents),
-    (')', VoidstarTokenTypes::CloseParents),
-    ('*', VoidstarTokenTypes::Asterisk),
-    ('+', VoidstarTokenTypes::Plus),
-    (',', VoidstarTokenTypes::Comma),
-    ('-', VoidstarTokenTypes::Minus),
-    ('.', VoidstarTokenTypes::Dot),
-    ('/', VoidstarTokenTypes::Slash),
-    (':', VoidstarTokenTypes::Colon),
-    (';', VoidstarTokenTypes::SemiColon),
-    ('=', VoidstarTokenTypes::Equals),
-    ('[', VoidstarTokenTypes::OpenBrackets),
-    (']', VoidstarTokenTypes::CloseBrackets),
-    ('{', VoidstarTokenTypes::OpenBraces),
-    ('}', VoidstarTokenTypes::CloseBraces),
+const SYMBOLS: [(u8, VoidstarTokenTypes); 16] = [
+    (b'!', VoidstarTokenTypes::Not),
+    (b'(', VoidstarTokenTypes::OpenParents),
+    (b')', VoidstarTokenTypes::CloseParents),
+    (b'*', VoidstarTokenTypes::Asterisk),
+    (b'+', VoidstarTokenTypes::Plus),
+    (b',', VoidstarTokenTypes::Comma),
+    (b'-', VoidstarTokenTypes::Minus),
+    (b'.', VoidstarTokenTypes::Dot),
+    (b'/', VoidstarTokenTypes::Slash),
+    (b':', VoidstarTokenTypes::Colon),
+    (b';', VoidstarTokenTypes::SemiColon),
+    (b'=', VoidstarTokenTypes::Equals),
+    (b'[', VoidstarTokenTypes::OpenBrackets),
+    (b']', VoidstarTokenTypes::CloseBrackets),
+    (b'{', VoidstarTokenTypes::OpenBraces),
+    (b'}', VoidstarTokenTypes::CloseBraces),
 ];

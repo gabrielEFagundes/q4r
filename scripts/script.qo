@@ -1,2 +1,9 @@
-char ch = 'o'
-int a = 2
+f main(int p_1, int p_2) int{
+    return value+p_1
+}
+
+f cmp(char c1, char c2) bool{
+    return c1 == c2
+}
+
+int global_var = 10

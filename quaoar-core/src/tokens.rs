@@ -1,5 +1,5 @@
 /// The voidstar token types
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub enum VoidstarTokenTypes{
     Dot,
     Comma,
@@ -61,19 +61,20 @@ pub enum VoidstarTokenTypes{
     Cross,
     Return,
 
-    Halt,
+    #[default] Halt,
 }
 
-/// The `Token` struct used by voidstar
-#[derive(Debug)]
+/// The `Token` struct used by Q4r
+#[derive(Debug, Default, Clone, Copy)]
 pub struct VoidstarToken{
-    token_type: VoidstarTokenTypes,
-    content: String
+    pub(crate) token_type: VoidstarTokenTypes,
+    pub(crate) start: usize,
+    pub(crate) end: usize
 } 
 
 impl VoidstarToken{
     /// Creates a new `VoidstarToken`
-    pub fn new(token_type: VoidstarTokenTypes, content: String) -> VoidstarToken{
-        VoidstarToken { token_type, content }
+    pub fn new(token_type: VoidstarTokenTypes, start: usize, end: usize) -> Self{
+        Self { token_type, start, end }
     }
 }
