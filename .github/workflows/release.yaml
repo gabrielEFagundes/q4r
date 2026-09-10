@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # guard: don't re-trigger on the bot's own release commit
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need full history + tags for git describe/log
+
+      - name: Configure git identity
+        run: |
+          git config user.name "quaoar-release-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Find last tag
+        id: last_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Collect commits since last tag
+        run: |
+          RANGE="${{ steps.last_tag.outputs.tag }}"
+          if [ -n "$RANGE" ]; then RANGE="$RANGE..HEAD"; fi
+          git log $RANGE --pretty=format:"%s" > commits.txt
+
+      - name: Determine bump type
+        id: bump
+        run: |
+          BUMP="none"
+          if grep -qE '^[a-zA-Z]+(\(.+\))?!:' commits.txt || grep -qi 'BREAKING CHANGE' commits.txt; then
+            BUMP="major"
+          elif grep -qE '^feat(\(.+\))?:' commits.txt; then
+            BUMP="minor"
+          elif grep -qE '^fix(\(.+\))?:' commits.txt; then
+            BUMP="patch"
+          fi
+          echo "type=$BUMP" >> "$GITHUB_OUTPUT"
+
+      - name: Bump VERSION
+        if: steps.bump.outputs.type != 'none'
+        id: version
+        run: |
+          CURRENT=$(cat VERSION)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "${{ steps.bump.outputs.type }}" in
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
+          esac
+          NEW="$MAJOR.$MINOR.$PATCH"
+          echo "$NEW" > VERSION
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: Update CHANGELOG
+        if: steps.bump.outputs.type != 'none'
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          {
+            echo "## v${{ steps.version.outputs.new_version }} - $DATE"
+            echo ""
+            if grep -qE '^feat(\(.+\))?!?:' commits.txt; then
+              echo "### Features"
+              grep -E '^feat(\(.+\))?!?:' commits.txt | sed -E 's/^feat(\(.+\))?!?:/- /'
+              echo ""
+            fi
+            if grep -qE '^fix(\(.+\))?!?:' commits.txt; then
+              echo "### Fixes"
+              grep -E '^fix(\(.+\))?!?:' commits.txt | sed -E 's/^fix(\(.+\))?!?:/- /'
+              echo ""
+            fi
+            if grep -vE '^(feat|fix)(\(.+\))?!?:' commits.txt | grep -q .; then
+              echo "### Other changes"
+              grep -vE '^(feat|fix)(\(.+\))?!?:' commits.txt | sed -E 's/^/- /'
+              echo ""
+            fi
+          } > new_entry.md
+          cat new_entry.md CHANGELOG.md > tmp_changelog && mv tmp_changelog CHANGELOG.md
+
+      - name: Commit and tag
+        if: steps.bump.outputs.type != 'none'
+        run: |
+          git add VERSION CHANGELOG.md
+          git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
+          git tag "v${{ steps.version.outputs.new_version }}"
+          git push origin main
+          git push origin "v${{ steps.version.outputs.new_version }}"
+
+      - name: Create GitHub release
+        if: steps.bump.outputs.type != 'none'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.version.outputs.new_version }}"
+          body_path: new_entry.md
