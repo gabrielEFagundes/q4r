@@ -204,7 +204,7 @@ impl Lexer{
             }
         }
 
-        //println!("{:#?}", tokens);
+        println!("{:#?}", tokens);
         tokens
     }
 }

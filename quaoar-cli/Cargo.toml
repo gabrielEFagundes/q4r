@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-quaoar-core = {path="../quaoar-core"}
+quaoar-core = { path="../quaoar-core" }
+quaoar-c = { path="../quaoar-c" }

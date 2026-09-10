@@ -1,5 +1,5 @@
 [workspace]
-members = [
+members = ["quaoar-c",
     "quaoar-cli",
     "quaoar-core"
 ]

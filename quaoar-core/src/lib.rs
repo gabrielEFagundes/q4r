@@ -3,6 +3,8 @@ use crate::tokens::VoidstarTokenTypes;
 pub mod tokens;
 pub mod lexer;
 pub mod signatures;
+pub mod generator;
+pub mod expdesc;
 
 const OPEN_PAREN: u8 = b'(';
 const CLOSE_PAREN: u8 = b')';

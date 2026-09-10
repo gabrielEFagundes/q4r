@@ -3,9 +3,17 @@
 version = 4
 
 [[package]]
+name = "quaoar-c"
+version = "0.1.0"
+dependencies = [
+ "quaoar-core",
+]
+
+[[package]]
 name = "quaoar-cli"
 version = "0.1.0"
 dependencies = [
+ "quaoar-c",
  "quaoar-core",
 ]
 

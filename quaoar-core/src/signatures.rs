@@ -25,6 +25,17 @@ impl Type{
         }
     }
 
+    pub fn to_byte_span(&self) -> &'static[u8]{
+        match self{
+            Type::Void => b"void",
+            Type::Int => b"int",
+            Type::Float => b"float",
+            Type::Char => b"char",
+            Type::Bool => b"bool",
+            Type::Pointer(_) => todo!(),
+        }
+    }
+
     /// Returns `true` if the `VoidstarTokenTypes` type is valid inside `Type`, false otherwise
     pub fn has(token_type: VoidstarTokenTypes) -> bool{
         match token_type{
@@ -34,6 +45,22 @@ impl Type{
             |VoidstarTokenTypes::Char 
             |VoidstarTokenTypes::Bool => true,
             _ => false
+        }
+    }
+}
+
+pub enum Literal{
+    IntLiteral(usize), FloatLiteral(f32), CharLiteral(char), VoidLiteral, BoolLiteral(bool)
+}
+
+impl Literal{
+    pub fn to_byte_span(&self) -> Vec<u8>{
+        match self{
+            Literal::IntLiteral(v) => v.to_le_bytes().to_vec(),
+            Literal::FloatLiteral(v) => v.to_le_bytes().to_vec(),
+            Literal::CharLiteral(v) => Vec::from([*v as u8]),
+            Literal::VoidLiteral => b"void".to_vec(),
+            Literal::BoolLiteral(v) => Vec::from([u8::from(*v)]),
         }
     }
 }
@@ -71,7 +98,6 @@ impl<'a> SignatureMounter<'a>{
         self.current_token = self.tokens[self.cursor];
 
         while self.cursor < self.tokens.len()-1{
-            println!("{:#?}", self.current_token);
             match self.current_token.token_type{
                 VoidstarTokenTypes::Function => {
                     self.forward();

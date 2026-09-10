@@ -77,4 +77,16 @@ impl VoidstarToken{
     pub fn new(token_type: VoidstarTokenTypes, start: usize, end: usize) -> Self{
         Self { token_type, start, end }
     }
+
+    pub fn token_type(&self) -> VoidstarTokenTypes{
+        self.token_type
+    }
+
+    pub fn start(&self) -> usize{
+        self.start
+    }
+
+    pub fn end(&self) -> usize{
+        self.end
+    }
 }
