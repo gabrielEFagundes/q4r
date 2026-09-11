@@ -107,7 +107,7 @@ impl Lexer{
 
     fn keyword(&mut self) -> VoidstarToken{
         let start = self.cursor;
-        while self.current.is_ascii_alphanumeric() || self.current == UNDERSCORE{
+        while !self.end() && (self.current.is_ascii_alphanumeric() || self.current == UNDERSCORE){
             self.advance();
         }
         let end = self.cursor;
@@ -169,7 +169,7 @@ impl Lexer{
                         SLASH => {
                             loop{
                                 self.advance();
-                                if self.current == LINE_FEED || self.current == HALT{
+                                if self.end() || self.current == LINE_FEED || self.current == HALT{
                                     break;
                                 }
                             }
@@ -199,7 +199,6 @@ impl Lexer{
                     continue;
                 },
 
-                HALT => tokens.push(VoidstarToken::new(VoidstarTokenTypes::Halt, self.cursor, self.cursor)),
                 _ => panic!("lexer reached an impossible state on line {}, byte `{}`", self.line, self.source[self.cursor])
             }
         }
