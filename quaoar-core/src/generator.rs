@@ -1,4 +1,4 @@
-use crate::{expdesc::{FunDeclaration, VarDeclaration}, signatures::{Literal, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use crate::{expdesc::{Expression, FunDeclaration, VarDeclaration}, signatures::{DecKind, Literal, Operator, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// Trait used by the support modules that generate code
 /// 
@@ -15,6 +15,31 @@ pub trait CodeGen{
     fn next(tokens: &[VoidstarToken], cursor: &usize) -> VoidstarToken{
         if *cursor+1 > tokens.len(){ return tokens[*cursor] }
         tokens[*cursor+1]
+    }
+
+    fn expression<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> Expression<'a>{
+        let kind = DecKind::map(tokens[*cursor].token_type);
+        let left: &[u8]; 
+        let right: &[u8]; 
+        let operator;
+
+        *cursor+=1;
+        let lstart = tokens[*cursor].start;
+
+        while !Operator::has(tokens[*cursor].token_type){ *cursor+=1; }
+        let lend = tokens[*cursor-1].end;
+        left = &source[lstart..lend];
+
+        operator = Operator::map(tokens[*cursor].token_type);
+
+        *cursor+=1;
+        let rstart = tokens[*cursor].start;
+
+        while tokens[*cursor].token_type != VoidstarTokenTypes::OpenBraces{ *cursor+=1; }
+        let rend = tokens[*cursor-1].end;
+        right = &source[rstart..rend];
+
+        Expression { kind, left: left, operator, right: right }
     }
 
     fn var_declaration<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> VarDeclaration<'a>{
@@ -66,6 +91,11 @@ pub trait CodeGen{
         let returns = Type::map(tokens[*cursor].token_type);
 
         Self::expect(VoidstarTokenTypes::OpenBraces, tokens, cursor);
+        // let mut stack: Vec<VoidstarTokenTypes> = Vec::from([VoidstarTokenTypes::OpenBraces]);
+
+        while tokens[*cursor].token_type != VoidstarTokenTypes::CloseBraces{
+            todo!("function body scope not implemented")
+        }
 
         FunDeclaration { returns, ident, params }
     }

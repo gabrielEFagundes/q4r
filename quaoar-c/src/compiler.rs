@@ -1,4 +1,4 @@
-use quaoar_core::{expdesc::{FunDeclaration, VarDeclaration}, generator::CodeGen, signatures::Type, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use quaoar_core::{expdesc::{Expression, FunDeclaration, VarDeclaration}, generator::CodeGen, signatures::Type, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// The `quaoar-c` transpiler generates a source string 
 /// and parses it to the first gcc compiler Q4r finds on PATH.
@@ -26,6 +26,23 @@ pub struct CCompiler<'a>{
 impl<'a> CCompiler<'a>{
     pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken]) -> Self{
         Self{ tokens, source, cursor: 0 }
+    }
+
+    pub(crate) fn parse_expression(&mut self, out: &mut Vec<u8>, expression: Expression){
+        // e.g. if((side1)==(side2)){ }
+        out.extend_from_slice(expression.kind.to_byte_span());
+        out.push(b'(');
+        out.push(b'(');
+        out.extend_from_slice(expression.left);
+        out.push(b')');
+        out.extend_from_slice(expression.operator.to_byte_span());
+        out.push(b'(');
+        out.extend_from_slice(expression.right);
+        out.push(b')');
+        out.push(b')');
+        out.push(b'{');
+        self.generate();
+        out.push(b'}');
     }
 
     pub(crate) fn parse_var_decl(&self, out: &mut Vec<u8>, declaration: VarDeclaration){

@@ -18,6 +18,6 @@ fn main() {
     
     let t = Lexer::new(s.clone()).lexerize();
 
-    // SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
-    // CCompiler::new(s.as_slice(), t.as_slice()).generate();
+    SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
+    CCompiler::new(s.as_slice(), t.as_slice()).generate();
 }

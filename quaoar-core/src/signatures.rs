@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use crate::tokens::{self, VoidstarToken, VoidstarTokenTypes};
+use crate::{signatures::Type::Void, tokens::{self, VoidstarToken, VoidstarTokenTypes}};
 
 /// Usable types
 #[derive(Debug)]
@@ -21,7 +21,7 @@ impl Type{
             VoidstarTokenTypes::Float => Self::Float,
             VoidstarTokenTypes::Char => Self::Char,
             VoidstarTokenTypes::Bool => Self::Bool,
-            _ => panic!("invalid data type {:#?}", token_type)
+            _ => panic!("invalid data type `{:#?}`", token_type)
         }
     }
 
@@ -42,7 +42,7 @@ impl Type{
             VoidstarTokenTypes::Void
             |VoidstarTokenTypes::Int
             |VoidstarTokenTypes::Float
-            |VoidstarTokenTypes::Char 
+            |VoidstarTokenTypes::Char
             |VoidstarTokenTypes::Bool => true,
             _ => false
         }
@@ -61,6 +61,67 @@ impl Literal{
             Literal::CharLiteral(v) => Vec::from([*v as u8]),
             Literal::VoidLiteral => b"void".to_vec(),
             Literal::BoolLiteral(v) => Vec::from([u8::from(*v)]),
+        }
+    }
+}
+
+pub enum Operator{
+    EqualsEquals, Greater, GreaterEq, Lesser, LesserEq
+}
+
+impl Operator{
+    pub fn map(token_type: VoidstarTokenTypes) -> Operator{
+        match token_type{
+            VoidstarTokenTypes::CompEquals => Operator::EqualsEquals,
+            VoidstarTokenTypes::Greater => Operator::Greater,
+            VoidstarTokenTypes::GreaterEq => Operator::GreaterEq,
+            VoidstarTokenTypes::Lesser => Operator::Lesser,
+            VoidstarTokenTypes::LesserEq => Operator::LesserEq,
+            _ => panic!("invalid operator type `{:#?}`", token_type)
+        }
+    }
+
+    pub fn to_byte_span(&self) -> &'static[u8]{
+        match self{
+            Operator::EqualsEquals => b"==",
+            Operator::Greater => b">",
+            Operator::GreaterEq => b">=",
+            Operator::Lesser => b"<",
+            Operator::LesserEq => b"<=",
+        }
+    }
+
+    pub fn has(token_type: VoidstarTokenTypes) -> bool{
+        match token_type{
+            VoidstarTokenTypes::Equals
+            | VoidstarTokenTypes::Greater
+            | VoidstarTokenTypes::GreaterEq
+            | VoidstarTokenTypes::Lesser
+            | VoidstarTokenTypes::LesserEq => true,
+            _ => false
+        }
+    }
+}
+
+pub enum DecKind{
+    If, While, For
+}
+
+impl DecKind{
+    pub fn map(token_type: VoidstarTokenTypes) -> Self{
+        match token_type{
+            VoidstarTokenTypes::If => Self::If,
+            VoidstarTokenTypes::While => Self::While,
+            VoidstarTokenTypes::For => Self::For,
+            _ => panic!("invalid declaration kind `{:#?}`", token_type)
+        }
+    }
+
+    pub fn to_byte_span(&self) -> &'static[u8]{
+        match self{
+            DecKind::If => b"if",
+            DecKind::While => b"while",
+            DecKind::For => b"for",
         }
     }
 }

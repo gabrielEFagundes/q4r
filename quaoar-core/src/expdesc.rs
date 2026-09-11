@@ -1,9 +1,11 @@
-use crate::signatures::Type;
+use crate::signatures::{DecKind, Operator, Type};
 
-// pub struct Expression{
-//     pub left: Literal,
-//     pub right: Literal
-// }
+pub struct Expression<'a>{
+    pub kind: DecKind,
+    pub left: &'a[u8],
+    pub operator: Operator,
+    pub right: &'a[u8]
+}
 
 pub struct VarDeclaration<'a>{
     pub ty: Type,

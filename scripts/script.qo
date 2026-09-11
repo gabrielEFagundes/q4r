@@ -1,5 +1,14 @@
 int global_var = 10
 
-f cmp(int c1, int c2) bool{
-    return c1 == c2
+if 10 <= 5{
+    // nothing because nothing
+    // on pure q4r
 }
+
+// f cmp(int c1, int c2) bool{
+//     return c1 == c2
+// }
+
+// f func() void{
+//     // do nothing
+// }

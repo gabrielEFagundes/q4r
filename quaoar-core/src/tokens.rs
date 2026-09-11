@@ -28,6 +28,8 @@ pub enum VoidstarTokenTypes{
     Lesser,
     GreaterEq,
     LesserEq,
+    CompEquals,
+
     Equals,
     Not,
 

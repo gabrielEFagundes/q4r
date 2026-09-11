@@ -31,7 +31,7 @@ impl Lexer{
     }
 
     fn symbol(&mut self) -> VoidstarToken{
-        let start = self.cursor; let mut end = self.cursor;
+        let start = self.cursor; let end;
         match self.current{
             QUOTES => {
                 todo!("strings are not implemented yet.");
@@ -51,10 +51,7 @@ impl Lexer{
                         end = self.cursor;
                         VoidstarToken::new(VoidstarTokenTypes::GreaterEq, start, end)
                     },
-                    _ => {
-                        end = self.cursor;
-                        VoidstarToken::new(VoidstarTokenTypes::Greater, start, end)
-                    }
+                    _ => VoidstarToken::new(VoidstarTokenTypes::Greater, start, self.cursor)
                 }
             },
             LESSER => {
@@ -64,9 +61,18 @@ impl Lexer{
                         end = self.cursor;
                         VoidstarToken::new(VoidstarTokenTypes::LesserEq, start, end)
                     },
-                    _ => {
-                        VoidstarToken::new(VoidstarTokenTypes::Lesser, start, self.cursor)
-                    }
+                    _ => VoidstarToken::new(VoidstarTokenTypes::Lesser, start, self.cursor)
+                    
+                }
+            },
+            EQ => {
+                match self.advance(){
+                    EQ => {
+                        self.advance();
+                        end = self.cursor;
+                        VoidstarToken::new(VoidstarTokenTypes::CompEquals, start, end)
+                    },
+                    _ => VoidstarToken::new(VoidstarTokenTypes::Equals, start, self.cursor)
                 }
             },
             PLUS => {

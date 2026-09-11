@@ -17,6 +17,11 @@ impl<'a> CodeGen for CCompiler<'_>{
                     self.parse_var_decl(&mut c_src, dec);
                 },
 
+                VoidstarTokenTypes::If | VoidstarTokenTypes::While => {
+                    let exp = Self::expression(self.tokens, self.source, &mut self.cursor);
+                    self.parse_expression(&mut c_src, exp);
+                }
+
                 VoidstarTokenTypes::Function => {
                     let fun = Self::fun_declaration(self.tokens, self.source, &mut self.cursor);
                     self.parse_fun_decl(&mut c_src, fun);
