@@ -40,7 +40,9 @@ pub trait CodeGen{
         Self::expect(VoidstarTokenTypes::OpenParents, tokens, cursor);
         let mut params: Vec<&[u8]> = Vec::new();
 
+        *cursor+=1;
         while tokens[*cursor].token_type != VoidstarTokenTypes::CloseParents{
+            println!("{:#?}", tokens[*cursor]);
             match tokens[*cursor].token_type{
                 VoidstarTokenTypes::Int
                 | VoidstarTokenTypes::Float
@@ -54,13 +56,18 @@ pub trait CodeGen{
                     ]);
                 },
 
-                VoidstarTokenTypes::Comma | VoidstarTokenTypes::Void => continue,
+                VoidstarTokenTypes::Comma | VoidstarTokenTypes::Void => *cursor+=1,
                 
                 _ => panic!("unknown symbol as a parameter of `{}`", str::from_utf8(ident).unwrap_or("unknown"))
             }
         }
 
-        todo!()
+        *cursor+=1;
+        let returns = Type::map(tokens[*cursor].token_type);
+
+        Self::expect(VoidstarTokenTypes::OpenBraces, tokens, cursor);
+
+        FunDeclaration { returns, ident, params }
     }
 
     fn generate(&mut self) -> Vec<u8>;

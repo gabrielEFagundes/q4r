@@ -1,4 +1,4 @@
-use quaoar_core::{expdesc::VarDeclaration, generator::CodeGen, signatures::Type, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use quaoar_core::{expdesc::{FunDeclaration, VarDeclaration}, generator::CodeGen, signatures::Type, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// The `quaoar-c` transpiler generates a source string 
 /// and parses it to the first gcc compiler Q4r finds on PATH.
@@ -18,9 +18,9 @@ use quaoar_core::{expdesc::VarDeclaration, generator::CodeGen, signatures::Type,
 /// 
 /// That doesn't mean Q4r doesn't support other compilers.
 pub struct CCompiler<'a>{
-    tokens: &'a[VoidstarToken],
-    source: &'a[u8],
-    cursor: usize
+    pub(crate) tokens: &'a[VoidstarToken],
+    pub(crate) source: &'a[u8],
+    pub(crate) cursor: usize
 }
 
 impl<'a> CCompiler<'a>{
@@ -28,7 +28,8 @@ impl<'a> CCompiler<'a>{
         Self{ tokens, source, cursor: 0 }
     }
 
-    fn parse_var_decl(&self, out: &mut Vec<u8>, declaration: VarDeclaration){
+    pub(crate) fn parse_var_decl(&self, out: &mut Vec<u8>, declaration: VarDeclaration){
+        // int var = value
         out.extend_from_slice(declaration.ty.to_byte_span());
         out.push(b' ');
         out.extend_from_slice(declaration.ident);
@@ -36,32 +37,17 @@ impl<'a> CCompiler<'a>{
         out.extend_from_slice(declaration.val);
         out.push(b';');
     }
-}
 
-impl<'a> CodeGen for CCompiler<'_>{
-    fn generate(&mut self) -> Vec<u8> {
-        let mut c_src: Vec<u8> = Vec::new();
-
-        for i in self.tokens{
-            match i.token_type(){
-                VoidstarTokenTypes::Int
-                | VoidstarTokenTypes::Float
-                | VoidstarTokenTypes::Bool
-                | VoidstarTokenTypes::Char
-                | VoidstarTokenTypes::Void => {
-                    let dec = Self::var_declaration(self.tokens, self.source, &mut self.cursor);
-                    self.parse_var_decl(&mut c_src, dec);
-                },
-
-                VoidstarTokenTypes::Function => {
-                    //let fun = Self::fun_declaration(self.tokens, self.source, &mut self.cursor);
-                }
-
-                _ => continue
-            }
+    pub(crate) fn parse_fun_decl(&self, out: &mut Vec<u8>, declaration: FunDeclaration){
+        // int function(int p1, int p2){ }
+        out.extend_from_slice(declaration.returns.to_byte_span());
+        out.push(b' ');
+        out.extend_from_slice(declaration.ident);
+        out.push(b'(');
+        for i in declaration.params{
+            out.extend_from_slice(i);
         }
-
-        println!("{:#?}", c_src);
-        c_src
+        out.push(b')');
+        out.push(b';');
     }
 }
