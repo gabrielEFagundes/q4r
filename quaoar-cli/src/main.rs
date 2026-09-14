@@ -18,6 +18,8 @@ fn main() {
     
     let t = Lexer::new(s.clone()).lexerize();
 
-    SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
-    CCompiler::new(s.as_slice(), t.as_slice()).generate();
+    let signatures = SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
+    let bytes = CCompiler::new(&s, &t, signatures).generate();
+
+    quaoar_c::exec(&bytes);
 }

@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use crate::{signatures::Type::Void, tokens::{self, VoidstarToken, VoidstarTokenTypes}};
+use crate::tokens::{VoidstarToken, VoidstarTokenTypes};
 
 /// Usable types
 #[derive(Debug)]
@@ -47,10 +47,22 @@ impl Type{
             _ => false
         }
     }
+
+    pub fn default_literal(&self) -> Literal{
+        match self{
+            Type::Int => Literal::IntLiteral(0),
+            Type::Float => Literal::FloatLiteral(0.0),
+            Type::Char => Literal::CharLiteral(' '),
+            Type::Bool => Literal::BoolLiteral(false),
+            Type::Pointer(_) => todo!("pointers not implemented yet"),
+            // default_literal() is only called on variables, that's why this is valid
+            _ => panic!("invalid syntax: `void` on variable type")
+        }
+    }
 }
 
 pub enum Literal{
-    IntLiteral(usize), FloatLiteral(f32), CharLiteral(char), VoidLiteral, BoolLiteral(bool)
+    IntLiteral(usize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool)
 }
 
 impl Literal{
@@ -59,7 +71,6 @@ impl Literal{
             Literal::IntLiteral(v) => v.to_le_bytes().to_vec(),
             Literal::FloatLiteral(v) => v.to_le_bytes().to_vec(),
             Literal::CharLiteral(v) => Vec::from([*v as u8]),
-            Literal::VoidLiteral => b"void".to_vec(),
             Literal::BoolLiteral(v) => Vec::from([u8::from(*v)]),
         }
     }
@@ -129,10 +140,9 @@ impl DecKind{
 /// Each signature must hold the function's name, parameters and return type
 ///
 /// Or, if that's the case, the type of the global variable
-#[derive(Debug)]
 pub enum Signature{
     Function{ returns: Type, params: Vec<Type> },
-    Global{ ty: Type }
+    Global{ ty: Type, value: Vec<u8> }
 }
 
 /// Main struct used for mounting the table that holds the signatures
@@ -152,6 +162,11 @@ impl<'a> SignatureMounter<'a>{
     fn forward(&mut self){
         self.cursor+=1;
         if self.cursor < self.tokens.len(){ self.current_token = self.tokens[self.cursor]; }
+    }
+
+    fn peekaboo(&mut self) -> VoidstarToken{
+        if self.cursor+1 < self.tokens.len(){ return self.tokens[self.cursor+1] }
+        self.tokens[self.cursor]
     }
 
     pub fn mount(&mut self) -> HashMap<String, Signature>{
@@ -190,12 +205,18 @@ impl<'a> SignatureMounter<'a>{
                     self.forward();
 
                     let ident = &self.source[self.current_token.start..self.current_token.end];
-                    map.insert(unsafe{ str::from_utf8_unchecked(ident).to_string() }, Signature::Global { ty });
+                    let mut value = ty.default_literal().to_byte_span();
+
+                    if self.peekaboo().token_type == VoidstarTokenTypes::Equals{
+                        self.forward(); self.forward();
+                        value = self.source[self.current_token.start..self.current_token.end].to_vec();
+                    }
+
+                    map.insert(unsafe{ str::from_utf8_unchecked(ident).to_string() }, Signature::Global { ty, value });
                 },
                 _ => self.forward()
             }
         }
-        println!("{:#?}", map);
         map
     }
 }

@@ -1,8 +1,9 @@
 int global_var = 10
 
-if 10 <= 5{
-    // nothing because nothing
-    // on pure q4r
+f main() int{
+    if 10 > 5{
+        global_var = 5
+    }
 }
 
 // f cmp(int c1, int c2) bool{

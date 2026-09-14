@@ -4,34 +4,42 @@ use crate::compiler::CCompiler;
 
 impl<'a> CodeGen for CCompiler<'_>{
     fn generate(&mut self) -> Vec<u8> {
-        let mut c_src: Vec<u8> = Vec::new();
+        self.gen_signature_headers();
 
-        for i in self.tokens{
-            match i.token_type(){
+        while !Self::end(self.tokens, &mut self.cursor){
+            println!("{:#?}", self.tokens[self.cursor]);
+            match self.tokens[self.cursor].token_type(){
                 VoidstarTokenTypes::Int
                 | VoidstarTokenTypes::Float
                 | VoidstarTokenTypes::Bool
                 | VoidstarTokenTypes::Char
                 | VoidstarTokenTypes::Void => {
                     let dec = Self::var_declaration(self.tokens, self.source, &mut self.cursor);
-                    self.parse_var_decl(&mut c_src, dec);
+                    self.parse_var_decl(dec);
                 },
 
                 VoidstarTokenTypes::If | VoidstarTokenTypes::While => {
-                    let exp = Self::expression(self.tokens, self.source, &mut self.cursor);
-                    self.parse_expression(&mut c_src, exp);
+                    let cmp = Self::comparison_declaration(self.tokens, self.source, &mut self.cursor);
+                    self.parse_cmp_expression(cmp);
                 }
 
                 VoidstarTokenTypes::Function => {
                     let fun = Self::fun_declaration(self.tokens, self.source, &mut self.cursor);
-                    self.parse_fun_decl(&mut c_src, fun);
+                    self.parse_fun_decl(fun);
                 }
 
-                _ => continue
+                // VoidstarTokenTypes::Ident => {
+                //     //let id = Self::standalone_ident(self.tokens, self.source, &mut self.cursor);
+                // }
+
+                VoidstarTokenTypes::OpenBraces => self.cursor+=1,
+                VoidstarTokenTypes::CloseBraces => break,
+
+                _ => self.cursor+=1
             }
         }
 
-        println!("{:#?}", c_src);
-        c_src
+        println!("{:#?}", self.c_src);
+        self.c_src.clone()
     }
 }
