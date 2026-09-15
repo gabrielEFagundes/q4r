@@ -19,7 +19,10 @@ fn main() {
     let t = Lexer::new(s.clone()).lexerize();
 
     let signatures = SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
-    let bytes = CCompiler::new(&s, &t, signatures).generate();
+    let bytes = CCompiler::new(&s, &t, signatures).generate_headers().generate();
 
+    for i in &bytes{
+        print!("{}", *i as char);
+    }
     quaoar_c::exec(&bytes);
 }

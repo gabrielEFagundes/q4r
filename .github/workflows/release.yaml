@@ -38,9 +38,16 @@ jobs:
       - name: Determine bump type
         id: bump
         run: |
+          CURRENT_MAJOR=$(cut -d. -f1 VERSION)
           BUMP="none"
-          if grep -qE '^[a-zA-Z]+(\(.+\))?!:' commits.txt || grep -qi 'BREAKING CHANGE' commits.txt; then
-            BUMP="major"
+          if [ "$CURRENT_MAJOR" = "0" ] && grep -qE '^release(\(.+\))?:' commits.txt; then
+            BUMP="release"   # explicit gate: only way out of 0.x
+          elif grep -qE '^[a-zA-Z]+(\(.+\))?!:' commits.txt || grep -qi 'BREAKING CHANGE' commits.txt; then
+            if [ "$CURRENT_MAJOR" = "0" ]; then
+              BUMP="minor"   # pre-1.0: breaking changes don't touch major
+            else
+              BUMP="major"
+            fi
           elif grep -qE '^feat(\(.+\))?:' commits.txt; then
             BUMP="minor"
           elif grep -qE '^fix(\(.+\))?:' commits.txt; then
@@ -52,14 +59,18 @@ jobs:
         if: steps.bump.outputs.type != 'none'
         id: version
         run: |
-          CURRENT=$(cat VERSION)
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-          case "${{ steps.bump.outputs.type }}" in
-            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-            patch) PATCH=$((PATCH+1)) ;;
-          esac
-          NEW="$MAJOR.$MINOR.$PATCH"
+          if [ "${{ steps.bump.outputs.type }}" = "release" ]; then
+            NEW="1.0.0"
+          else
+            CURRENT=$(cat VERSION)
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+            case "${{ steps.bump.outputs.type }}" in
+              major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+              patch) PATCH=$((PATCH+1)) ;;
+            esac
+            NEW="$MAJOR.$MINOR.$PATCH"
+          fi
           echo "$NEW" > VERSION
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
 

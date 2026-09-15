@@ -10,8 +10,24 @@ pub fn mount_and_exec(bytes: &[u8]) -> Option<bool>{
         .stdin(Stdio::piped())
         .spawn().ok()?;
 
-    match child.stdin.unwrap().write_all(bytes){
+    let did_compile = match child.stdin.unwrap().write_all(bytes){
         Ok(_) => Some(true),
         Err(_) => Some(false),
+    }.unwrap();
+
+    if !did_compile{
+        panic!("could not compile with gcc");
+    }
+
+    match Command::new("./q4rgcc").spawn(){
+        Ok(_) => Some(true),
+        Err(_) => Some(false)
+    }
+}
+
+pub fn exists() -> bool{
+    match Command::new("gcc").arg("--version").status(){
+        Ok(_) => true,
+        Err(_) => false,
     }
 }

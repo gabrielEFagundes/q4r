@@ -1,6 +1,7 @@
 tests/
 *.exe
-
+*/q4rzig
+*/q4rgcc
 
 # Added by cargo
 

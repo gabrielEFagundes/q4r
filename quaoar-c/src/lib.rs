@@ -1,9 +1,11 @@
 use std::process::Command;
 
+use crate::Compilers::{Gcc, Zig};
+
 pub mod compiler;
-pub mod genhelper;
-pub mod cmacros;
-pub mod impls;
+pub mod helpers;
+pub mod macros;
+pub mod r#impl;
 pub mod gcc;
 pub mod zigcc;
 
@@ -13,10 +15,10 @@ enum Compilers{
 }
 
 fn search_compiler() -> Compilers{
-    match Command::new("zigcc").arg("--version").status(){
-        Ok(_) => Compilers::Zig,
-        Err(_) => Compilers::Gcc,
-    }
+    if gcc::exists(){ return Gcc }
+    if zigcc::exists(){ return Zig }
+
+    panic!("no C compiler found on PATH\navailable compilers: `gcc`, `zigcc`")
 }
 
 pub fn exec(bytes: &[u8]){

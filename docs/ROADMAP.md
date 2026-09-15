@@ -8,7 +8,7 @@ Version 0.1 is the first milestone, it's where Q4r will simply compile its sourc
 
 Using the **GNU Compiler Collection** as the main backend, this is Q4r's most limited version, being capable, at best, of defining basic syntax, such as `struct`s, `enum`s and more.
 
-Keep in mind that the `quaoar-c` backend will be updated as Q4r evolves, meaning it'll be as efficient and capable as the `quaoar-asm` backend.
+Keep in mind that the `quaoar-c` backend will be updated as Q4r evolves, although those will only be fixes and seasonal chores, the `quaoar-asm` crate will be the default compiler, since it's pointless to compile to `C` when you already have an Assembly backend.
 
 ## v0.2 - Assembly Compiler
 

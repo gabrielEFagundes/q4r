@@ -1,15 +1,24 @@
 int global_var = 10
 
 f main() int{
-    if 10 > 5{
-        global_var = 5
-    }
+    cmp()
+    return 0
 }
 
-// f cmp(int c1, int c2) bool{
-//     return c1 == c2
-// }
+f cmp() bool{
+    if 10 >= 5{
+        global_var = 5
+    }
+    return true
+}
 
-// f func() void{
-//     // do nothing
-// }
+/* 
+Expression types:
+    1           - Literal
+    1+1         - Arithmetic
+    1<2         - Comparison
+    (1+1) + 1   - Arithmetic + Subexpression
+    (1+1) >= 2  - Arithmetic + Comparison
+    1+1+1       - MTOO Arithmetic
+         (More Than One Operator)
+*/

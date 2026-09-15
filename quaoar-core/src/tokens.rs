@@ -84,6 +84,10 @@ impl VoidstarToken{
         self.token_type
     }
 
+    pub fn set_token_type(&mut self, new: VoidstarTokenTypes){
+        self.token_type = new;
+    }
+
     pub fn start(&self) -> usize{
         self.start
     }

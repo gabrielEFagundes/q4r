@@ -1,4 +1,4 @@
-use crate::{expdesc::{ComparisonDeclaration, Expression, FunDeclaration, VarDeclaration}, signatures::{DecKind, Literal, Operator, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use crate::{expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::self, FunDeclaration, VarDeclaration}, signatures::{DecKind, Literal, Operator, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// Trait used by the support modules that generate code
 /// 
@@ -16,32 +16,63 @@ pub trait CodeGen{
         }
     }
 
+    fn lookahead(tokens: &[VoidstarToken], cursor: &usize) -> VoidstarToken{
+        if *cursor+1 < tokens.len(){
+            return tokens[*cursor+1]
+        }
+        tokens[*cursor]
+    }
+
     fn next(tokens: &[VoidstarToken], cursor: &usize) -> VoidstarToken{
-        if *cursor+1 > tokens.len(){ return tokens[*cursor] }
+        if *cursor > tokens.len(){ return tokens[*cursor] }
         tokens[*cursor+1]
     }
 
-    fn expression<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> Expression<'a>{
-        let left: &[u8];
-        let right: &[u8];
-        let operator;
+    fn expression<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> ExpType<'a>{
+        let current = tokens[*cursor].token_type;
+        let expression_type = Self::lookahead(tokens, cursor).token_type;
 
-        let lstart = tokens[*cursor].start;
+        let mut subexpressions: Vec<ExpType<'_>> = Vec::new();
 
-        while !Operator::has(tokens[*cursor].token_type){ *cursor+=1; }
-        let lend = tokens[*cursor-1].end;
-        left = &source[lstart..lend];
+        // recurses back if a subexpression is detected
+        if current == VoidstarTokenTypes::OpenBraces{
+            *cursor += 1;
+            subexpressions.push(Self::expression(tokens, source, cursor));
+        }
 
-        operator = Operator::map(tokens[*cursor].token_type);
+        if Operator::is_comparative(expression_type) || Operator::is_arithmetic(expression_type){
+            let left: &[u8];
+            let right: &[u8];
+            let operator;
+            
+            let lstart = tokens[*cursor].start;
+            
+            while !(Operator::is_comparative(tokens[*cursor].token_type) ||
+                    Operator::is_arithmetic(tokens[*cursor].token_type)){
+                    *cursor+=1;
+            }
+            
+            let lend = tokens[*cursor-1].end;
+            left = &source[lstart..lend];
 
-        *cursor+=1;
-        let rstart = tokens[*cursor].start;
+            operator = Operator::map(tokens[*cursor].token_type);
 
-        while tokens[*cursor].token_type != VoidstarTokenTypes::OpenBraces{ *cursor+=1; }
-        let rend = tokens[*cursor-1].end;
-        right = &source[rstart..rend];
+            *cursor+=1;
+            let rstart = tokens[*cursor].start;
 
-        Expression { left, operator, right }
+            while Operator::is_legal(tokens[*cursor].token_type){ 
+                *cursor+=1;
+            }
+
+            let rend = tokens[*cursor-1].end;
+            right = &source[rstart..rend];
+
+            return ExpType::OperativeExp(ExpOperator{ left, operator, right })
+        }
+
+        ExpType::LiteralExp(ExpLiteral{
+            val: &source[tokens[*cursor].start..tokens[*cursor].end]
+        })
     }
 
     fn comparison_declaration<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> ComparisonDeclaration<'a>{
@@ -53,7 +84,9 @@ pub trait CodeGen{
     }
 
     fn var_declaration<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> VarDeclaration<'a>{
-        let ty = Type::map(tokens[*cursor].token_type);
+        let mut ty = Type::map(tokens[*cursor].token_type);
+        if ty.eq(&Type::Bool){ ty = Type::Int }
+
         Self::expect(VoidstarTokenTypes::Ident, tokens, cursor);
 
         let ident = &source[tokens[*cursor].start..tokens[*cursor].end];
@@ -65,7 +98,7 @@ pub trait CodeGen{
         };
 
         *cursor+=1;
-        VarDeclaration { ty, ident, val }
+        VarDeclaration { ty, ident, val: ExpType::LiteralExp(ExpLiteral{ val }) }
     }
 
     fn fun_declaration<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> FunDeclaration<'a>{
@@ -84,11 +117,14 @@ pub trait CodeGen{
                 | VoidstarTokenTypes::Char
                 | VoidstarTokenTypes::Bool => {
                     let declaration: VarDeclaration<'a> = Self::var_declaration(tokens, source, cursor);
-                    params.extend([
-                        declaration.ty.to_byte_span(),
-                        declaration.ident,
-                        declaration.val
-                    ]);
+                    // should always match in this case
+                    if let ExpType::LiteralExp(ExpLiteral { val }) = declaration.val{
+                        params.extend([
+                            declaration.ty.to_byte_span(),
+                            declaration.ident,
+                            val
+                        ]);
+                    }
                 },
 
                 VoidstarTokenTypes::Comma | VoidstarTokenTypes::Void => *cursor+=1,
@@ -101,14 +137,11 @@ pub trait CodeGen{
         let returns = Type::map(tokens[*cursor].token_type);
 
         Self::expect(VoidstarTokenTypes::OpenBraces, tokens, cursor);
-        // let mut stack: Vec<VoidstarTokenTypes> = Vec::from([VoidstarTokenTypes::OpenBraces]);
-
-        while tokens[*cursor].token_type != VoidstarTokenTypes::CloseBraces{
-            todo!("function body scope not implemented")
-        }
-
+        
         FunDeclaration { returns, ident, params }
     }
+
+    fn generate_headers(&mut self) -> &mut Self;
 
     fn generate(&mut self) -> Vec<u8>;
 }

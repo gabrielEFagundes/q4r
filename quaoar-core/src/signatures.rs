@@ -3,10 +3,10 @@
 
 use std::collections::HashMap;
 
-use crate::tokens::{VoidstarToken, VoidstarTokenTypes};
+use crate::{signatures::Type::Void, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// Usable types
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Type{
     Void, Int, Float, Char, Bool,
     Pointer(Box<Type>)
@@ -76,8 +76,10 @@ impl Literal{
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum Operator{
-    EqualsEquals, Greater, GreaterEq, Lesser, LesserEq
+    EqualsEquals, Greater, GreaterEq, Lesser, LesserEq,
+    Plus, Minus, Multiplication, Division
 }
 
 impl Operator{
@@ -88,6 +90,10 @@ impl Operator{
             VoidstarTokenTypes::GreaterEq => Operator::GreaterEq,
             VoidstarTokenTypes::Lesser => Operator::Lesser,
             VoidstarTokenTypes::LesserEq => Operator::LesserEq,
+            VoidstarTokenTypes::Plus => Operator::Plus,
+            VoidstarTokenTypes::Minus => Operator::Minus,
+            VoidstarTokenTypes::Asterisk => Operator::Multiplication,
+            VoidstarTokenTypes::Slash => Operator::Division,
             _ => panic!("invalid operator type `{:#?}`", token_type)
         }
     }
@@ -99,16 +105,48 @@ impl Operator{
             Operator::GreaterEq => b">=",
             Operator::Lesser => b"<",
             Operator::LesserEq => b"<=",
+            Operator::Plus => b"+",
+            Operator::Minus => b"-",
+            Operator::Multiplication => b"*",
+            Operator::Division => b"/",
         }
     }
 
-    pub fn has(token_type: VoidstarTokenTypes) -> bool{
+    pub fn is_comparative(token_type: VoidstarTokenTypes) -> bool{
         match token_type{
             VoidstarTokenTypes::Equals
             | VoidstarTokenTypes::Greater
             | VoidstarTokenTypes::GreaterEq
             | VoidstarTokenTypes::Lesser
             | VoidstarTokenTypes::LesserEq => true,
+            _ => false
+        }
+    }
+
+    pub fn is_arithmetic(token_type: VoidstarTokenTypes) -> bool{
+        match token_type{
+            VoidstarTokenTypes::Plus
+            |VoidstarTokenTypes::Minus
+            |VoidstarTokenTypes::Slash
+            |VoidstarTokenTypes::Asterisk => true,
+            _ => false
+        }
+    }
+
+    pub fn is_legal(token_type: VoidstarTokenTypes) -> bool{
+        match token_type{
+            VoidstarTokenTypes::Plus
+            | VoidstarTokenTypes::Minus
+            | VoidstarTokenTypes::Slash
+            | VoidstarTokenTypes::Asterisk
+            | VoidstarTokenTypes::Equals
+            | VoidstarTokenTypes::Greater
+            | VoidstarTokenTypes::GreaterEq
+            | VoidstarTokenTypes::Lesser
+            | VoidstarTokenTypes::LesserEq
+            | VoidstarTokenTypes::Ident
+            | VoidstarTokenTypes::IntLiteral
+            | VoidstarTokenTypes::FloatLiteral => true,
             _ => false
         }
     }
@@ -139,10 +177,27 @@ impl DecKind{
 
 /// Each signature must hold the function's name, parameters and return type
 ///
-/// Or, if that's the case, the type of the global variable
+/// Or, if that's the case, the type and value of the global variable
+#[derive(Debug)]
 pub enum Signature{
     Function{ returns: Type, params: Vec<Type> },
     Global{ ty: Type, value: Vec<u8> }
+}
+
+impl Signature{
+    pub fn destructure_fun(v: Signature) -> (Type, Vec<Type>){
+        if let Signature::Function { returns, params } = v{
+            return (returns, params)
+        }
+        panic!("bad call of `destructure_fun`")
+    }
+
+    pub fn destructure_glob(v: &Signature) -> (&Type, &Vec<u8>){
+        if let Signature::Global { ty, value } = v{
+            return (ty, value)
+        }
+        panic!("bad call of `destructure_glob`")
+    }
 }
 
 /// Main struct used for mounting the table that holds the signatures
