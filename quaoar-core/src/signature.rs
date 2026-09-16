@@ -1,9 +1,11 @@
-// This parser is only used to generate the signatures table in memory
-// It does not generate C or ASM code.
-
 use std::collections::HashMap;
 
-use crate::{signatures::Type::Void, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+
+const INT_DEF: isize = 0;
+const FLOAT_DEF: f32 = 0.0;
+const CHAR_DEF: char = ' ';
+const BOOL_DEF: bool = false;
 
 /// Usable types
 #[derive(Debug, PartialEq, Eq)]
@@ -21,6 +23,17 @@ impl Type{
             VoidstarTokenTypes::Float => Self::Float,
             VoidstarTokenTypes::Char => Self::Char,
             VoidstarTokenTypes::Bool => Self::Bool,
+            _ => panic!("invalid data type `{:#?}`", token_type)
+        }
+    }
+
+    /// Maps from a `VoidstarTokenTypes` representing a Literal type to `Type`
+    pub fn map_literal_token(token_type: VoidstarTokenTypes) -> Self{
+        match token_type{
+            VoidstarTokenTypes::IntLiteral => Self::Int,
+            VoidstarTokenTypes::FloatLiteral => Self::Float,
+            VoidstarTokenTypes::CharLiteral => Self::Char,
+            VoidstarTokenTypes::BoolLiteral => Self::Bool,
             _ => panic!("invalid data type `{:#?}`", token_type)
         }
     }
@@ -48,31 +61,89 @@ impl Type{
         }
     }
 
+    pub fn as_token_type(&self) -> VoidstarTokenTypes{
+        match self{
+            Type::Void => VoidstarTokenTypes::Void,
+            Type::Int => VoidstarTokenTypes::Int,
+            Type::Float => VoidstarTokenTypes::Float,
+            Type::Char => VoidstarTokenTypes::Char,
+            Type::Bool => VoidstarTokenTypes::Bool,
+            _ => panic!("bad conversion from `{:#?}` to token_type", self)
+        }
+    }
+
     pub fn default_literal(&self) -> Literal{
         match self{
-            Type::Int => Literal::IntLiteral(0),
-            Type::Float => Literal::FloatLiteral(0.0),
-            Type::Char => Literal::CharLiteral(' '),
-            Type::Bool => Literal::BoolLiteral(false),
+            Type::Int => Literal::IntLiteral(INT_DEF),
+            Type::Float => Literal::FloatLiteral(FLOAT_DEF),
+            Type::Char => Literal::CharLiteral(CHAR_DEF),
+            Type::Bool => Literal::BoolLiteral(BOOL_DEF),
             Type::Pointer(_) => todo!("pointers not implemented yet"),
-            // default_literal() is only called on variables, that's why this is valid
-            _ => panic!("invalid syntax: `void` on variable type")
+            // default_literal() is only called on values, that's why this is valid
+            _ => panic!("invalid syntax: `{:#?}` on variable type", self)
         }
     }
 }
 
+#[derive(Debug)]
 pub enum Literal{
-    IntLiteral(usize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool)
+    IntLiteral(isize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool), 
+    
+    #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"] 
+    VarLiteral(&'static[u8])
 }
 
 impl Literal{
+    /// Funny enough, this function is ALWAYS the source of most problems
+    /// I've been finding so far
     pub fn to_byte_span(&self) -> Vec<u8>{
         match self{
-            Literal::IntLiteral(v) => v.to_le_bytes().to_vec(),
-            Literal::FloatLiteral(v) => v.to_le_bytes().to_vec(),
+            Literal::IntLiteral(v) => v.to_string().into_bytes(),
+            Literal::FloatLiteral(v) => v.to_string().into_bytes(),
             Literal::CharLiteral(v) => Vec::from([*v as u8]),
-            Literal::BoolLiteral(v) => Vec::from([u8::from(*v)]),
+            Literal::BoolLiteral(v) => v.to_string().into_bytes(),
+            Literal::VarLiteral(v) => v.to_vec()
         }
+    }
+
+    /// The bytes are read as single values.
+    /// 
+    /// This means that, for example, a value is 10, the
+    /// converted value inside the byte slice would be
+    /// `0x1` and `0x0` (`1` and `0`, separately)
+    pub fn to_literal(bytes: &[u8], ty: VoidstarTokenTypes) -> Literal{
+        match ty{
+            VoidstarTokenTypes::Int => IntLiteral(Self::parse_int(bytes)),
+            VoidstarTokenTypes::Float => FloatLiteral(Self::parse_float(bytes)),
+            VoidstarTokenTypes::Bool => BoolLiteral(Self::parse_bool(bytes)),
+            VoidstarTokenTypes::Char => CharLiteral(Self::parse_char(bytes)),
+            _ => panic!("invalid syntax: `{:#?}` on variable type", ty)
+        }
+    }
+
+    #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"]
+    pub fn to_identifier(bytes: &'static[u8]) -> Literal{
+        Literal::VarLiteral(bytes)
+    }
+
+    /// Guaranteed to be an integer at this point of compilation
+    pub fn parse_int(bytes: &[u8]) -> isize{
+        std::str::from_utf8(bytes).unwrap().parse().unwrap()
+    }
+
+    /// Guaranteed to be a float at this point of compilation
+    pub fn parse_float(bytes: &[u8]) -> f32{
+        std::str::from_utf8(bytes).unwrap().parse().unwrap()
+    }
+
+    /// Guaranteed to be a char at this point of compilation
+    pub fn parse_char(bytes: &[u8]) -> char{
+        std::str::from_utf8(bytes).unwrap().parse().unwrap()
+    }
+
+    /// Guaranteed to be a bool at this point of compilation
+    pub fn parse_bool(bytes: &[u8]) -> bool{
+        std::str::from_utf8(bytes).unwrap().parse().unwrap()
     }
 }
 
@@ -197,81 +268,5 @@ impl Signature{
             return (ty, value)
         }
         panic!("bad call of `destructure_glob`")
-    }
-}
-
-/// Main struct used for mounting the table that holds the signatures
-pub struct SignatureMounter<'a>{
-    source: &'a[u8],
-    tokens: &'a[VoidstarToken],
-    cursor: usize,
-    current_token: VoidstarToken
-}
-
-// fix because ugly
-impl<'a> SignatureMounter<'a>{
-    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken]) -> Self{
-        Self { source, tokens, cursor: 0, current_token: VoidstarToken::default() }
-    }
-
-    fn forward(&mut self){
-        self.cursor+=1;
-        if self.cursor < self.tokens.len(){ self.current_token = self.tokens[self.cursor]; }
-    }
-
-    fn peekaboo(&mut self) -> VoidstarToken{
-        if self.cursor+1 < self.tokens.len(){ return self.tokens[self.cursor+1] }
-        self.tokens[self.cursor]
-    }
-
-    pub fn mount(&mut self) -> HashMap<String, Signature>{
-        let mut map: HashMap<String, Signature> = HashMap::new();
-        self.current_token = self.tokens[self.cursor];
-
-        while self.cursor < self.tokens.len()-1{
-            match self.current_token.token_type{
-                VoidstarTokenTypes::Function => {
-                    self.forward();
-                    let ident = &self.source[self.current_token.start..self.current_token.end];
-                    let mut params: Vec<Type> = Vec::new();
-
-                    self.forward();
-                    while self.current_token.token_type != VoidstarTokenTypes::CloseParents{
-                        self.forward();
-                        if Type::has(self.current_token.token_type){
-                            params.push(Type::map(self.current_token.token_type));
-                        }
-                    }
-                    self.forward();
-                    let returns = Type::map(self.current_token.token_type);
-                    
-                    self.forward();
-                    map.insert(
-                        unsafe{ str::from_utf8_unchecked(ident).to_string() },
-                        Signature::Function { returns, params }
-                    );
-                },
-                VoidstarTokenTypes::Void
-                |VoidstarTokenTypes::Int
-                |VoidstarTokenTypes::Float
-                |VoidstarTokenTypes::Char
-                |VoidstarTokenTypes::Bool => {
-                    let ty = Type::map(self.current_token.token_type);
-                    self.forward();
-
-                    let ident = &self.source[self.current_token.start..self.current_token.end];
-                    let mut value = ty.default_literal().to_byte_span();
-
-                    if self.peekaboo().token_type == VoidstarTokenTypes::Equals{
-                        self.forward(); self.forward();
-                        value = self.source[self.current_token.start..self.current_token.end].to_vec();
-                    }
-
-                    map.insert(unsafe{ str::from_utf8_unchecked(ident).to_string() }, Signature::Global { ty, value });
-                },
-                _ => self.forward()
-            }
-        }
-        map
     }
 }

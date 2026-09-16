@@ -1,4 +1,6 @@
-use crate::{expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::self, FunDeclaration, VarDeclaration}, signatures::{DecKind, Literal, Operator, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use std::collections::HashMap;
+
+use crate::{expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::self, FunDeclaration, VarDeclaration}, signature::{DecKind, Literal, Operator, Signature, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// Trait used by the support modules that generate code
 /// 
@@ -21,11 +23,6 @@ pub trait CodeGen{
             return tokens[*cursor+1]
         }
         tokens[*cursor]
-    }
-
-    fn next(tokens: &[VoidstarToken], cursor: &usize) -> VoidstarToken{
-        if *cursor > tokens.len(){ return tokens[*cursor] }
-        tokens[*cursor+1]
     }
 
     fn expression<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> ExpType<'a>{
@@ -69,9 +66,10 @@ pub trait CodeGen{
 
             return ExpType::OperativeExp(ExpOperator{ left, operator, right })
         }
-
+        let literal_type = Type::map_literal_token(current).as_token_type();
+        
         ExpType::LiteralExp(ExpLiteral{
-            val: &source[tokens[*cursor].start..tokens[*cursor].end]
+            val: Literal::to_literal(&source[tokens[*cursor].start..tokens[*cursor].end], literal_type)
         })
     }
 
@@ -84,17 +82,39 @@ pub trait CodeGen{
     }
 
     fn var_declaration<'a>(tokens: &[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> VarDeclaration<'a>{
+        let var_type = tokens[*cursor].token_type;
         let mut ty = Type::map(tokens[*cursor].token_type);
         if ty.eq(&Type::Bool){ ty = Type::Int }
 
         Self::expect(VoidstarTokenTypes::Ident, tokens, cursor);
 
         let ident = &source[tokens[*cursor].start..tokens[*cursor].end];
-        let val: &'a[u8] = if Self::next(tokens, cursor).token_type == VoidstarTokenTypes::Equals{
+
+        let val: Literal = if Self::lookahead(tokens, cursor).token_type == VoidstarTokenTypes::Equals{
             *cursor+=2;
-            &source[tokens[*cursor].start..tokens[*cursor].end]
+            let current = tokens[*cursor];
+            let byted_val;
+
+            // GABS' NOTE error is prob here (09/16::16:48)
+
+            match current.token_type{
+                VoidstarTokenTypes::Ident => { 
+                    println!("{:?}", current);
+                    byted_val = &source[current.start..current.end];
+                    println!("{:#?}", byted_val);
+                },
+
+                VoidstarTokenTypes::IntLiteral
+                | VoidstarTokenTypes::FloatLiteral
+                | VoidstarTokenTypes::CharLiteral
+                | VoidstarTokenTypes::BoolLiteral => byted_val = &source[tokens[*cursor].start..tokens[*cursor].end],
+                
+                _ => panic!("bad variable declaration {:#?}", current)
+            }
+
+            Literal::to_literal(byted_val, var_type)
         }else{
-            b"void"
+            Literal::to_literal(&ty.default_literal().to_byte_span(), var_type)
         };
 
         *cursor+=1;
@@ -106,25 +126,18 @@ pub trait CodeGen{
         let ident = &source[tokens[*cursor].start..tokens[*cursor].end];
 
         Self::expect(VoidstarTokenTypes::OpenParents, tokens, cursor);
-        let mut params: Vec<&[u8]> = Vec::new();
+        let mut params: Vec<VarDeclaration> = Vec::new();
 
         *cursor+=1;
         while tokens[*cursor].token_type != VoidstarTokenTypes::CloseParents{
-            println!("{:#?}", tokens[*cursor]);
             match tokens[*cursor].token_type{
                 VoidstarTokenTypes::Int
                 | VoidstarTokenTypes::Float
                 | VoidstarTokenTypes::Char
                 | VoidstarTokenTypes::Bool => {
                     let declaration: VarDeclaration<'a> = Self::var_declaration(tokens, source, cursor);
-                    // should always match in this case
-                    if let ExpType::LiteralExp(ExpLiteral { val }) = declaration.val{
-                        params.extend([
-                            declaration.ty.to_byte_span(),
-                            declaration.ident,
-                            val
-                        ]);
-                    }
+
+                    params.push(declaration);
                 },
 
                 VoidstarTokenTypes::Comma | VoidstarTokenTypes::Void => *cursor+=1,
@@ -141,7 +154,7 @@ pub trait CodeGen{
         FunDeclaration { returns, ident, params }
     }
 
-    fn generate_headers(&mut self) -> &mut Self;
+    fn generate_headers(&mut self, signatures: HashMap<String, Signature>) -> &mut Self;
 
-    fn generate(&mut self) -> Vec<u8>;
+    fn generate<'a>(&mut self, tokens: &'a[VoidstarToken], source: &'a[u8], cursor: &mut usize) -> Vec<u8>;
 }

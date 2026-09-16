@@ -1,7 +1,7 @@
 use std::{env::args, fs::self};
 
 use quaoar_c::compiler::CCompiler;
-use quaoar_core::{generator::CodeGen, lexer::Lexer, signatures::SignatureMounter};
+use quaoar_core::{backend::Backend, emitter::CodeGen, header::SignatureMounter, lexer::Lexer};
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -19,7 +19,17 @@ fn main() {
     let t = Lexer::new(s.clone()).lexerize();
 
     let signatures = SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
-    let bytes = CCompiler::new(&s, &t, signatures).generate_headers().generate();
+    
+    // considering I only have the C backend rn
+    let backend = CCompiler::new();
+    let mut c_compiler: Backend<'_, CCompiler> = Backend::new(
+        &s,
+        &t,
+        signatures,
+        backend
+    );
+    
+    let bytes = c_compiler.backend.generate(t.as_slice(), s.as_slice(), &mut c_compiler.cursor);
 
     for i in &bytes{
         print!("{}", *i as char);

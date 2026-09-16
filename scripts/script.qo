@@ -1,16 +1,19 @@
 int global_var = 10
 
 f main() int{
-    cmp()
+    int val = 0
+    int var = val
+
     return 0
 }
 
-f cmp() bool{
-    if 10 >= 5{
-        global_var = 5
-    }
-    return true
-}
+// f cmp() bool{
+//     int i = 0
+//     while i < 10{
+//         i += 1
+//     }
+//     return true
+// }
 
 /* 
 Expression types:

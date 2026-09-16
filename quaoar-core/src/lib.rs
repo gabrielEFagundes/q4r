@@ -2,9 +2,11 @@ use crate::tokens::VoidstarTokenTypes;
 
 pub mod tokens;
 pub mod lexer;
-pub mod signatures;
-pub mod generator;
+pub mod signature;
+pub mod emitter;
 pub mod expdesc;
+pub mod header;
+pub mod backend;
 
 const OPEN_PAREN: u8 = b'(';
 const CLOSE_PAREN: u8 = b')';

@@ -1,8 +1,8 @@
-use crate::signatures::{DecKind, Operator, Type};
+use crate::signature::{DecKind, Literal, Operator, Type};
 
 pub enum ExpType<'a>{ 
     OperativeExp(ExpOperator<'a>),
-    LiteralExp(ExpLiteral<'a>),
+    LiteralExp(ExpLiteral),
 }
 
 pub struct ExpOperator<'a>{
@@ -11,8 +11,8 @@ pub struct ExpOperator<'a>{
     pub right: &'a[u8]
 }
 
-pub struct ExpLiteral<'a>{
-    pub val: &'a[u8]
+pub struct ExpLiteral{
+    pub val: Literal
 }
 
 pub struct ComparisonDeclaration<'a>{
@@ -29,5 +29,5 @@ pub struct VarDeclaration<'a>{
 pub struct FunDeclaration<'a>{
     pub returns: Type,
     pub ident: &'a[u8],
-    pub params: Vec<&'a[u8]>
+    pub params: Vec<VarDeclaration<'a>>
 }

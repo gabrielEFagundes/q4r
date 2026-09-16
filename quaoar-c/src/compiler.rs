@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, FunDeclaration, VarDeclaration}, generator::CodeGen, signatures::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
+use quaoar_core::{backend::Backend, emitter::CodeGen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, FunDeclaration, VarDeclaration}, signature::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
@@ -18,59 +18,33 @@ use crate::emit;
 /// - gcc
 /// 
 /// Those are the ones that were tested.
-pub struct CCompiler<'a>{
-    pub(crate) tokens: &'a[VoidstarToken],
-    pub(crate) source: &'a[u8],
-    pub(crate) cursor: usize,
-
-    signatures: HashMap<String, Signature>,
-    
+pub struct CCompiler{   
     pub(crate) c_src: Vec<u8>,
-    scopes: Vec<HashMap<String, Type>> // only variables (name and type, helps the typechecker)
 }
 
-impl<'a> CCompiler<'a>{
-    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature>) -> Self{
-        Self{ tokens, source, cursor: 0, signatures, c_src: Vec::new(), scopes: Vec::new() }
+impl<'a> CCompiler{
+    pub fn new() -> Self{
+        Self{ c_src: Vec::new() }
     }
 
-    pub fn enter_scope(&mut self){
-        self.scopes.push(HashMap::new());
-    }
-
-    pub fn exit_scope(&mut self){
-        self.scopes.pop();
-    }
-
-    pub fn declare_in_scope(&mut self, ident: String, ty: Type){
-        self.scopes.last_mut().unwrap().insert(ident, ty);
-    }
-
-    pub fn resolve_in_scope(&mut self, ident: &str) -> Option<&Type>{
-        self.scopes.iter().rev()
-            .find_map(|s| s.get(ident))
-            .or_else(|| {
-                let sign = self.signatures.get(ident).unwrap();
-                Some(&Signature::destructure_glob(sign).0).map(|v| &**v)
-            })
-    }
-
-    pub(crate) fn gen_signature_headers(&mut self){
-        for i in &self.signatures{
-            println!("{:#?}", i);
+    pub(crate) fn gen_signature_headers(&mut self, signatures: HashMap<String, Signature>){
+        for i in signatures{
             match i.1{
                 Signature::Function { returns, params } => {
                     let finreturns = if returns.eq(&Type::Bool){
                         &Type::Int
-                    } else { returns };
+                    } else { &returns };
 
                     emit!(
                         &mut self.c_src, 
                         finreturns.to_byte_span(), b' ', i.0.as_bytes(), b'('
                     );
 
-                    for i in params{
-                        emit!(&mut self.c_src, i.to_byte_span());
+                    for i in 0..params.len(){
+                        emit!(&mut self.c_src, params[i].to_byte_span());
+                        if i != params.len()-1{
+                            emit!(&mut self.c_src, b',');
+                        }
                     }
 
                     emit!(&mut self.c_src, b')', b';');
@@ -78,7 +52,7 @@ impl<'a> CCompiler<'a>{
                 Signature::Global { ty, value:_ } => {
                     let fintype = if ty.eq(&Type::Bool){ 
                         &Type::Int
-                    } else { ty };
+                    } else { &ty };
 
                     emit!(&mut self.c_src, fintype.to_byte_span(), b' ', i.0.as_bytes(), b';');
                 },
@@ -90,12 +64,16 @@ impl<'a> CCompiler<'a>{
         emit!(&mut self.c_src, to_emit);
     }
 
+    pub(crate) fn parse_increment(&mut self, amount: &'a[u8]){
+        emit!(&mut self.c_src, &b"+="[..], amount, b';');
+    }
+
     pub(crate) fn parse_literal_expression(&mut self, expression: ExpLiteral){
-        emit!(&mut self.c_src, b'=', expression.val, b';');
+        emit!(&mut self.c_src, b'=', expression.val.to_byte_span().as_slice(), b';');
     }
 
     pub(crate) fn parse_operator_expression(&mut self, expression: ExpOperator){
-        // e.g. ((left)==(right))
+        // e.g. ((left)==(right)) or ((left)+(right))
         emit!(
             &mut self.c_src,
             b'(', b'(', expression.left, b')',
@@ -104,7 +82,7 @@ impl<'a> CCompiler<'a>{
         );
     }
 
-    pub(crate) fn parse_conditional(&mut self, cmp_expression: ComparisonDeclaration){
+    pub(crate) fn parse_conditional(&mut self, cmp_expression: ComparisonDeclaration, tokens: &'a[VoidstarToken], source: &'a[u8], cursor: &mut usize){
         // e.g. if expression{} or while expression{}
         emit!(&mut self.c_src, cmp_expression.kind.to_byte_span(), b' ');
         if let ExpType::OperativeExp(ExpOperator { left, operator, right }) = cmp_expression.expression{
@@ -112,7 +90,7 @@ impl<'a> CCompiler<'a>{
         }
 
         emit!(&mut self.c_src, b'{');
-        self.generate();
+        self.generate(tokens, source, cursor);
         emit!(&mut self.c_src, b'}');
     }
 
@@ -127,11 +105,11 @@ impl<'a> CCompiler<'a>{
             fintype.to_byte_span(), b' ', declaration.ident, b'='
         );
         if let ExpType::LiteralExp(ExpLiteral{ val }) = declaration.val{
-            emit!(&mut self.c_src, val, b';')
+            emit!(&mut self.c_src, val.to_byte_span().as_slice(), b';')
         }
     }
 
-    pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration){
+    pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration, tokens: &'a[VoidstarToken], source: &'a[u8], cursor: &mut usize){
         // int function(int p1, int p2){ }
         let finreturns = if declaration.returns.eq(&Type::Bool){
             &Type::Int
@@ -142,16 +120,26 @@ impl<'a> CCompiler<'a>{
             finreturns.to_byte_span(), b' ',
             declaration.ident, b'('
         );
-        for i in declaration.params{
-            emit!(&mut self.c_src, i);
+
+        for i in 0..declaration.params.len(){
+            let current = &declaration.params[i];
+            // default arguments to be implemented in the future
+            // they're currently ignored on the C compiler's case
+            emit!(&mut self.c_src, 
+                current.ty.to_byte_span(), b' ', current.ident
+            );
+
+            if i != declaration.params.len()-1{
+                emit!(&mut self.c_src, b',');
+            }
         }
         emit!(&mut self.c_src, b')', b'{');
-        self.generate();
+        self.generate(tokens, source, cursor);
         emit!(&mut self.c_src, b'}');
     }
 
     pub(crate) fn parse_literal_return(&mut self, expression: ExpLiteral){
-        emit!(&mut self.c_src, &b"return"[..], b' ', expression.val, b';');
+        emit!(&mut self.c_src, &b"return"[..], b' ', expression.val.to_byte_span().as_slice(), b';');
     }
 
     pub(crate) fn parse_operator_return(&mut self, expression: ExpOperator){
