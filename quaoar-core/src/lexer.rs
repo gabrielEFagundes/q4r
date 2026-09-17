@@ -75,6 +75,18 @@ impl Lexer{
                     _ => VoidstarToken::new(VoidstarTokenTypes::Equals, start, self.cursor)
                 }
             },
+
+            NOT => {
+                match self.advance(){
+                    EQ => {
+                        self.advance();
+                        end = self.cursor;
+                        VoidstarToken::new(VoidstarTokenTypes::NotEquals, start, end)
+                    },
+                    _ => VoidstarToken::new(VoidstarTokenTypes::Not, start, self.cursor)
+                }
+            },
+
             PLUS => {
                 match self.advance() {
                     EQ => {

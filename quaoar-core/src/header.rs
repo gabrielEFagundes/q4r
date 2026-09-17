@@ -47,8 +47,12 @@ impl<'a> SignatureMounter<'a>{
                             params.push(Type::map(self.current_token.token_type));
                         }
                     }
-                    self.forward();
-                    let returns = Type::map(self.current_token.token_type);
+                    let returns = if Type::has(self.peekaboo().token_type){
+                        self.forward();
+                        Type::map(self.current_token.token_type)
+                    } else {
+                        Type::Void
+                    };
                     
                     self.forward();
                     map.insert(

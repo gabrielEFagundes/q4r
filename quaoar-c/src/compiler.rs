@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, emitter::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, ExpVariable, FunDeclaration, VarDeclaration}, signature::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
+use quaoar_core::{backend::Backend, emitter::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, ExpVariable, ForLoopDeclaration, FunDeclaration, VarDeclaration}, signature::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
@@ -68,12 +68,14 @@ impl<'a> CCompiler{
         emit!(&mut self.c_src, &b"+="[..], amount, b';');
     }
 
-    pub(crate) fn parse_literal_expression(&mut self, expression: ExpLiteral){
+    pub(crate) fn parse_assignment_expression(&mut self, expression: ExpLiteral){
+        // e.g. ident = expression
         emit!(&mut self.c_src, b'=', expression.val.to_byte_span().as_slice(), b';');
     }
 
-    pub(crate) fn parse_var_expression(&mut self, expression: ExpVariable){
-        emit!(&mut self.c_src, b'=', expression.val, b';');
+    pub(crate) fn parse_literal_expression(&mut self, expression: ExpLiteral){
+        // e.g. (literal)
+        emit!(&mut self.c_src, b'(', expression.val.to_byte_span().as_slice(), b')');
     }
 
     pub(crate) fn parse_operator_expression(&mut self, expression: ExpOperator){
@@ -91,9 +93,26 @@ impl<'a> CCompiler{
         emit!(&mut self.c_src, cmp_expression.kind.to_byte_span(), b' ');
         if let ExpType::OperativeExp(ExpOperator { left, operator, right }) = cmp_expression.expression{
             self.parse_operator_expression(ExpOperator { left, operator, right });
+
+        } else if let ExpType::LiteralExp(ExpLiteral { val }) = cmp_expression.expression{
+            self.parse_literal_expression(ExpLiteral { val });
         }
 
         emit!(&mut self.c_src, b'{');
+        self.generate(backend);
+        emit!(&mut self.c_src, b'}');
+    }
+
+    pub fn parse_for_loop(&mut self, for_declaration: ForLoopDeclaration, backend: &mut Backend<'a>){
+        emit!(
+            &mut self.c_src, for_declaration.kind.to_byte_span(), b'(',
+            &b"int"[..], b' ', for_declaration.iterator, b';',
+            // to finish lmao
+        )
+    }
+
+    pub(crate) fn parse_else(&mut self, backend: &mut Backend<'a>){
+        emit!(&mut self.c_src, &b"else"[..], b'{');
         self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }

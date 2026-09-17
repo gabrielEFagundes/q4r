@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{backend::Backend, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::self, FunDeclaration, VarDeclaration}, helper::parse_str, signature::{DecKind, Literal, Operator, Signature, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use crate::{backend::Backend, expdesc::{ComparisonDeclaration, DeclType, ExpLiteral, ExpOperator, ExpType::self, FunDeclaration, ForLoopDeclaration, VarDeclaration}, helper::parse_str, signature::{DecKind, Literal, Operator, Signature, Type::{self, Void}}, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// Trait used by the support modules that generate code
 /// 
@@ -23,6 +23,16 @@ pub trait Codegen<'a, B>{
             return backend.tokens[backend.cursor+1]
         }
         backend.tokens[backend.cursor]
+    }
+
+    fn signed_number(backend: &mut Backend<'a>) -> ExpLiteral{
+        let sign = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+        backend.cursor += 1;
+
+        let number = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+        let bytes = [sign, number].concat();
+        
+        ExpLiteral { val: Literal::to_literal(&bytes, VoidstarTokenTypes::Int) }
     }
 
     fn expression(backend: &mut Backend<'a>) -> ExpType<'a>{
@@ -73,7 +83,7 @@ pub trait Codegen<'a, B>{
                     return ExpType::OperativeExp(ExpOperator{ left, operator, right })
                 }
             
-                let bytes_value = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+                let bytes_value = &backend.source[current.start..current.end];
                 
                 ExpType::LiteralExp(ExpLiteral{
                     val: Literal::to_literal(bytes_value, Literal::from_literal(current.token_type))
@@ -110,22 +120,46 @@ pub trait Codegen<'a, B>{
 
                     return ExpType::OperativeExp(ExpOperator{ left, operator, right })
                 }
-                let bytes_value = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+                let bytes_value = &backend.source[current.start..current.end];
+
                 ExpType::LiteralExp(ExpLiteral { 
                     val: Literal::to_literal(bytes_value, current.token_type)
                 })
             },
 
-            _ => panic!("illegal expression argument")
+            _ => panic!("illegal expression argument `{:#?}`", current.token_type)
         }
     }
 
     fn comparison_declaration(backend: &mut Backend<'a>) -> ComparisonDeclaration<'a>{
-        let kind = DecKind::map(backend.tokens[backend.cursor].token_type);
         backend.cursor+=1;
         let expression = Self::expression(backend);
         
-        ComparisonDeclaration { kind, expression }
+        ComparisonDeclaration { kind: DecKind::If, expression }
+    }
+
+    fn loop_declaration(backend: &mut Backend<'a>) -> DeclType<'a>{
+        backend.cursor += 1;
+        let iterator = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+
+        backend.cursor += 2;
+        let init_expression = Self::expression(backend);
+
+        if Self::lookahead(backend).token_type == VoidstarTokenTypes::SemiColon{
+            backend.cursor += 2;
+            
+            let exp = Self::expression(backend);
+
+            backend.cursor += 1;
+            let incrementer = Self::signed_number(backend).val;
+
+            DeclType::ForLoopDecl(ForLoopDeclaration { 
+                kind: DecKind::For, iterator, initializer: init_expression, exp, incrementer 
+            })
+
+        }else{
+            DeclType::WhileLoopDecl(ComparisonDeclaration { kind: DecKind::While, expression: init_expression })
+        }
     }
 
     fn var_declaration(backend: &mut Backend<'a>) -> VarDeclaration<'a>{
@@ -196,8 +230,12 @@ pub trait Codegen<'a, B>{
             }
         }
 
-        backend.cursor+=1;
-        let returns = Type::map(backend.tokens[backend.cursor].token_type);
+        let returns = if Type::has(Self::lookahead(backend).token_type){
+            backend.cursor += 1;
+            Type::map(backend.tokens[backend.cursor].token_type)
+        } else {
+            Type::Void
+        };
 
         Self::expect(VoidstarTokenTypes::OpenBraces, backend);
         

@@ -23,9 +23,37 @@ impl<'a> Codegen<'a, CCompiler> for CCompiler{
                     self.parse_var_decl(dec);
                 },
 
-                VoidstarTokenTypes::If | VoidstarTokenTypes::While => {
+                VoidstarTokenTypes::If => {
                     let cmp = Self::comparison_declaration(backend);
                     self.parse_conditional(cmp, backend);
+                }
+
+                VoidstarTokenTypes::For => {
+                    let loops = Self::loop_declaration(backend);
+                    match loops {
+                        quaoar_core::expdesc::DeclType::ForLoopDecl(for_loop) 
+                            => todo!(),
+
+                        quaoar_core::expdesc::DeclType::WhileLoopDecl(while_loop) 
+                            => self.parse_conditional(while_loop, backend),
+                    }
+                }
+
+                VoidstarTokenTypes::Else => {
+                    backend.cursor += 1;
+                    let current = backend.tokens[backend.cursor];
+
+                    if current.token_type() == VoidstarTokenTypes::If{
+                        self.parse_simple(b"else ");
+                        let cmp = Self::comparison_declaration(backend);
+                        self.parse_conditional(cmp, backend);
+                    }else {
+                        self.parse_else(backend);
+                    }
+                }
+
+                VoidstarTokenTypes::Plus | VoidstarTokenTypes::Minus => {
+                    todo!("number signment (plus or minus) yet to be implemented");
                 }
 
                 VoidstarTokenTypes::Function => {
@@ -60,9 +88,12 @@ impl<'a> Codegen<'a, CCompiler> for CCompiler{
                             backend.cursor += 1;
                             
                             match Self::expression(backend){
-                                ExpType::OperativeExp(exp_operator) => self.parse_operator_expression(exp_operator),
-                                ExpType::LiteralExp(exp_literal) => self.parse_literal_expression(exp_literal),
-                                ExpType::VariableExp(exp_var) => self.parse_var_expression(exp_var),
+                                ExpType::OperativeExp(exp_operator) => {
+                                    self.parse_simple(b"=");
+                                    self.parse_operator_expression(exp_operator);
+                                    self.parse_simple(b";");
+                                },
+                                ExpType::LiteralExp(exp_literal) => self.parse_assignment_expression(exp_literal),
                             }
                             backend.cursor += 1;
                         },
@@ -84,7 +115,6 @@ impl<'a> Codegen<'a, CCompiler> for CCompiler{
                     match Self::expression(backend){
                         ExpType::OperativeExp(exp_operator) => self.parse_operator_return(exp_operator),
                         ExpType::LiteralExp(exp_literal) => self.parse_literal_return(exp_literal),
-                        ExpType::VariableExp(exp_var) => self.parse_var_expression(exp_var),
                     };
                 }
 

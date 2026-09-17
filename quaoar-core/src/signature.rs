@@ -149,7 +149,7 @@ impl Literal{
 
 #[derive(Clone, Copy, Debug)]
 pub enum Operator{
-    EqualsEquals, Greater, GreaterEq, Lesser, LesserEq,
+    EqualsEquals, Different, Greater, GreaterEq, Lesser, LesserEq,
     Plus, Minus, Multiplication, Division
 }
 
@@ -157,6 +157,7 @@ impl Operator{
     pub fn map(token_type: VoidstarTokenTypes) -> Operator{
         match token_type{
             VoidstarTokenTypes::CompEquals => Operator::EqualsEquals,
+            VoidstarTokenTypes::NotEquals => Operator::Different,
             VoidstarTokenTypes::Greater => Operator::Greater,
             VoidstarTokenTypes::GreaterEq => Operator::GreaterEq,
             VoidstarTokenTypes::Lesser => Operator::Lesser,
@@ -172,6 +173,7 @@ impl Operator{
     pub fn to_byte_span(&self) -> &'static[u8]{
         match self{
             Operator::EqualsEquals => b"==",
+            Operator::Different => b"!=",
             Operator::Greater => b">",
             Operator::GreaterEq => b">=",
             Operator::Lesser => b"<",
@@ -186,6 +188,7 @@ impl Operator{
     pub fn is_comparative(token_type: VoidstarTokenTypes) -> bool{
         match token_type{
             VoidstarTokenTypes::CompEquals
+            | VoidstarTokenTypes::NotEquals
             | VoidstarTokenTypes::Greater
             | VoidstarTokenTypes::GreaterEq
             | VoidstarTokenTypes::Lesser
@@ -225,14 +228,13 @@ impl Operator{
 
 #[derive(Debug)]
 pub enum DecKind{
-    If, While, For
+    If, For, While
 }
 
 impl DecKind{
     pub fn map(token_type: VoidstarTokenTypes) -> Self{
         match token_type{
             VoidstarTokenTypes::If => Self::If,
-            VoidstarTokenTypes::While => Self::While,
             VoidstarTokenTypes::For => Self::For,
             _ => panic!("invalid declaration kind `{:#?}`", token_type)
         }
@@ -241,8 +243,8 @@ impl DecKind{
     pub fn to_byte_span(&self) -> &'static[u8]{
         match self{
             DecKind::If => b"if",
-            DecKind::While => b"while",
             DecKind::For => b"for",
+            DecKind::While => b"while"
         }
     }
 }

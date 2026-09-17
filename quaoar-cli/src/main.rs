@@ -17,6 +17,7 @@ fn main() {
     };
     
     let t = Lexer::new(s.clone()).lexerize();
+    //println!("{:#?}", t);
 
     let signatures = SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
     

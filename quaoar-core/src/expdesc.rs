@@ -3,7 +3,11 @@ use crate::signature::{DecKind, Literal, Operator, Type};
 pub enum ExpType<'a>{ 
     OperativeExp(ExpOperator<'a>),
     LiteralExp(ExpLiteral),
-    VariableExp(ExpVariable<'a>)
+}
+
+pub enum DeclType<'a>{
+    ForLoopDecl(ForLoopDeclaration<'a>),
+    WhileLoopDecl(ComparisonDeclaration<'a>),
 }
 
 pub struct ExpOperator<'a>{
@@ -24,6 +28,14 @@ pub struct ExpVariable<'a>{
 pub struct ComparisonDeclaration<'a>{
     pub kind: DecKind,
     pub expression: ExpType<'a>
+}
+
+pub struct ForLoopDeclaration<'a>{
+    pub kind: DecKind,
+    pub iterator: &'a[u8],
+    pub initializer: ExpType<'a>,
+    pub exp: ExpType<'a>,
+    pub incrementer: Literal
 }
 
 pub struct VarDeclaration<'a>{
