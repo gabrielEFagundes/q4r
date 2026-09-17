@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, emitter::CodeGen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, FunDeclaration, VarDeclaration}, signature::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
+use quaoar_core::{backend::Backend, emitter::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, ExpVariable, FunDeclaration, VarDeclaration}, signature::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
@@ -27,7 +27,7 @@ impl<'a> CCompiler{
         Self{ c_src: Vec::new() }
     }
 
-    pub(crate) fn gen_signature_headers(&mut self, signatures: HashMap<String, Signature>){
+    pub(crate) fn gen_signature_headers(&mut self, signatures: &HashMap<String, Signature>){
         for i in signatures{
             match i.1{
                 Signature::Function { returns, params } => {
@@ -72,6 +72,10 @@ impl<'a> CCompiler{
         emit!(&mut self.c_src, b'=', expression.val.to_byte_span().as_slice(), b';');
     }
 
+    pub(crate) fn parse_var_expression(&mut self, expression: ExpVariable){
+        emit!(&mut self.c_src, b'=', expression.val, b';');
+    }
+
     pub(crate) fn parse_operator_expression(&mut self, expression: ExpOperator){
         // e.g. ((left)==(right)) or ((left)+(right))
         emit!(
@@ -82,7 +86,7 @@ impl<'a> CCompiler{
         );
     }
 
-    pub(crate) fn parse_conditional(&mut self, cmp_expression: ComparisonDeclaration, tokens: &'a[VoidstarToken], source: &'a[u8], cursor: &mut usize){
+    pub(crate) fn parse_conditional(&mut self, cmp_expression: ComparisonDeclaration, backend: &mut Backend<'a>){
         // e.g. if expression{} or while expression{}
         emit!(&mut self.c_src, cmp_expression.kind.to_byte_span(), b' ');
         if let ExpType::OperativeExp(ExpOperator { left, operator, right }) = cmp_expression.expression{
@@ -90,7 +94,7 @@ impl<'a> CCompiler{
         }
 
         emit!(&mut self.c_src, b'{');
-        self.generate(tokens, source, cursor);
+        self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }
 
@@ -109,7 +113,7 @@ impl<'a> CCompiler{
         }
     }
 
-    pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration, tokens: &'a[VoidstarToken], source: &'a[u8], cursor: &mut usize){
+    pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration, backend: &mut Backend<'a>){
         // int function(int p1, int p2){ }
         let finreturns = if declaration.returns.eq(&Type::Bool){
             &Type::Int
@@ -134,7 +138,7 @@ impl<'a> CCompiler{
             }
         }
         emit!(&mut self.c_src, b')', b'{');
-        self.generate(tokens, source, cursor);
+        self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }
 

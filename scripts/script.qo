@@ -1,19 +1,17 @@
 int global_var = 10
 
 f main() int{
-    int val = 0
-    int var = val
+    cmp(1,2)
 
     return 0
 }
 
-// f cmp() bool{
-//     int i = 0
-//     while i < 10{
-//         i += 1
-//     }
-//     return true
-// }
+f cmp(int p1, int p2) bool{
+    if p1 == p2{
+        return true
+    }
+    return false
+}
 
 /* 
 Expression types:

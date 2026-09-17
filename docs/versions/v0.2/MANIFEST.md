@@ -3,7 +3,7 @@
 
 # Quaoar (Q4r) — v0.2 Manifest: AST + QBE Backend
 
-Companion to `quaoar-v0.1-architecture.md`. v0.1 stays exactly as designed — single-pass, no AST, disposable, C-backend-only, kept purely for correctness/compatibility. v0.2 is a **second, separate compiler path**, not a rewrite of v0.1.
+Companion to `v0.1/MANIFEST.md`. v0.1 stays exactly as designed — single-pass and no AST for performance purposes. Disposable, C-backend-only, kept purely for correctness/compatibility. v0.2 is a **second, separate compiler path**, not a rewrite of v0.1.
 
 ## Why v0.2 diverges from v0.1
 
@@ -12,10 +12,10 @@ v0.1's "no persistent tree" constraint was right for emitting plain C — C's mu
 ## AST
 
 - A real, persistent tree this time — `Stmt`/`Expr` nodes, built during parsing, walked afterward for codegen.
-- **Memory: arena allocation, not per-node `malloc`/`free`.** One arena per compilation unit (or per function), bump-allocated, the whole arena discarded in one shot once that unit's codegen finishes. Same reasoning as the original `malloc`/`brk` conversation — a compiler's own internal data structures are exactly the textbook case for this.
+- **Memory: arena allocation, not per-node `malloc`/`free`.** One arena per compilation unit (or per function), bump-allocated, the whole arena discarded in one shot once that unit's codegen finishes. Same reasoning as the original `malloc`/`brk` — a compiler's own internal data structures are exactly the textbook case for this.
 - `expdesc`-style transient descriptors (from v0.1) don't disappear — they still show up locally during codegen, just now operating over persistent tree nodes instead of live parser state.
 
-## Scoping — two separate mechanisms, don't conflate them
+## Scoping — two separate mechanisms
 
 **1. Ordinary name/type resolution** (declare/resolve, `Vec<HashMap<String, Type>>`) — same concept as v0.1. With a real tree, this can happen either while *building* the AST (catch errors early, same live-checking feel as v0.1) or during a separate walk afterward. Either is valid now — the tree persists, so timing no longer loses information the way single-pass would have.
 
@@ -52,18 +52,20 @@ trait CodegenBackend {
 ## QBE target specifics
 
 - Emit QBE's textual IL — same deferred-conversion principle as C emission: identifiers/already-source-text copy straight from spans, literals go through the same `Literal` enum (needed for constant folding either way, not QBE-specific).
-- **License: MIT.** Small (~8,000–15,000 LOC). Explicitly built to be read, extended, forked — not a black box. Real path to adding your own optimization passes later, not just consuming it as-is.
+- **License: MIT.** Small (~8,000–15,000 LOC). Explicitly built to be read, extended, forked — not a black box. Real path to adding my own optimization passes later, not just consuming it as-is.
 - **Windows target exists**: QBE 1.3 (June 2, 2026) added an x64 Windows backend via `-t amd64_win`. Externally contributed, output is AT&T-syntax assembly best assembled via mingw — newer than the Linux/macOS targets, verify yourself before relying on it in anything shipped.
 - **Performance baseline**: targets ~70% of industrial optimizer (gcc/LLVM -O2) performance. QBE 1.2 (2024) actually sat closer to ~40%; 1.3's new passes (GVN/GCM, loop optimization, if-elimination, CFG simplification) closed most of that gap — recent, real progress, not a stale number.
 
 ## Optimization tiers
 
 - **Tier 1 — QBE gets this for free, no extra work**: constant folding, dead-branch elimination, real register allocation (QBE ships this out of the box, unlike v0.1's C-delegated version).
-- **Tier 2 — future, your own passes on top**: since QBE is MIT and small enough to actually read end to end, the plan is to study its existing passes first, then extend or replace specific ones once you know precisely where they're weak — not a rewrite from scratch, incremental improvement on real infrastructure.
+- **Tier 2 — future, Q4r own passes on top**: since QBE is MIT and small enough to actually read end to end, the plan is to study its existing passes first, then extend or replace specific ones once you know precisely where they're weak — not a rewrite from scratch, incremental improvement on real infrastructure.
 
 ## Self-hosting — unchanged principle from v0.1
 
 Using QBE as an external backend doesn't break self-hosting, same reasoning as rustc+LLVM: self-hosted means the *frontend* (parsing, AST-building, SSA-construction logic) is eventually written in Quaoar itself. QBE remaining an external tool `quac` shells out to is no different from Voidstar-in-C shelling out to `nasm`/`ld` in the original plan, or C-backend piping to `zig cc`.
+
+It's worth noting that before actual self-hosting, Quaoar will have **lots** of fixes, including **standard libraries** and new features. Self-hosting a language too early can be an extreme challenge.
 
 ## Roadmap position
 

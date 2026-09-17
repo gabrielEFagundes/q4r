@@ -2,19 +2,18 @@ use std::collections::HashMap;
 
 use crate::{signature::{Signature, Type}, tokens::VoidstarToken};
 
-pub struct Backend<'a, B>{
+pub struct Backend<'a>{
     pub source: &'a[u8],
     pub tokens: &'a[VoidstarToken],
     pub cursor: usize,
 
     pub signatures: HashMap<String, Signature>, // identifier & signature
     pub scopes: Vec<HashMap<String, Type>>,     // Identifier and type
-    pub backend: B
 }
 
-impl<'a, B> Backend<'a, B>{
-    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature>, backend: B) -> Self{
-        Self { source, tokens, cursor: 0, signatures, scopes: Vec::new(), backend }
+impl<'a> Backend<'a>{
+    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature>) -> Self{
+        Self { source, tokens, cursor: 0, signatures, scopes: Vec::from([HashMap::new()]) }
     }
 
     pub fn enter_scope(&mut self){

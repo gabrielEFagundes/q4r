@@ -18,6 +18,8 @@ Version 0.2 is where Q4r will be capable of compiling straight to ASM, that bein
 
 This backend is where Quaoar will differ from other languages by being incredibly fast in compile time and runtime, while still being small and simple.
 
+QBE will be utilized as Quaoar's own IL, with my own tweaks and optimizations over it in the future.
+
 ## v0.3 - `stdlib` and more
 
 See [v0.3 MANIFEST.md](./versions/v0.3/MANIFEST.md)

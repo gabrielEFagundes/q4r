@@ -3,6 +3,7 @@ use crate::signature::{DecKind, Literal, Operator, Type};
 pub enum ExpType<'a>{ 
     OperativeExp(ExpOperator<'a>),
     LiteralExp(ExpLiteral),
+    VariableExp(ExpVariable<'a>)
 }
 
 pub struct ExpOperator<'a>{
@@ -13,6 +14,11 @@ pub struct ExpOperator<'a>{
 
 pub struct ExpLiteral{
     pub val: Literal
+}
+
+pub struct ExpVariable<'a>{
+    pub ty: Type,
+    pub val: &'a[u8]
 }
 
 pub struct ComparisonDeclaration<'a>{

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Void}}};
 
 const INT_DEF: isize = 0;
 const FLOAT_DEF: f32 = 0.0;
@@ -8,10 +8,10 @@ const CHAR_DEF: char = ' ';
 const BOOL_DEF: bool = false;
 
 /// Usable types
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Type{
     Void, Int, Float, Char, Bool,
-    Pointer(Box<Type>)
+    Pointer(Box<Type>),
 }
 
 impl Type{
@@ -23,17 +23,6 @@ impl Type{
             VoidstarTokenTypes::Float => Self::Float,
             VoidstarTokenTypes::Char => Self::Char,
             VoidstarTokenTypes::Bool => Self::Bool,
-            _ => panic!("invalid data type `{:#?}`", token_type)
-        }
-    }
-
-    /// Maps from a `VoidstarTokenTypes` representing a Literal type to `Type`
-    pub fn map_literal_token(token_type: VoidstarTokenTypes) -> Self{
-        match token_type{
-            VoidstarTokenTypes::IntLiteral => Self::Int,
-            VoidstarTokenTypes::FloatLiteral => Self::Float,
-            VoidstarTokenTypes::CharLiteral => Self::Char,
-            VoidstarTokenTypes::BoolLiteral => Self::Bool,
             _ => panic!("invalid data type `{:#?}`", token_type)
         }
     }
@@ -90,7 +79,7 @@ pub enum Literal{
     IntLiteral(isize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool), 
     
     #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"] 
-    VarLiteral(&'static[u8])
+    VarLiteral(Vec<u8>)
 }
 
 impl Literal{
@@ -117,12 +106,23 @@ impl Literal{
             VoidstarTokenTypes::Float => FloatLiteral(Self::parse_float(bytes)),
             VoidstarTokenTypes::Bool => BoolLiteral(Self::parse_bool(bytes)),
             VoidstarTokenTypes::Char => CharLiteral(Self::parse_char(bytes)),
+            VoidstarTokenTypes::Ident => VarLiteral(bytes.to_vec()),
             _ => panic!("invalid syntax: `{:#?}` on variable type", ty)
         }
     }
 
+    pub fn from_literal(ty: VoidstarTokenTypes) -> VoidstarTokenTypes{
+        match ty{
+            VoidstarTokenTypes::IntLiteral => VoidstarTokenTypes::Int,
+            VoidstarTokenTypes::FloatLiteral => VoidstarTokenTypes::Float,
+            VoidstarTokenTypes::BoolLiteral => VoidstarTokenTypes::Bool,
+            VoidstarTokenTypes::CharLiteral => VoidstarTokenTypes::Char,
+            _ => panic!("can't map from `{:#?}` to non-literal", ty)
+        }
+    }
+
     #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"]
-    pub fn to_identifier(bytes: &'static[u8]) -> Literal{
+    pub fn to_identifier(bytes: Vec<u8>) -> Literal{
         Literal::VarLiteral(bytes)
     }
 
@@ -147,7 +147,7 @@ impl Literal{
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Operator{
     EqualsEquals, Greater, GreaterEq, Lesser, LesserEq,
     Plus, Minus, Multiplication, Division
@@ -185,7 +185,7 @@ impl Operator{
 
     pub fn is_comparative(token_type: VoidstarTokenTypes) -> bool{
         match token_type{
-            VoidstarTokenTypes::Equals
+            VoidstarTokenTypes::CompEquals
             | VoidstarTokenTypes::Greater
             | VoidstarTokenTypes::GreaterEq
             | VoidstarTokenTypes::Lesser
@@ -210,7 +210,7 @@ impl Operator{
             | VoidstarTokenTypes::Minus
             | VoidstarTokenTypes::Slash
             | VoidstarTokenTypes::Asterisk
-            | VoidstarTokenTypes::Equals
+            | VoidstarTokenTypes::CompEquals
             | VoidstarTokenTypes::Greater
             | VoidstarTokenTypes::GreaterEq
             | VoidstarTokenTypes::Lesser
@@ -223,6 +223,7 @@ impl Operator{
     }
 }
 
+#[derive(Debug)]
 pub enum DecKind{
     If, While, For
 }

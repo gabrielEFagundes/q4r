@@ -7,6 +7,7 @@ pub mod emitter;
 pub mod expdesc;
 pub mod header;
 pub mod backend;
+pub mod helper;
 
 const OPEN_PAREN: u8 = b'(';
 const CLOSE_PAREN: u8 = b')';
