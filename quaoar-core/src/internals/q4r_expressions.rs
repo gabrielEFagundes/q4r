@@ -1,4 +1,4 @@
-use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType, FunCall}, internals::helpers, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn mount_expression<'a>(backend: &mut Backend<'a>) -> ExpOperator<'a>{
     let left: &[u8];
@@ -65,7 +65,7 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
             }
 
             if expression_type == VoidstarTokenTypes::OpenParents{
-                return ExpType::CallExp(fun_call(backend));
+                return ExpType::CallExp(q4r_functions::fun_call(backend));
             }
 
             let bytes_value = &backend.source[current.start..current.end];
@@ -77,26 +77,4 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
 
         _ => panic!("illegal expression argument `{:#?}`", current.token_type)
     }
-}
-
-pub fn fun_call<'a>(backend: &mut Backend<'a>) -> FunCall<'a>{
-    let ident = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
-    let mut params: Vec<u8> = Vec::new();
-    backend.cursor += 2;
-
-    while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
-            let current = backend.tokens[backend.cursor];
-            if current.token_type() == VoidstarTokenTypes::CharLiteral{
-                params.push(b'\'');
-                params.extend_from_slice(&backend.source[current.start()..current.end()]);
-                params.push(b'\'');
-                
-            } else { // we need the commas inside the array while we don't have a "parameter" struct
-                params.extend_from_slice(&backend.source[current.start()..current.end()]);
-            }
-
-            backend.cursor += 1;
-    }
-
-    FunCall { ident, params }
 }

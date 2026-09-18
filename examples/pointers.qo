@@ -1,6 +1,8 @@
 // returns integer for exit codes, this is 
 // a pattern you'll observe across most of the
 // examples here.
+
+// YET TODO
 f main() int{
     int value = 5
     *int p = &value
