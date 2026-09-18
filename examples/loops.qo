@@ -1,0 +1,38 @@
+/*
+    While loops are similar to Go's, using simply:
+
+    ```quaoar
+    int i = 0
+    for i < 10{
+        i += 1
+    }
+    ```
+*/
+f whileLoop(int a, int b){
+    for a <= b{
+        a += 1
+    }
+}
+
+/*
+    For loops are similar to C's, the only difference is the lack 
+    of initiating the iterator variable and the incrementer's appearence.
+
+    ```quaoar
+    for i = 0; i < 10; +1{
+        // i inits as 0 and increments by 1 until 9!
+    }
+    ```
+*/
+f forLoop(int a, int b){
+    for i = 0; i <= a; b{
+        // nothing to do!
+    }
+}
+
+f main() int{
+    whileLoop(1, 10)
+    forLoop(10, 1)
+
+    return 0
+}

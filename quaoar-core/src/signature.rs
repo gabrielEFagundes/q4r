@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Void}}};
+use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::{VoidstarTokenTypes::self}};
 
 const INT_DEF: isize = 0;
 const FLOAT_DEF: f32 = 0.0;
@@ -34,7 +32,7 @@ impl Type{
             Type::Float => b"float",
             Type::Char => b"char",
             Type::Bool => b"bool",
-            Type::Pointer(_) => todo!(),
+            Type::Pointer(val) => val.to_byte_span(),
         }
     }
 
@@ -68,7 +66,7 @@ impl Type{
             Type::Char => Literal::CharLiteral(CHAR_DEF),
             Type::Bool => Literal::BoolLiteral(BOOL_DEF),
             Type::Pointer(_) => todo!("pointers not implemented yet"),
-            // default_literal() is only called on values, that's why this is valid
+            // default_literal() is only called on values (literals), that's why this is valid
             _ => panic!("invalid syntax: `{:#?}` on variable type", self)
         }
     }

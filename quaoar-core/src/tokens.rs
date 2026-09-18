@@ -8,6 +8,7 @@ pub enum VoidstarTokenTypes{
     SemiColon,
 
     Asterisk,
+    Ampersand,
 
     OpenParents,
     CloseParents,
@@ -63,6 +64,8 @@ pub enum VoidstarTokenTypes{
     Goto,
     Cross,
     Return,
+
+    Null,
 
     #[default] Halt,
 }

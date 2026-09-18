@@ -1,9 +1,7 @@
-use std::process::Command;
-
 use crate::Compilers::{Gcc, Zig};
 
 pub mod compiler;
-pub mod codegen;
+pub mod emitter;
 pub mod macros;
 pub mod r#impl;
 pub mod gcc;

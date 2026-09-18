@@ -3,11 +3,12 @@ use crate::tokens::VoidstarTokenTypes;
 pub mod tokens;
 pub mod lexer;
 pub mod signature;
-pub mod emitter;
+pub mod codegen;
 pub mod expdesc;
 pub mod header;
 pub mod backend;
 pub mod helper;
+pub mod internals;
 
 const OPEN_PAREN: u8 = b'(';
 const CLOSE_PAREN: u8 = b')';
@@ -35,6 +36,7 @@ const LESSER: u8 = b'<';
 const EQ: u8 = b'=';
 const NOT: u8 = b'!';
 const ASTRSK: u8 = b'*';
+const AMPERSND: u8 = b'&';
 
 const LINE_FEED: u8 = b'\n';
 const TABULATION: u8 = b'\t';
@@ -42,7 +44,7 @@ const SPACE: u8 = b' ';
 
 const HALT: u8 = b'\0';
 
-const KEYWORDS: [(&[u8], VoidstarTokenTypes); 18] = [
+const KEYWORDS: [(&[u8], VoidstarTokenTypes); 19] = [
     (b"bool",        VoidstarTokenTypes::Bool),
     (b"char",        VoidstarTokenTypes::Char),
     (b"cross",       VoidstarTokenTypes::Cross),
@@ -54,6 +56,7 @@ const KEYWORDS: [(&[u8], VoidstarTokenTypes); 18] = [
     (b"goto",        VoidstarTokenTypes::Goto),
     (b"if",          VoidstarTokenTypes::If),
     (b"int",         VoidstarTokenTypes::Int),
+    (b"null",        VoidstarTokenTypes::Null),
     (b"return",      VoidstarTokenTypes::Return),
     (b"static",      VoidstarTokenTypes::Static),
     (b"true",        VoidstarTokenTypes::BoolLiteral),
@@ -63,8 +66,9 @@ const KEYWORDS: [(&[u8], VoidstarTokenTypes); 18] = [
     (b"workspace",   VoidstarTokenTypes::Workspace),
 ];
 
-const SYMBOLS: [(u8, VoidstarTokenTypes); 16] = [
+const SYMBOLS: [(u8, VoidstarTokenTypes); 17] = [
     (b'!', VoidstarTokenTypes::Not),
+    (b'&', VoidstarTokenTypes::Ampersand),
     (b'(', VoidstarTokenTypes::OpenParents),
     (b')', VoidstarTokenTypes::CloseParents),
     (b'*', VoidstarTokenTypes::Asterisk),

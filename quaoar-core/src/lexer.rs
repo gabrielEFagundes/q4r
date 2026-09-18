@@ -173,7 +173,7 @@ impl Lexer{
         while !self.end(){
             match self.current{
                 OPEN_PAREN | CLOSE_PAREN | OPEN_BRACE | CLOSE_BRACE | OPEN_BRACKET | CLOSE_BRACKET |
-                DOT | COMMA | COLON | SEMICOL | EQ | NOT | ASTRSK | QUOTES | APOSTROPHE | PLUS | MINUS |
+                DOT | COMMA | COLON | SEMICOL | EQ | NOT | ASTRSK | AMPERSND | QUOTES | APOSTROPHE | PLUS | MINUS |
                 GREATER | LESSER => {
                     tokens.push(self.symbol());
                 },

@@ -1,0 +1,29 @@
+f main() int{
+    return crossTable(true)
+}
+
+/*
+    -- TODO! --
+    this code currently will not compile, as cross matching is yet to be implemented.
+
+    Q4r doesn't have a default `switch` statement,
+    it actually mounts something I call a `cross` table.
+
+    `cross` tables are basically jump tables used to match the pattern
+    of different values.
+
+    ```quaoar
+    cross value{
+        1: return 1,
+        2: return 2,
+        3: return 3,
+        // ...
+    }
+    ```
+*/
+f crossTable(bool value) int{
+    cross value{
+        true: return 0,
+        false: return 1
+    }
+}

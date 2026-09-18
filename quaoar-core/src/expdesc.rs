@@ -1,8 +1,10 @@
 use crate::signature::{DecKind, Literal, Operator, Type};
 
+#[derive(Debug)]
 pub enum ExpType<'a>{ 
     OperativeExp(ExpOperator<'a>),
     LiteralExp(ExpLiteral),
+    CallExp(FunCall<'a>),
 }
 
 pub enum DeclType<'a>{
@@ -10,12 +12,14 @@ pub enum DeclType<'a>{
     WhileLoopDecl(ComparisonDeclaration<'a>),
 }
 
+#[derive(Debug)]
 pub struct ExpOperator<'a>{
     pub left: &'a[u8],
     pub operator: Operator,
     pub right: &'a[u8]
 }
 
+#[derive(Debug)]
 pub struct ExpLiteral{
     pub val: Literal
 }
@@ -38,6 +42,7 @@ pub struct ForLoopDeclaration<'a>{
     pub incrementer: Literal
 }
 
+#[derive(Debug)]
 pub struct VarDeclaration<'a>{
     pub ty: Type,
     pub ident: &'a[u8],
@@ -48,4 +53,10 @@ pub struct FunDeclaration<'a>{
     pub returns: Type,
     pub ident: &'a[u8],
     pub params: Vec<VarDeclaration<'a>>
+}
+
+#[derive(Debug)]
+pub struct FunCall<'a>{
+    pub ident: &'a[u8],
+    pub params: Vec<u8>
 }

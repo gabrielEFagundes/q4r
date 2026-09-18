@@ -1,0 +1,102 @@
+use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType, FunCall}, internals::helpers, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+
+pub fn mount_expression<'a>(backend: &mut Backend<'a>) -> ExpOperator<'a>{
+    let left: &[u8];
+    let right: &[u8];
+    let operator;
+    
+    let lstart = backend.tokens[backend.cursor].start;
+    
+    while !(Operator::is_comparative(backend.tokens[backend.cursor].token_type) ||
+            Operator::is_arithmetic(backend.tokens[backend.cursor].token_type)){
+            backend.cursor+=1;
+    }
+    
+    let lend = backend.tokens[backend.cursor-1].end;
+    left = &backend.source[lstart..lend];
+
+    operator = Operator::map(backend.tokens[backend.cursor].token_type);
+
+    backend.cursor+=1;
+    let rstart = backend.tokens[backend.cursor].start;
+
+    while Operator::is_legal(backend.tokens[backend.cursor].token_type){ 
+        backend.cursor+=1;
+    }
+
+    let rend = backend.tokens[backend.cursor-1].end;
+    right = &backend.source[rstart..rend];
+
+    ExpOperator{ left, operator, right }
+}
+
+pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
+    let current = backend.tokens[backend.cursor];
+    let expression_type = helpers::lookahead(backend).token_type;
+
+    let mut subexpressions: Vec<ExpType<'_>> = Vec::new();
+
+    // recurses back if a subexpression is detected
+    // revisit this later
+    if current.token_type == VoidstarTokenTypes::OpenBraces{
+        backend.cursor += 1;
+        subexpressions.push(expression(backend));
+    }
+
+    match current.token_type{
+        VoidstarTokenTypes::IntLiteral
+        |VoidstarTokenTypes::FloatLiteral
+        |VoidstarTokenTypes::BoolLiteral
+        |VoidstarTokenTypes::CharLiteral => {
+            if Operator::is_comparative(expression_type) || Operator::is_arithmetic(expression_type){
+                return ExpType::OperativeExp(mount_expression(backend))
+            }
+        
+            let bytes_value = &backend.source[current.start..current.end];
+            
+            ExpType::LiteralExp(ExpLiteral{
+                val: Literal::to_literal(bytes_value, Literal::from_literal(current.token_type))
+            })
+        },
+
+        VoidstarTokenTypes::Ident => {
+            if Operator::is_comparative(expression_type) || Operator::is_arithmetic(expression_type){
+                return ExpType::OperativeExp(mount_expression(backend))
+            }
+
+            if expression_type == VoidstarTokenTypes::OpenParents{
+                return ExpType::CallExp(fun_call(backend));
+            }
+
+            let bytes_value = &backend.source[current.start..current.end];
+
+            ExpType::LiteralExp(ExpLiteral { 
+                val: Literal::to_literal(bytes_value, current.token_type)
+            })
+        },
+
+        _ => panic!("illegal expression argument `{:#?}`", current.token_type)
+    }
+}
+
+pub fn fun_call<'a>(backend: &mut Backend<'a>) -> FunCall<'a>{
+    let ident = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+    let mut params: Vec<u8> = Vec::new();
+    backend.cursor += 2;
+
+    while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
+            let current = backend.tokens[backend.cursor];
+            if current.token_type() == VoidstarTokenTypes::CharLiteral{
+                params.push(b'\'');
+                params.extend_from_slice(&backend.source[current.start()..current.end()]);
+                params.push(b'\'');
+                
+            } else { // we need the commas inside the array while we don't have a "parameter" struct
+                params.extend_from_slice(&backend.source[current.start()..current.end()]);
+            }
+
+            backend.cursor += 1;
+    }
+
+    FunCall { ident, params }
+}

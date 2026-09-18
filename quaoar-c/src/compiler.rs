@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, emitter::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self, LiteralExp}, ExpVariable, ForLoopDeclaration, FunDeclaration, VarDeclaration}, signature::{self, Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes::{self, Function}}};
+use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self}, ForLoopDeclaration, FunCall, FunDeclaration, VarDeclaration}, signature::{Signature, Type}};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
@@ -22,6 +22,7 @@ pub struct CCompiler{
     pub(crate) c_src: Vec<u8>,
 }
 
+#[allow(unused)]
 impl<'a> CCompiler{
     pub fn new() -> Self{
         Self{ c_src: Vec::new() }
@@ -68,9 +69,16 @@ impl<'a> CCompiler{
         emit!(&mut self.c_src, &b"+="[..], amount, b';');
     }
 
-    pub(crate) fn parse_assignment_expression(&mut self, expression: ExpLiteral){
-        // e.g. ident = expression
-        emit!(&mut self.c_src, b'=', expression.val.to_byte_span().as_slice(), b';');
+    pub(crate) fn parse_decrement(&mut self, amount: &'a[u8]){
+        emit!(&mut self.c_src, &b"-="[..], amount, b';');
+    }
+
+    pub(crate) fn parse_branch_expression(&mut self, expression: ExpType<'a>){
+        match expression{
+            ExpType::OperativeExp(exp_operator) => self.parse_operator_expression(exp_operator),
+            ExpType::LiteralExp(exp_literal) => self.parse_literal_expression(exp_literal),
+            ExpType::CallExp(fun_call) => self.parse_fun_call(fun_call),
+        }
     }
 
     pub(crate) fn parse_literal_expression(&mut self, expression: ExpLiteral){
@@ -91,12 +99,7 @@ impl<'a> CCompiler{
     pub(crate) fn parse_conditional(&mut self, cmp_expression: ComparisonDeclaration, backend: &mut Backend<'a>){
         // e.g. if expression{} or while expression{}
         emit!(&mut self.c_src, cmp_expression.kind.to_byte_span(), b' ');
-        if let ExpType::OperativeExp(ExpOperator { left, operator, right }) = cmp_expression.expression{
-            self.parse_operator_expression(ExpOperator { left, operator, right });
-
-        } else if let ExpType::LiteralExp(ExpLiteral { val }) = cmp_expression.expression{
-            self.parse_literal_expression(ExpLiteral { val });
-        }
+        self.parse_branch_expression(cmp_expression.expression);
 
         emit!(&mut self.c_src, b'{');
         self.generate(backend);
@@ -106,9 +109,20 @@ impl<'a> CCompiler{
     pub fn parse_for_loop(&mut self, for_declaration: ForLoopDeclaration, backend: &mut Backend<'a>){
         emit!(
             &mut self.c_src, for_declaration.kind.to_byte_span(), b'(',
-            &b"int"[..], b' ', for_declaration.iterator, b';',
-            // to finish lmao
-        )
+            &b"int"[..], b' ', for_declaration.iterator, b'='
+        );
+        self.parse_branch_expression(for_declaration.initializer);
+
+        emit!(&mut self.c_src, b';');
+        self.parse_branch_expression(for_declaration.exp);
+
+        emit!(
+            &mut self.c_src, b';', for_declaration.iterator, b'+', b'=', 
+            for_declaration.incrementer.to_byte_span().as_slice(),
+            b')', b'{'
+        );
+        self.generate(backend);
+        emit!(&mut self.c_src, b'}');
     }
 
     pub(crate) fn parse_else(&mut self, backend: &mut Backend<'a>){
@@ -118,18 +132,13 @@ impl<'a> CCompiler{
     }
 
     pub(crate) fn parse_var_decl(&mut self, declaration: VarDeclaration){
-        // int var = value;
-        let fintype = if declaration.ty.eq(&Type::Bool){
-            &Type::Int
-        } else { &declaration.ty };
-
+        // e.g. type var = value;
         emit!(
             &mut self.c_src, 
-            fintype.to_byte_span(), b' ', declaration.ident, b'='
+            declaration.ty.to_byte_span(), b' ', declaration.ident, b'='
         );
-        if let ExpType::LiteralExp(ExpLiteral{ val }) = declaration.val{
-            emit!(&mut self.c_src, val.to_byte_span().as_slice(), b';')
-        }
+        self.parse_branch_expression(declaration.val);
+        emit!(&mut self.c_src, b';');
     }
 
     pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration, backend: &mut Backend<'a>){
@@ -174,10 +183,12 @@ impl<'a> CCompiler{
         );
     }
 
-    pub(crate) fn parse_fun_call(&mut self, params: Vec<u8>){
+    pub(crate) fn parse_fun_call(&mut self, call: FunCall<'a>){
         emit!(
-            &mut self.c_src, b'(',
-            params.as_slice(), b')', b';'
+            &mut self.c_src, 
+            b'(',
+            call.ident, b'(',
+            call.params.as_slice(), b')', b')', b';'
         );
     }
 }

@@ -1,7 +1,7 @@
 use std::{env::args, fs::self};
 
 use quaoar_c::compiler::CCompiler;
-use quaoar_core::{backend::Backend, emitter::Codegen, header::SignatureMounter, lexer::Lexer};
+use quaoar_core::{backend::Backend, codegen::Codegen, header::SignatureMounter, lexer::Lexer};
 
 fn main() {
     let args: Vec<String> = args().collect();
@@ -17,7 +17,7 @@ fn main() {
     };
     
     let t = Lexer::new(s.clone()).lexerize();
-    //println!("{:#?}", t);
+    println!("{:#?}", t);
 
     let signatures = SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
     

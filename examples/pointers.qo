@@ -1,0 +1,10 @@
+// returns integer for exit codes, this is 
+// a pattern you'll observe across most of the
+// examples here.
+f main() int{
+    int value = 5
+    *int p = &value
+
+    *p = 10
+    return value // 10 if deref-write reached, 5 if it didn't
+}
