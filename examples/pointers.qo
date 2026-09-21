@@ -4,9 +4,9 @@
 
 // YET TODO
 f main() int{
-    int value = 5
-    *int p = &value
+    //int value = 5
+    *int p = 10
 
-    *p = 10
-    return value // 10 if deref-write reached, 5 if it didn't
+    // *p = 10
+    // return value // 10 if deref-write reached, 5 if it didn't
 }

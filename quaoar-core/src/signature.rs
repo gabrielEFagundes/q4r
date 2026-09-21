@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::{VoidstarTokenTypes::self}};
 
 const INT_DEF: isize = 0;
@@ -25,6 +27,10 @@ impl Type{
         }
     }
 
+    pub fn map_pointer(self) -> Self{
+        Self::Pointer(Box::new(self))
+    }
+
     pub fn to_byte_span(&self) -> &'static[u8]{
         match self{
             Type::Void => b"void",
@@ -32,7 +38,7 @@ impl Type{
             Type::Float => b"float",
             Type::Char => b"char",
             Type::Bool => b"bool",
-            Type::Pointer(val) => val.to_byte_span(),
+            Type::Pointer(val) => val.to_byte_span()
         }
     }
 

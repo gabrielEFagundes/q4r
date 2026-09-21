@@ -212,7 +212,7 @@ impl Lexer{
                     continue;
                 },
 
-                TABULATION | SPACE => {
+                TABULATION | SPACE | CARRIAGE => {
                     self.advance();
                     continue;
                 },

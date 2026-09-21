@@ -39,6 +39,7 @@ const AMPERSND: u8 = b'&';
 
 const LINE_FEED: u8 = b'\n';
 const TABULATION: u8 = b'\t';
+const CARRIAGE: u8 = b'\r';
 const SPACE: u8 = b' ';
 
 const HALT: u8 = b'\0';

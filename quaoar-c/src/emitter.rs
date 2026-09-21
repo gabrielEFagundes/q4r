@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::ExpType::self, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes};
+use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::ExpType::self, internals::helpers, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
 
 use crate::{compiler::CCompiler};
 
@@ -12,8 +12,27 @@ impl<'a> Codegen<'a> for CCompiler{
 
     fn generate(&mut self, backend: &mut Backend<'a>) -> Vec<u8> {
         while !helpers::end(backend){
-            //println!("{:#?}", backend.tokens[backend.cursor]);
+            //dbg!("{:#?}", backend.tokens[backend.cursor]);
             match backend.tokens[backend.cursor].token_type(){
+                // on the C's compiler case, the asterisk will always mean it's a pointer
+                // asterisks inside expressions are automatically consumed and considered multiplication.
+                // VoidstarTokenTypes::Asterisk => {
+                //     match helpers::lookahead(backend).token_type(){
+                //         VoidstarTokenTypes::Int
+                //         | VoidstarTokenTypes::Float
+                //         | VoidstarTokenTypes::Bool
+                //         | VoidstarTokenTypes::Char
+                //         | VoidstarTokenTypes::Void => {
+                //             backend.cursor += 1;
+                //             self.parse_simple(Type::map(backend.tokens[backend.cursor].token_type()).to_byte_span());
+                //             self.parse_simple(b"*");
+                //             self.parse_simple();
+                //         },
+                //         _ => panic!("expected type for pbt pointers (pointer-before-type)")
+                //     }
+                //     backend.cursor += 1;
+                // }
+
                 VoidstarTokenTypes::Int
                 | VoidstarTokenTypes::Float
                 | VoidstarTokenTypes::Bool
@@ -66,7 +85,6 @@ impl<'a> Codegen<'a> for CCompiler{
                 }
 
                 VoidstarTokenTypes::Ident => {
-                    // emit ident and check either it's a function call or a variable attribution/increment/decrement
                     self.parse_branch_expression(Self::var_assignment(backend));
                 }
 
