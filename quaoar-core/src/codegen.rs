@@ -26,12 +26,12 @@ pub trait Codegen<'a>{
         q4r_statements::loop_statement(backend)
     }
 
-    fn var_declaration(backend: &mut Backend<'a>) -> VarDeclaration<'a>{
-        q4r_variables::var_declaration(backend)
+    fn var_declaration(backend: &mut Backend<'a>, is_pointer: bool) -> VarDeclaration<'a>{
+        q4r_variables::var_declaration(backend, is_pointer)
     }
 
-    fn var_assignment(backend: &mut Backend<'a>) -> ExpType<'a>{
-        q4r_variables::var_assignment(backend)
+    fn var_callee(backend: &mut Backend<'a>) -> ExpType<'a>{
+        q4r_variables::var_callee(backend)
     }
 
     fn fun_declaration(backend: &mut Backend<'a>) -> FunDeclaration<'a>{

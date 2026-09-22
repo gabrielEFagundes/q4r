@@ -16,14 +16,15 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>) -> FunDeclaration<'a>{
             | VoidstarTokenTypes::Float
             | VoidstarTokenTypes::Char
             | VoidstarTokenTypes::Bool => {
-                let declaration: VarDeclaration<'a> = q4r_variables::var_declaration(backend);
+                let declaration: VarDeclaration<'a> = q4r_variables::var_declaration(backend, false);
 
                 params.push(declaration);
+                backend.cursor += 1;
             },
 
             VoidstarTokenTypes::Comma | VoidstarTokenTypes::Void => backend.cursor+=1,
             
-            _ => panic!("unknown symbol as a parameter of `{}`", str::from_utf8(ident).unwrap_or("unknown"))
+            _ => panic!("unknown symbol as a parameter of `{}`: `{:#?}`", str::from_utf8(ident).unwrap_or("unknown"), backend.tokens[backend.cursor].token_type)
         }
     }
 

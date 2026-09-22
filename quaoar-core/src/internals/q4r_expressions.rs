@@ -1,4 +1,4 @@
-use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions, q4r_variables}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn mount_expression<'a>(backend: &mut Backend<'a>) -> ExpOperator<'a>{
     let left: &[u8];
@@ -53,9 +53,10 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
             }
         
             let bytes_value = &backend.source[current.start..current.end];
-            
+            helpers::expect(VoidstarTokenTypes::SemiColon, backend);
+
             ExpType::LiteralExp(ExpLiteral{
-                val: Literal::to_literal(bytes_value, Literal::from_literal(current.token_type))
+                val: Literal::to_literal(bytes_value, Literal::to_type_token(current.token_type))
             })
         },
 
@@ -68,12 +69,29 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
                 return ExpType::CallExp(q4r_functions::fun_call(backend));
             }
 
+            if expression_type == VoidstarTokenTypes::Equals{
+                return q4r_variables::var_callee(backend)
+            }
+
             let bytes_value = &backend.source[current.start..current.end];
+            backend.cursor += 1;
 
             ExpType::LiteralExp(ExpLiteral { 
                 val: Literal::to_literal(bytes_value, current.token_type)
             })
         },
+
+        VoidstarTokenTypes::Ampersand => {
+            let mut bytes_ident = Vec::from(b"&");
+
+            backend.cursor += 1;
+            bytes_ident.extend_from_slice(&backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end]);
+
+            helpers::expect(VoidstarTokenTypes::SemiColon, backend);
+            ExpType::AddressExp(ExpLiteral { 
+                val: Literal::to_literal(bytes_ident.as_slice(), VoidstarTokenTypes::Ident)
+            })
+        }
 
         _ => panic!("illegal expression argument `{:#?}`", current.token_type)
     }

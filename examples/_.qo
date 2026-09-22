@@ -1,0 +1,14 @@
+/*
+    This is a program made for testing specific cases
+    during development.
+
+    Just ignore this and move on to the next examples.
+*/
+f main() int{
+    do_something()
+    return 0
+}
+
+f do_something(){
+    // this does something
+}

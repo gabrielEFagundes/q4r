@@ -1,12 +1,26 @@
-// returns integer for exit codes, this is 
-// a pattern you'll observe across most of the
-// examples here.
+/*
+    Pointers are variables that referentiate a memory address, instead of
+    an actual value.
 
-// YET TODO
+    Unlike C, pointers in Quaoar are defined by adding an asterisk (*) 
+    **before** the variable type.
+
+    Addressing the memory value of variables is just like C, with an
+    ampersand (&) before the variable itself.
+
+    ```quaoar
+    int value = 10
+    *int pointer = &value
+    *pointer = 5
+
+    return value // value is now 5 thanks to the deref-write property of pointers!
+    ```
+*/
 f main() int{
-    //int value = 5
-    *int p = 10
+    int value = 5
+    // int another = 10
+    *int p = &value
+    *p = 10
 
-    // *p = 10
-    // return value // 10 if deref-write reached, 5 if it didn't
+    return value // 10 if deref-write reached, 5 if it didn't
 }

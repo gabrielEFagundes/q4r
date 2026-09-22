@@ -1,4 +1,4 @@
-use crate::{backend::Backend, expdesc::{ComparisonDeclaration, DeclType, ForLoopDeclaration}, internals::{helpers, q4r_expressions, q4r_values}, signature::DecKind, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, expdesc::{ComparisonDeclaration, DeclType, ForLoopDeclaration}, internals::{q4r_expressions, q4r_values}, signature::DecKind, tokens::VoidstarTokenTypes};
 
 pub fn relational_statement<'a>(backend: &mut Backend<'a>) -> ComparisonDeclaration<'a>{
     backend.cursor+=1;
@@ -11,13 +11,10 @@ pub fn loop_statement<'a>(backend: &mut Backend<'a>) -> DeclType<'a>{
     backend.cursor += 1;
     let iterator = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
 
-    let mut init_expression = q4r_expressions::expression(backend);
-    backend.cursor += 2;
+    let init_expression = q4r_expressions::expression(backend);
 
-    if helpers::lookahead(backend).token_type == VoidstarTokenTypes::SemiColon{
-        init_expression = q4r_expressions::expression(backend);
-
-        backend.cursor += 2;
+    if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::SemiColon{
+        backend.cursor += 1;
         let exp = q4r_expressions::expression(backend);
 
         backend.cursor += 1;

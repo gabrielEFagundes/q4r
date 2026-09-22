@@ -5,6 +5,7 @@ pub enum ExpType<'a>{
     OperativeExp(ExpOperator<'a>),
     LiteralExp(ExpLiteral),
     CallExp(FunCall<'a>),
+    AddressExp(ExpLiteral)
 }
 
 pub enum DeclType<'a>{

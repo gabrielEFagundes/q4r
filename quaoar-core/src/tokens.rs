@@ -75,13 +75,14 @@ pub enum VoidstarTokenTypes{
 pub struct VoidstarToken{
     pub(crate) token_type: VoidstarTokenTypes,
     pub(crate) start: usize,
-    pub(crate) end: usize
+    pub(crate) end: usize,
+    pub(crate) last_could_end_stmt: bool
 } 
 
 impl VoidstarToken{
     /// Creates a new `VoidstarToken`
-    pub fn new(token_type: VoidstarTokenTypes, start: usize, end: usize) -> Self{
-        Self { token_type, start, end }
+    pub fn new(token_type: VoidstarTokenTypes, start: usize, end: usize, last_could_end_stmt: bool) -> Self{
+        Self { token_type, start, end, last_could_end_stmt }
     }
 
     pub fn token_type(&self) -> VoidstarTokenTypes{

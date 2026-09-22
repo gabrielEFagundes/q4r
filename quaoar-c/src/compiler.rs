@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self}, ForLoopDeclaration, FunCall, FunDeclaration, VarDeclaration}, signature::{Signature, Type}};
+use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self}, ForLoopDeclaration, FunCall, FunDeclaration, VarDeclaration}, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
 
-/// The `quaoar-c` transpiler generates a source string 
+/// The `quaoar-c` compiler generates a source string 
 /// and parses it to the first gcc compiler Q4r finds on PATH.
 /// 
 /// `gcc -x c -o <prog_name> <<< '<code_str>'`
@@ -30,6 +30,7 @@ impl<'a> CCompiler{
 
     pub(crate) fn gen_signature_headers(&mut self, signatures: &HashMap<String, Signature>){
         for i in signatures{
+            let mut buffer: &mut [u8] = &mut [];
             match i.1{
                 Signature::Function { returns, params } => {
                     let finreturns = if returns.eq(&Type::Bool){
@@ -38,11 +39,12 @@ impl<'a> CCompiler{
 
                     emit!(
                         &mut self.c_src, 
-                        finreturns.to_byte_span(), b' ', i.0.as_bytes(), b'('
+                        finreturns.to_byte_span().as_slice(), b' ', i.0.as_bytes(), b'('
                     );
 
                     for i in 0..params.len(){
-                        emit!(&mut self.c_src, params[i].to_byte_span());
+                        emit!(&mut self.c_src, params[i].to_byte_span().as_slice());
+
                         if i != params.len()-1{
                             emit!(&mut self.c_src, b',');
                         }
@@ -55,9 +57,10 @@ impl<'a> CCompiler{
                         &Type::Int
                     } else { &ty };
 
-                    emit!(&mut self.c_src, fintype.to_byte_span(), b' ', i.0.as_bytes(), b';');
+                    emit!(&mut self.c_src, fintype.to_byte_span().as_slice(), b' ', i.0.as_bytes(), b';');
                 },
             }
+            buffer = &mut [];
         }
     }
 
@@ -78,12 +81,17 @@ impl<'a> CCompiler{
             ExpType::OperativeExp(exp_operator) => self.parse_operator_expression(exp_operator),
             ExpType::LiteralExp(exp_literal) => self.parse_literal_expression(exp_literal),
             ExpType::CallExp(fun_call) => self.parse_fun_call(fun_call),
+            ExpType::AddressExp(exp_literal) => self.parse_literal_expression(exp_literal),
         }
     }
 
     pub(crate) fn parse_literal_expression(&mut self, expression: ExpLiteral){
         // e.g. (literal)
-        emit!(&mut self.c_src, b'(', expression.val.to_byte_span().as_slice(), b')');
+        if expression.val.from_literal() == VoidstarTokenTypes::CharLiteral{
+            emit!(&mut self.c_src, b'(', b'\'', expression.val.to_byte_span().as_slice(), b'\'', b')');
+        } else {
+            emit!(&mut self.c_src, b'(', expression.val.to_byte_span().as_slice(), b')');
+        }
     }
 
     pub(crate) fn parse_operator_expression(&mut self, expression: ExpOperator){
@@ -135,10 +143,19 @@ impl<'a> CCompiler{
         // e.g. type var = value;
         emit!(
             &mut self.c_src, 
-            declaration.ty.to_byte_span(), b' ', declaration.ident, b'='
+            declaration.ty.to_byte_span().as_slice(), b' ', declaration.ident, b'='
         );
         self.parse_branch_expression(declaration.val);
         emit!(&mut self.c_src, b';');
+    }
+
+    pub(crate) fn parse_var_assign(&mut self, identifier: &'a[u8], expression: ExpType<'a>){
+        emit!(
+            &mut self.c_src,
+            identifier, b'='
+        );
+        self.parse_branch_expression(expression);
+        emit!(&mut self.c_src, b';')
     }
 
     pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration, backend: &mut Backend<'a>){
@@ -149,7 +166,7 @@ impl<'a> CCompiler{
 
         emit!(
             &mut self.c_src,
-            finreturns.to_byte_span(), b' ',
+            finreturns.to_byte_span().as_slice(), b' ',
             declaration.ident, b'('
         );
 
@@ -157,8 +174,9 @@ impl<'a> CCompiler{
             let current = &declaration.params[i];
             // default arguments to be implemented in the future
             // they're currently ignored on the C compiler's case
+
             emit!(&mut self.c_src, 
-                current.ty.to_byte_span(), b' ', current.ident
+                current.ty.to_byte_span().as_slice(), b' ', current.ident
             );
 
             if i != declaration.params.len()-1{
