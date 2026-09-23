@@ -60,6 +60,7 @@ pub enum VoidstarTokenTypes{
     FloatLiteral,
     BoolLiteral,
     CharLiteral,
+    StringLiteral,
 
     Increment,
     Decrement,

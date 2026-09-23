@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ExpType::self, FunCall}, internals::helpers, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
+use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::ExpType::self, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes};
 
 use crate::{compiler::CCompiler};
 

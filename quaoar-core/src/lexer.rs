@@ -34,14 +34,23 @@ impl Lexer{
         let start = self.cursor; let end;
         match self.current{
             QUOTES => {
-                todo!("strings are not implemented yet.");
+                self.advance();
+                let start = self.cursor;
+
+                while self.current != QUOTES{
+                    self.advance();
+                }
+
+                let end = self.cursor;
+                self.advance();
+                VoidstarToken::new(VoidstarTokenTypes::StringLiteral, start, end, true)
             },
 
             APOSTROPHE => {
                 self.advance();
                 let v = self.cursor;
                 self.advance_this(2);
-                return VoidstarToken::new(VoidstarTokenTypes::CharLiteral, v, v+1, false);
+                return VoidstarToken::new(VoidstarTokenTypes::CharLiteral, v, v+1, true);
             },
 
             GREATER => {

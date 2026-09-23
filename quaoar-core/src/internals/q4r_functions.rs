@@ -1,4 +1,4 @@
-use crate::{backend::Backend, error::QErrorTypes, expdesc::{FunCall, FunDeclaration, Parameter}, internals::{helpers, q4r_parameters}, signature::Type, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::QErrorTypes, expdesc::{ExpType, FunCall, FunDeclaration, Parameter}, internals::{helpers, q4r_expressions, q4r_parameters}, signature::Type, tokens::VoidstarTokenTypes};
 
 pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> FunDeclaration<'a>{
     helpers::expect(VoidstarTokenTypes::Ident, backend);
@@ -41,22 +41,24 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> FunDec
 
 pub fn fun_call<'a>(backend: &mut Backend<'a>) -> FunCall<'a>{
     let ident = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
-    let mut params: Vec<u8> = Vec::new();
+    let mut params: Vec<ExpType<'a>> = Vec::new();
     backend.cursor += 2;
 
     while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
-        let current = backend.tokens[backend.cursor];
-        if current.token_type() == VoidstarTokenTypes::CharLiteral{
-            params.push(b'\'');
-            params.extend_from_slice(&backend.source[current.start()..current.end()]);
-            params.push(b'\'');
-            
-        } else {
-            params.extend_from_slice(&backend.source[current.start()..current.end()]);
+        match q4r_expressions::expression(backend){
+            crate::expdesc::ExpType::OperativeExp(exp_operator) => params.push(ExpType::OperativeExp(exp_operator)),
+            crate::expdesc::ExpType::LiteralExp(exp_literal) => params.push(ExpType::LiteralExp(exp_literal)),
+            crate::expdesc::ExpType::CallExp(fun_call) => params.push(ExpType::CallExp(fun_call)),
+            crate::expdesc::ExpType::AddressExp(exp_literal) => params.push(ExpType::AddressExp(exp_literal)),
         }
 
-        params.push(b','); // for now
+        dbg!(backend.tokens[backend.cursor]);
         backend.cursor += 1;
+
+        // revisit this, it's ugly
+        if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::Comma{
+            backend.cursor += 1;
+        }
     }
 
     FunCall { ident, params }

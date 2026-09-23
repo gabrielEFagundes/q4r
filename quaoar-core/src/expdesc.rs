@@ -67,5 +67,5 @@ pub struct FunDeclaration<'a>{
 #[derive(Debug)]
 pub struct FunCall<'a>{
     pub ident: &'a[u8],
-    pub params: Vec<u8>
+    pub params: Vec<ExpType<'a>>
 }

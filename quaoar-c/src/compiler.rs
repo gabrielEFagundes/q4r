@@ -91,6 +91,10 @@ impl<'a> CCompiler{
         // e.g. (literal)
         if expression.val.from_literal() == VoidstarTokenTypes::CharLiteral{
             emit!(&mut self.c_src, b'(', b'\'', expression.val.to_byte_span().as_slice(), b'\'', b')');
+
+        } else if expression.val.from_literal() == VoidstarTokenTypes::StringLiteral{
+            emit!(&mut self.c_src, b'(', b'"', expression.val.to_byte_span().as_slice(), b'"', b')');
+
         } else {
             emit!(&mut self.c_src, b'(', expression.val.to_byte_span().as_slice(), b')');
         }
@@ -213,8 +217,14 @@ impl<'a> CCompiler{
         emit!(
             &mut self.c_src, 
             b'(',
-            call.ident, b'(',
-            call.params.as_slice(), b')', b')', b';'
+            call.ident, b'('
         );
+        for i in call.params{
+            self.parse_branch_expression(i);
+            self.parse_simple(b",");
+        }
+        self.c_src.pop(); // removes the last trailing comma
+
+        emit!(&mut self.c_src, b')', b')', b';');
     }
 }

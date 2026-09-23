@@ -1,4 +1,4 @@
-use crate::{expdesc::Parameter, signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::VoidstarTokenTypes::self};
+use crate::{expdesc::Parameter, signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, StringLiteral, VarLiteral}, tokens::VoidstarTokenTypes::self};
 
 const INT_DEF: isize = 0;
 const FLOAT_DEF: f32 = 0.0;
@@ -84,7 +84,7 @@ impl Type{
 
 #[derive(Debug)]
 pub enum Literal{
-    IntLiteral(isize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool), 
+    IntLiteral(isize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool), StringLiteral(String),
     PointerLiteral(Box<Literal>),
     
     #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"] 
@@ -101,6 +101,7 @@ impl Literal{
             Literal::CharLiteral(v) => Vec::from([*v as u8]),
             Literal::BoolLiteral(v) => v.to_string().into_bytes(),
             Literal::PointerLiteral(v) => v.to_byte_span(),
+            Literal::StringLiteral(v) => v.as_bytes().to_vec(),
             Literal::VarLiteral(v) => v.to_vec()
         }
     }
@@ -122,6 +123,7 @@ impl Literal{
             VoidstarTokenTypes::FloatLiteral => FloatLiteral(Self::parse_float(bytes)),
             VoidstarTokenTypes::CharLiteral => CharLiteral(Self::parse_char(bytes)),
             VoidstarTokenTypes::BoolLiteral => BoolLiteral(Self::parse_bool(bytes)),
+            VoidstarTokenTypes::StringLiteral => StringLiteral(Self::parse_str(bytes)),
             _ => panic!("invalid syntax: `{:#?}` on variable type", ty)
         }
     }
@@ -132,8 +134,9 @@ impl Literal{
             FloatLiteral(_) => VoidstarTokenTypes::FloatLiteral,
             CharLiteral(_) => VoidstarTokenTypes::CharLiteral,
             BoolLiteral(_) => VoidstarTokenTypes::BoolLiteral,
+            StringLiteral(_) => VoidstarTokenTypes::StringLiteral,
             VarLiteral(_) => VoidstarTokenTypes::Ident,
-            Literal::PointerLiteral(_) => panic!("can't parse a literal pointer to a token")
+            Literal::PointerLiteral(_) => panic!("can't parse a literal pointer as a token")
         }
     }
 
@@ -164,6 +167,11 @@ impl Literal{
 
     /// Guaranteed to be a char at this point of compilation
     pub fn parse_char(bytes: &[u8]) -> char{
+        std::str::from_utf8(bytes).unwrap().parse().unwrap()
+    }
+
+    /// Guaranteed to be a string at this point of compilation
+    pub fn parse_str(bytes: &[u8]) -> String{
         std::str::from_utf8(bytes).unwrap().parse().unwrap()
     }
 

@@ -5,10 +5,10 @@
     Just ignore this and move on to the next examples.
 */
 f main() int{
-    do_something()
+    do_something('a', 'b')
     return 0
 }
 
-f do_something(){
+f do_something(char a, char b){
     // this does something
 }

@@ -51,9 +51,14 @@ impl<'a> SignatureMounter<'a>{
                     let ident = &self.source[self.current_token.start..self.current_token.end];
                     let mut params: Vec<Parameter> = Vec::new();
 
-                    self.forward();
+                    // fucking mess
+                    self.forward(); self.forward();
                     while self.current_token.token_type != VoidstarTokenTypes::CloseParents{
-                        self.forward();
+                        if self.current_token.token_type == VoidstarTokenTypes::Comma{
+                            self.forward();
+                            continue;
+                        }
+
                         if self.current_token.token_type == VoidstarTokenTypes::Ellipsis{
                             params.push(Parameter { 
                                 ty: Type::Void, ident: &b"..."[..], is_etc: true

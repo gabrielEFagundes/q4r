@@ -1,5 +1,25 @@
+/*
+    You can use external libraries with the `extern` keyword.
+
+    ```quaoar
+    extern f malloc(@C(size_t) size)
+    ```
+
+    The @C is an annotation that tells the compiler to use a C type.
+
+    You can also use extern blocks!
+
+    ```quaoar
+    extern{
+        f printf(*char st, ...)
+        f malloc(@C(size_t) size)
+        f scanf(*char fmtString, ...)
+    }
+    ```
+*/
 extern f printf(*char st, ...)
 
 f main() int{
+    printf("Hello, World!")
     return 0
 }

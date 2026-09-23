@@ -47,16 +47,16 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
         VoidstarTokenTypes::IntLiteral
         |VoidstarTokenTypes::FloatLiteral
         |VoidstarTokenTypes::BoolLiteral
-        |VoidstarTokenTypes::CharLiteral => {
+        |VoidstarTokenTypes::CharLiteral
+        |VoidstarTokenTypes::StringLiteral => {
             if Operator::is_comparative(expression_type) || Operator::is_arithmetic(expression_type){
                 return ExpType::OperativeExp(mount_expression(backend))
             }
-        
+
             let bytes_value = &backend.source[current.start..current.end];
-            helpers::expect(VoidstarTokenTypes::SemiColon, backend);
 
             ExpType::LiteralExp(ExpLiteral{
-                val: Literal::to_literal(bytes_value, Literal::to_type_token(current.token_type))
+                val: Literal::to_literal(bytes_value, current.token_type)
             })
         },
 
