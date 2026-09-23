@@ -50,10 +50,18 @@ pub struct VarDeclaration<'a>{
     pub val: ExpType<'a>,
 }
 
+#[derive(Debug)]
+pub struct Parameter<'a>{
+    pub ty: Type,
+    pub ident: &'a[u8],
+    pub is_etc: bool
+}
+
 pub struct FunDeclaration<'a>{
     pub returns: Type,
     pub ident: &'a[u8],
-    pub params: Vec<VarDeclaration<'a>>
+    pub params: Vec<Parameter<'a>>,
+    pub is_extern: bool
 }
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use crate::{signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::{VoidstarTokenTypes::self}};
+use crate::{expdesc::Parameter, signature::Literal::{BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, VarLiteral}, tokens::VoidstarTokenTypes::self};
 
 const INT_DEF: isize = 0;
 const FLOAT_DEF: f32 = 0.0;
@@ -283,20 +283,20 @@ impl DecKind{
 ///
 /// Or, if that's the case, the type and value of the global variable
 #[derive(Debug)]
-pub enum Signature{
-    Function{ returns: Type, params: Vec<Type> },
+pub enum Signature<'a>{
+    Function{ returns: Type, params: Vec<Parameter<'a>>, is_extern: bool },
     Global{ ty: Type, value: Vec<u8> }
 }
 
-impl Signature{
-    pub fn destructure_fun(v: Signature) -> (Type, Vec<Type>){
-        if let Signature::Function { returns, params } = v{
-            return (returns, params)
+impl<'a> Signature<'a>{
+    pub fn destructure_fun(v: Signature) -> (Type, Vec<Parameter>, bool){
+        if let Signature::Function { returns, params, is_extern } = v{
+            return (returns, params, is_extern)
         }
         panic!("bad call of `destructure_fun`")
     }
 
-    pub fn destructure_glob(v: &Signature) -> (&Type, &Vec<u8>){
+    pub fn destructure_glob(v: &'a Signature) -> (&'a Type, &'a Vec<u8>){
         if let Signature::Global { ty, value } = v{
             return (ty, value)
         }

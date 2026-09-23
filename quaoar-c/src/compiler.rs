@@ -30,23 +30,26 @@ impl<'a> CCompiler{
 
     pub(crate) fn gen_signature_headers(&mut self, signatures: &HashMap<String, Signature>){
         for i in signatures{
-            let mut buffer: &mut [u8] = &mut [];
             match i.1{
-                Signature::Function { returns, params } => {
-                    let finreturns = if returns.eq(&Type::Bool){
-                        &Type::Int
-                    } else { &returns };
+                Signature::Function { returns, params, is_extern } => {
+                    if *is_extern{
+                        self.parse_simple(b"extern ");
+                    }
 
                     emit!(
                         &mut self.c_src, 
-                        finreturns.to_byte_span().as_slice(), b' ', i.0.as_bytes(), b'('
+                        returns.to_byte_span().as_slice(), b' ', i.0.as_bytes(), b'('
                     );
 
                     for i in 0..params.len(){
-                        emit!(&mut self.c_src, params[i].to_byte_span().as_slice());
+                        if params[i].is_etc{
+                            self.parse_simple(b"...");
+                        } else {
+                            emit!(&mut self.c_src, params[i].ty.to_byte_span().as_slice());
 
-                        if i != params.len()-1{
-                            emit!(&mut self.c_src, b',');
+                            if i != params.len()-1{
+                                emit!(&mut self.c_src, b',');
+                            }
                         }
                     }
 
@@ -60,7 +63,6 @@ impl<'a> CCompiler{
                     emit!(&mut self.c_src, fintype.to_byte_span().as_slice(), b' ', i.0.as_bytes(), b';');
                 },
             }
-            buffer = &mut [];
         }
     }
 
@@ -160,6 +162,8 @@ impl<'a> CCompiler{
 
     pub(crate) fn parse_fun_decl(&mut self, declaration: FunDeclaration, backend: &mut Backend<'a>){
         // int function(int p1, int p2){ }
+        if declaration.is_extern{ self.parse_simple(b"extern "); }
+
         let finreturns = if declaration.returns.eq(&Type::Bool){
             &Type::Int
         } else { &declaration.returns };
@@ -172,29 +176,33 @@ impl<'a> CCompiler{
 
         for i in 0..declaration.params.len(){
             let current = &declaration.params[i];
-            // default arguments to be implemented in the future
-            // they're currently ignored on the C compiler's case
 
-            emit!(&mut self.c_src, 
-                current.ty.to_byte_span().as_slice(), b' ', current.ident
-            );
+            if current.is_etc{
+                emit!(&mut self.c_src, current.ident);
 
-            if i != declaration.params.len()-1{
-                emit!(&mut self.c_src, b',');
+            } else {
+                emit!(&mut self.c_src, 
+                    current.ty.to_byte_span().as_slice(), b' ', current.ident
+                );
+
+                if i != declaration.params.len()-1{
+                    emit!(&mut self.c_src, b',');
+                }
             }
         }
+
         emit!(&mut self.c_src, b')', b'{');
         self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }
 
     pub(crate) fn parse_literal_return(&mut self, expression: ExpLiteral){
-        emit!(&mut self.c_src, &b"return"[..], b' ', expression.val.to_byte_span().as_slice(), b';');
+        emit!(&mut self.c_src, &b"return "[..], expression.val.to_byte_span().as_slice(), b';');
     }
 
     pub(crate) fn parse_operator_return(&mut self, expression: ExpOperator){
         emit!(
-            &mut self.c_src, &b"return"[..], b' ',
+            &mut self.c_src, &b"return "[..],
             b'(', expression.left, b')',
             expression.operator.to_byte_span(), 
             b'(', expression.right, b')', b';'

@@ -19,7 +19,8 @@ fn main() {
     let t = Lexer::new(s.clone()).lexerize();
     println!("{:#?}", t);
 
-    let signatures = SignatureMounter::new(s.as_slice(), t.as_slice()).mount();
+    let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
+    let signatures = binding.mount();
     
     // considering I only have the C backend rn
     let mut backend = CCompiler::new();

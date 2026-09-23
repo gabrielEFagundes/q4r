@@ -8,6 +8,7 @@ pub mod codegen;
 pub mod expdesc;
 pub mod header;
 pub mod backend;
+pub mod error;
 pub mod internals;
 
 const OPEN_PAREN: u8 = b'(';
@@ -45,11 +46,12 @@ const SPACE: u8 = b' ';
 
 const HALT: u8 = b'\0';
 
-const KEYWORDS: [(&[u8], VoidstarTokenTypes); 19] = [
+const KEYWORDS: [(&[u8], VoidstarTokenTypes); 20] = [
     (b"bool",        VoidstarTokenTypes::Bool),
     (b"char",        VoidstarTokenTypes::Char),
     (b"cross",       VoidstarTokenTypes::Cross),
     (b"else",        VoidstarTokenTypes::Else),
+    (b"extern",      VoidstarTokenTypes::Extern),
     (b"f",           VoidstarTokenTypes::Function),
     (b"false",       VoidstarTokenTypes::BoolLiteral),
     (b"float",       VoidstarTokenTypes::Float),

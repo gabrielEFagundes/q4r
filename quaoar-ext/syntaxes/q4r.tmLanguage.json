@@ -101,7 +101,7 @@
 
     "support-functions": {
       "name": "support.function.quaoar",
-      "match": "\\b(writeLine|MAX_VALUE)\\b"
+      "match": "\\b(extern)\\b"
     },
 
     "functions": {

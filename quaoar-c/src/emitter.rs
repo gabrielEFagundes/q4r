@@ -15,7 +15,7 @@ impl<'a> Codegen<'a> for CCompiler{
             //dbg!("{:#?}", backend.tokens[backend.cursor]);
             match backend.tokens[backend.cursor].token_type(){
                 // asterisks located HERE on Q4r will always mean it's a pointer
-                // expressions consume the multiplication asterisks anyway.
+                // expressions consume the multiplication asterisks as they parse.
                 VoidstarTokenTypes::Asterisk => {
                     match helpers::lookahead(backend).token_type(){
                         VoidstarTokenTypes::Int
@@ -89,8 +89,16 @@ impl<'a> Codegen<'a> for CCompiler{
                     todo!("number signment (plus or minus) yet to be implemented");
                 }
 
+                // on the C compiler's case, it's pointless to define the extern function twice, since it's
+                // already defined when generating the table of signatures. That's why we skip it here.
+                VoidstarTokenTypes::Extern => {
+                    while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
+                        backend.cursor += 1;
+                    }
+                }
+
                 VoidstarTokenTypes::Function => {
-                    let fun = Self::fun_declaration(backend);
+                    let fun = Self::fun_declaration(backend, false);
                     self.parse_fun_decl(fun, backend);
                 }
 

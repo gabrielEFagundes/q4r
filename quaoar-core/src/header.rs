@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use crate::{signature::{Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes}};
+use crate::{expdesc::Parameter, signature::{Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes}};
 
 /// Main struct used for mounting the table that holds the signatures
 pub struct SignatureMounter<'a>{
@@ -29,23 +29,53 @@ impl<'a> SignatureMounter<'a>{
         self.tokens[self.cursor]
     }
 
-    pub fn mount(&mut self) -> HashMap<String, Signature>{
+    fn is_pointer(&mut self) -> bool{
+        if self.current_token.token_type == VoidstarTokenTypes::Asterisk{
+            return true
+        }
+        false
+    }
+
+    pub fn mount(&mut self) -> HashMap<String, Signature<'a>>{
         let mut map: HashMap<String, Signature> = HashMap::new();
         self.current_token = self.tokens[self.cursor];
 
         while self.cursor < self.tokens.len()-1{
             match self.current_token.token_type{
                 VoidstarTokenTypes::Function => {
+                    let is_extern = if self.cursor > 0 && self.tokens[self.cursor-1].token_type == VoidstarTokenTypes::Extern{
+                        true
+                    } else { false };
+
                     self.forward();
                     let ident = &self.source[self.current_token.start..self.current_token.end];
-                    let mut params: Vec<Type> = Vec::new();
+                    let mut params: Vec<Parameter> = Vec::new();
 
                     self.forward();
                     while self.current_token.token_type != VoidstarTokenTypes::CloseParents{
                         self.forward();
-                        if Type::has(self.current_token.token_type){
-                            params.push(Type::map(self.current_token.token_type));
+                        if self.current_token.token_type == VoidstarTokenTypes::Ellipsis{
+                            params.push(Parameter { 
+                                ty: Type::Void, ident: &b"..."[..], is_etc: true
+                            });
+                            break;
                         }
+
+                        let ty: Type;
+                        if self.is_pointer(){
+                            self.forward();
+                            ty = Type::map_pointer(Type::map(self.current_token.token_type));
+
+                        } else {
+                            ty = Type::map(self.current_token.token_type);
+                        }
+
+                        self.forward();
+                        let ident = &self.source[self.current_token.start..self.current_token.end];
+                        params.push(Parameter {
+                            ty, ident, is_etc: false
+                        });
+                        self.forward();
                     }
                     let returns = if Type::has(self.peekaboo().token_type){
                         self.forward();
@@ -57,7 +87,7 @@ impl<'a> SignatureMounter<'a>{
                     self.forward();
                     map.insert(
                         unsafe{ str::from_utf8_unchecked(ident).to_string() },
-                        Signature::Function { returns, params }
+                        Signature::Function { returns, params, is_extern }
                     );
 
                     // Doesn't take any scoped variables inside the function.

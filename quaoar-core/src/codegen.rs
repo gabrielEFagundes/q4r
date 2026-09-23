@@ -34,8 +34,8 @@ pub trait Codegen<'a>{
         q4r_variables::var_callee(backend)
     }
 
-    fn fun_declaration(backend: &mut Backend<'a>) -> FunDeclaration<'a>{
-        q4r_functions::fun_declaration(backend)
+    fn fun_declaration(backend: &mut Backend<'a>, is_extern: bool) -> FunDeclaration<'a>{
+        q4r_functions::fun_declaration(backend, is_extern)
     }
 
     fn fun_call(backend: &mut Backend<'a>) -> FunCall<'a>{

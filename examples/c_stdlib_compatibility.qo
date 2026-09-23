@@ -1,0 +1,5 @@
+extern f printf(*char st, ...)
+
+f main() int{
+    return 0
+}

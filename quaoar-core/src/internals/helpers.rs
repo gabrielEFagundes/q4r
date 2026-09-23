@@ -15,6 +15,24 @@ pub fn expect<'a>(expected: VoidstarTokenTypes, backend: &mut Backend<'a>){
     }
 }
 
+pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>){
+    backend.cursor += 1;
+    if !expected.iter().any(|t| *t == backend.tokens[backend.cursor].token_type){
+        panic!("found {:#?} instead of {:#?}", backend.tokens[backend.cursor].token_type, expected)
+    }
+}
+
+#[inline]
+pub fn expect_type<'a>(backend: &mut Backend<'a>){
+    expect_any(
+        &[
+            VoidstarTokenTypes::Int, VoidstarTokenTypes::Float, 
+            VoidstarTokenTypes::Char, VoidstarTokenTypes::Bool
+        ],
+        backend
+    );
+}
+
 pub fn end<'a>(backend: &mut Backend<'a>) -> bool{
     backend.cursor >= backend.tokens.len()
 }

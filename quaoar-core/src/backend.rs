@@ -7,12 +7,12 @@ pub struct Backend<'a>{
     pub tokens: &'a[VoidstarToken],
     pub cursor: usize,
 
-    pub signatures: HashMap<String, Signature>, // identifier & signature
+    pub signatures: HashMap<String, Signature<'a>>, // identifier & signature
     pub scopes: Vec<HashMap<String, Type>>,     // Identifier and type
 }
 
 impl<'a> Backend<'a>{
-    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature>) -> Self{
+    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature<'a>>) -> Self{
         Self { source, tokens, cursor: 0, signatures, scopes: Vec::from([HashMap::new()]) }
     }
 

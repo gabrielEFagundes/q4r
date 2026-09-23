@@ -2,6 +2,9 @@
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub enum VoidstarTokenTypes{
     Dot,
+    DotDot,
+    Ellipsis,
+
     Comma,
 
     Colon,
@@ -43,6 +46,7 @@ pub enum VoidstarTokenTypes{
     Workspace,
     Use,
     Static,
+    Extern,
     Annotation,
     
     Int,

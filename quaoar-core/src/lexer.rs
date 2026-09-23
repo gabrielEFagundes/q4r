@@ -122,6 +122,22 @@ impl Lexer{
                 self.advance();
                 end = self.cursor;
                 VoidstarToken::new(VoidstarTokenTypes::CloseParents, start, end, true)
+            },
+
+            DOT => {
+                let mut count = 0;
+                while self.current == DOT{
+                    count += 1;
+                    self.advance();
+                }
+                
+                end = self.cursor;
+                match count{
+                    1 => VoidstarToken::new(VoidstarTokenTypes::Dot, start, end, false),
+                    2 => VoidstarToken::new(VoidstarTokenTypes::DotDot, start, end, false),
+                    3 => VoidstarToken::new(VoidstarTokenTypes::Ellipsis, start, end, false),
+                    _ => panic!("too many dots at line {}: there are {} dots!", self.line, count)
+                }
             }
 
             _ => {
@@ -149,7 +165,12 @@ impl Lexer{
         match KEYWORDS.binary_search_by(|&(k, _)| k.cmp(&&self.source[start..end]))
                 .ok()
                 .and_then(|i| KEYWORDS.get(i)){
-                    Some(token) => VoidstarToken::new(token.1, start, end, false),
+                    Some(token) => {
+                        if token.1 == VoidstarTokenTypes::BoolLiteral{ 
+                            return VoidstarToken::new(token.1, start, end, true) // bool literals can return a semicolon
+                        }
+                        VoidstarToken::new(token.1, start, end, false)
+                    },
                     None => VoidstarToken::new(VoidstarTokenTypes::Ident, start, end, true),
         }
     }
