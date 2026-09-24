@@ -23,7 +23,6 @@ impl<'a> Codegen<'a> for CCompiler{
                         | VoidstarTokenTypes::Bool
                         | VoidstarTokenTypes::Char
                         | VoidstarTokenTypes::Void => {
-                            backend.cursor += 1;
                             let dec = Self::var_declaration(backend, true);
                             self.parse_var_decl(dec);
                         },
@@ -83,10 +82,6 @@ impl<'a> Codegen<'a> for CCompiler{
                     }else {
                         self.parse_else(backend);
                     }
-                }
-
-                VoidstarTokenTypes::Plus | VoidstarTokenTypes::Minus => {
-                    todo!("number signment (plus or minus) yet to be implemented");
                 }
 
                 // on the C compiler's case, it's pointless to define the extern function twice, since it's

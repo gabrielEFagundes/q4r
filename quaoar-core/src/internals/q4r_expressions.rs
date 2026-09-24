@@ -1,4 +1,4 @@
-use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions, q4r_variables}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions, q4r_values, q4r_variables}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn mount_expression<'a>(backend: &mut Backend<'a>) -> ExpOperator<'a>{
     let left: &[u8];
@@ -57,6 +57,12 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
 
             ExpType::LiteralExp(ExpLiteral{
                 val: Literal::to_literal(bytes_value, current.token_type)
+            })
+        },
+
+        VoidstarTokenTypes::Plus | VoidstarTokenTypes::Minus => {
+            ExpType::LiteralExp(ExpLiteral {
+                val: q4r_values::unary_literal(backend).val
             })
         },
 

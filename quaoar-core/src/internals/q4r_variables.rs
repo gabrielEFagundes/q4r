@@ -1,10 +1,14 @@
 use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType, VarDeclaration}, internals::{helpers, q4r_expressions, q4r_functions}, signature::{Literal, Operator, Type}, tokens::VoidstarTokenTypes};
 
 pub fn var_declaration<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> VarDeclaration<'a>{
-    let mut ty = Type::map(backend.tokens[backend.cursor].token_type);
+    let mut ty: Type;
 
     if is_pointer{
+        backend.cursor += 1;
+        ty = Type::map(backend.tokens[backend.cursor].token_type);
         ty = ty.map_pointer();
+    } else {
+        ty = Type::map(backend.tokens[backend.cursor].token_type);
     }
 
     helpers::expect(VoidstarTokenTypes::Ident, backend);

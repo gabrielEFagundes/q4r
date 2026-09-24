@@ -1,6 +1,6 @@
 use crate::{backend::Backend, expdesc::ExpLiteral, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
-pub fn signed_literal<'a>(backend: &mut Backend<'a>) -> ExpLiteral{
+pub fn unary_literal<'a>(backend: &mut Backend<'a>) -> ExpLiteral{
     let sign_type = backend.tokens[backend.cursor];
     let sign = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
     backend.cursor += 1;

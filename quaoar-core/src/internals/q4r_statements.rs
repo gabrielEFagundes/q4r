@@ -13,12 +13,13 @@ pub fn loop_statement<'a>(backend: &mut Backend<'a>) -> DeclType<'a>{
 
     let init_expression = q4r_expressions::expression(backend);
 
+    backend.cursor += 1;
     if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::SemiColon{
         backend.cursor += 1;
         let exp = q4r_expressions::expression(backend);
 
         backend.cursor += 1;
-        let incrementer = q4r_values::signed_literal(backend).val;
+        let incrementer = q4r_values::unary_literal(backend).val;
 
         DeclType::ForLoopDecl(ForLoopDeclaration { 
             kind: DecKind::For, iterator, initializer: init_expression, exp, incrementer 

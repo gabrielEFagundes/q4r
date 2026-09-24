@@ -65,7 +65,6 @@ impl Type{
             Type::Char => VoidstarTokenTypes::Char,
             Type::Bool => VoidstarTokenTypes::Bool,
             Type::Pointer(val) => val.as_token_type(),
-            _ => panic!("bad conversion from `{:#?}` to token_type", self)
         }
     }
 

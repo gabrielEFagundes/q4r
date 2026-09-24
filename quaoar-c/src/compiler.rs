@@ -10,7 +10,7 @@ use crate::emit;
 /// 
 /// `gcc -x c -o <prog_name> <<< '<code_str>'`
 /// 
-/// The command adapts to each available compiler at the time.
+/// Quac adapts to each available compiler at the time.
 /// 
 /// ## Available Compilers
 /// Currently, Q4r supports the following C compilers:
@@ -168,13 +168,9 @@ impl<'a> CCompiler{
         // int function(int p1, int p2){ }
         if declaration.is_extern{ self.parse_simple(b"extern "); }
 
-        let finreturns = if declaration.returns.eq(&Type::Bool){
-            &Type::Int
-        } else { &declaration.returns };
-
         emit!(
             &mut self.c_src,
-            finreturns.to_byte_span().as_slice(), b' ',
+            declaration.returns.to_byte_span().as_slice(), b' ',
             declaration.ident, b'('
         );
 
@@ -219,11 +215,15 @@ impl<'a> CCompiler{
             b'(',
             call.ident, b'('
         );
+        let params_len = call.params.len();
         for i in call.params{
             self.parse_branch_expression(i);
             self.parse_simple(b",");
         }
-        self.c_src.pop(); // removes the last trailing comma
+        // if there are parameters, remove the last trailing comma
+        if(params_len > 0){
+            self.c_src.pop();
+        }
 
         emit!(&mut self.c_src, b')', b')', b';');
     }

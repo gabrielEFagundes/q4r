@@ -3,12 +3,24 @@
     during development.
 
     Just ignore this and move on to the next examples.
+
+    All files that start with '_' are specifically made for testing.
+
+    ```quaoar
+    // e.g. on file src/_equals.qo
+
+    f test(int a, int b){
+        assert(a == b, "Values are equal.", "Values are not equal.")
+    }
+    ```
 */
 f main() int{
-    do_something('a', 'b')
+    int literal = -1
     return 0
 }
 
-f do_something(char a, char b){
-    // this does something
-}
+// f do_something(){
+//     for i = 0; i < 10; -1{
+//         // hell yeah
+//     }
+// }
