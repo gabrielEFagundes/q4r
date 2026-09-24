@@ -87,8 +87,14 @@ impl<'a> Codegen<'a> for CCompiler{
                 // on the C compiler's case, it's pointless to define the extern function twice, since it's
                 // already defined when generating the table of signatures. That's why we skip it here.
                 VoidstarTokenTypes::Extern => {
-                    while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
-                        backend.cursor += 1;
+                    if helpers::lookahead(backend).token_type() == VoidstarTokenTypes::OpenBraces{
+                        while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseBraces{
+                            backend.cursor += 1;
+                        }
+                    } else {
+                        while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
+                            backend.cursor += 1;
+                        }
                     }
                 }
 

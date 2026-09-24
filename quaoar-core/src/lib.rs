@@ -1,6 +1,5 @@
 use crate::tokens::VoidstarTokenTypes;
 
-pub mod prelude;
 pub mod tokens;
 pub mod lexer;
 pub mod signature;

@@ -33,6 +33,12 @@ pub fn expect_type<'a>(backend: &mut Backend<'a>){
     );
 }
 
+pub fn skip_if_comma<'a>(backend: &mut Backend<'a>){
+    if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::Comma{
+        backend.cursor += 1;
+    }
+}
+
 pub fn end<'a>(backend: &mut Backend<'a>) -> bool{
     backend.cursor >= backend.tokens.len()
 }

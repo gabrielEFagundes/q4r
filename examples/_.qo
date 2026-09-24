@@ -2,8 +2,6 @@
     This is a program made for testing specific cases
     during development.
 
-    Just ignore this and move on to the next examples.
-
     All files that start with '_' are specifically made for testing.
 
     ```quaoar
@@ -13,6 +11,8 @@
         assert(a == b, "Values are equal.", "Values are not equal.")
     }
     ```
+
+    Just ignore this and move on to the next examples.
 */
 f main() int{
     int literal = -1

@@ -51,14 +51,8 @@ pub fn fun_call<'a>(backend: &mut Backend<'a>) -> FunCall<'a>{
             crate::expdesc::ExpType::CallExp(fun_call) => params.push(ExpType::CallExp(fun_call)),
             crate::expdesc::ExpType::AddressExp(exp_literal) => params.push(ExpType::AddressExp(exp_literal)),
         }
-
-        dbg!(backend.tokens[backend.cursor]);
         backend.cursor += 1;
-
-        // revisit this, it's ugly
-        if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::Comma{
-            backend.cursor += 1;
-        }
+        helpers::skip_if_comma(backend);
     }
 
     FunCall { ident, params }

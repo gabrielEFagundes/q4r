@@ -57,6 +57,7 @@ pub struct Parameter<'a>{
     pub is_etc: bool
 }
 
+#[derive(Debug)]
 pub struct FunDeclaration<'a>{
     pub returns: Type,
     pub ident: &'a[u8],

@@ -17,9 +17,11 @@
     }
     ```
 */
-extern f printf(*char st, ...)
+extern {
+    f printf(*char s, ...)
+}
 
 f main() int{
-    printf("Hello, World!")
+    printf("Test")
     return 0
 }

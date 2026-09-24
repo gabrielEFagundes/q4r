@@ -13,7 +13,6 @@ pub struct SignatureMounter<'a>{
     current_token: VoidstarToken
 }
 
-// fix because ugly
 impl<'a> SignatureMounter<'a>{
     pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken]) -> Self{
         Self { source, tokens, cursor: 0, current_token: VoidstarToken::default() }
@@ -36,68 +35,90 @@ impl<'a> SignatureMounter<'a>{
         false
     }
 
+    fn mount_function(&mut self, map: &mut HashMap<String, Signature<'a>>, is_function_extern: bool){
+        self.forward();
+        let ident = &self.source[self.current_token.start..self.current_token.end];
+        let mut params: Vec<Parameter> = Vec::new();
+
+        // fucking mess
+        self.forward(); self.forward();
+        while self.current_token.token_type != VoidstarTokenTypes::CloseParents{
+            if self.current_token.token_type == VoidstarTokenTypes::Comma{
+                self.forward();
+                continue;
+            }
+
+            if self.current_token.token_type == VoidstarTokenTypes::Ellipsis{
+                params.push(Parameter { 
+                    ty: Type::Void, ident: &b"..."[..], is_etc: true
+                });
+                self.forward();
+                break;
+            }
+
+            let ty: Type;
+            if self.is_pointer(){
+                self.forward();
+                ty = Type::map_pointer(Type::map(self.current_token.token_type));
+
+            } else {
+                ty = Type::map(self.current_token.token_type);
+            }
+
+            self.forward();
+            let ident = &self.source[self.current_token.start..self.current_token.end];
+            params.push(Parameter {
+                ty, ident, is_etc: false
+            });
+            self.forward();
+        }
+        let returns = if Type::has(self.peekaboo().token_type){
+            self.forward();
+            Type::map(self.current_token.token_type)
+        } else {
+            Type::Void
+        };
+        
+        self.forward();
+        map.insert(
+            unsafe{ str::from_utf8_unchecked(ident).to_string() },
+            Signature::Function { returns, params, is_extern: is_function_extern }
+        );
+    }
+
     pub fn mount(&mut self) -> HashMap<String, Signature<'a>>{
         let mut map: HashMap<String, Signature> = HashMap::new();
         self.current_token = self.tokens[self.cursor];
 
         while self.cursor < self.tokens.len()-1{
             match self.current_token.token_type{
-                VoidstarTokenTypes::Function => {
-                    let is_extern = if self.cursor > 0 && self.tokens[self.cursor-1].token_type == VoidstarTokenTypes::Extern{
-                        true
-                    } else { false };
-
+                VoidstarTokenTypes::Extern => {
                     self.forward();
-                    let ident = &self.source[self.current_token.start..self.current_token.end];
-                    let mut params: Vec<Parameter> = Vec::new();
-
-                    // fucking mess
-                    self.forward(); self.forward();
-                    while self.current_token.token_type != VoidstarTokenTypes::CloseParents{
-                        if self.current_token.token_type == VoidstarTokenTypes::Comma{
-                            self.forward();
-                            continue;
-                        }
-
-                        if self.current_token.token_type == VoidstarTokenTypes::Ellipsis{
-                            params.push(Parameter { 
-                                ty: Type::Void, ident: &b"..."[..], is_etc: true
-                            });
-                            break;
-                        }
-
-                        let ty: Type;
-                        if self.is_pointer(){
-                            self.forward();
-                            ty = Type::map_pointer(Type::map(self.current_token.token_type));
-
-                        } else {
-                            ty = Type::map(self.current_token.token_type);
-                        }
-
-                        self.forward();
-                        let ident = &self.source[self.current_token.start..self.current_token.end];
-                        params.push(Parameter {
-                            ty, ident, is_etc: false
-                        });
-                        self.forward();
-                    }
-                    let returns = if Type::has(self.peekaboo().token_type){
-                        self.forward();
-                        Type::map(self.current_token.token_type)
-                    } else {
-                        Type::Void
-                    };
                     
-                    self.forward();
-                    map.insert(
-                        unsafe{ str::from_utf8_unchecked(ident).to_string() },
-                        Signature::Function { returns, params, is_extern }
-                    );
+                    match self.current_token.token_type{
+                        VoidstarTokenTypes::OpenBraces => {
+                            self.forward();
+                            while self.current_token.token_type != VoidstarTokenTypes::CloseBraces{
+                                self.mount_function(&mut map, true);
+                                self.forward();
+                            }
+                        },
 
-                    // Doesn't take any scoped variables inside the function.
+                        VoidstarTokenTypes::Function => {
+                            self.mount_function(&mut map, true);
+                        },
+
+                        _ => panic!("bad call of extern keyword")
+                    }
+                },
+                
+                VoidstarTokenTypes::Function => {
+                    self.mount_function(&mut map, false);
+
+                    // Don't take any scoped variables inside the function.
                     while self.current_token.token_type != VoidstarTokenTypes::CloseBraces{ self.forward(); }
                 },
+
                 VoidstarTokenTypes::Void
                 |VoidstarTokenTypes::Int
                 |VoidstarTokenTypes::Float

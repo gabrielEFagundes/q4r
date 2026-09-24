@@ -8,7 +8,7 @@ pub struct Backend<'a>{
     pub cursor: usize,
 
     pub signatures: HashMap<String, Signature<'a>>, // identifier & signature
-    pub scopes: Vec<HashMap<String, Type>>,     // Identifier and type
+    pub scopes: Vec<HashMap<String, Type>>, // Identifier and type
 }
 
 impl<'a> Backend<'a>{
