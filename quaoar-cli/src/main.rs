@@ -10,13 +10,15 @@ fn main() {
         panic!("couldn't find argument for path");
     }
 
+    let is_debug_mode_active = false; // change this here now, `quac` will have a specific flag for this
+
     let source = fs::read(&args[2]);
     let s = match source{
         Ok(_) => source.unwrap(),
         Err(reason) => panic!("{}", reason)
     };
     
-    let t = Lexer::new(s.clone()).lexerize();
+    let t = Lexer::new(s.clone(), is_debug_mode_active).lexerize();
     println!("{:#?}", t);
 
     let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
@@ -28,6 +30,7 @@ fn main() {
         &s,
         &t,
         signatures,
+        is_debug_mode_active
     );
     
     let bytes = backend.generate_headers(&c_compiler.signatures).generate(&mut c_compiler);

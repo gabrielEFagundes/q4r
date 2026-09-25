@@ -24,6 +24,7 @@ impl<'a> Codegen<'a> for CCompiler{
                         | VoidstarTokenTypes::Char
                         | VoidstarTokenTypes::Void => {
                             let dec = Self::var_declaration(backend, true);
+                            helpers::expect(VoidstarTokenTypes::SemiColon, backend);
                             self.parse_var_decl(dec);
                         },
 
@@ -48,6 +49,7 @@ impl<'a> Codegen<'a> for CCompiler{
                 | VoidstarTokenTypes::Char
                 | VoidstarTokenTypes::Void => {
                     let dec = Self::var_declaration(backend, false);
+                    helpers::expect(VoidstarTokenTypes::SemiColon, backend);
                     self.parse_var_decl(dec);
                 },
 
@@ -65,9 +67,7 @@ impl<'a> Codegen<'a> for CCompiler{
                             => self.parse_for_loop(for_loop, backend),
 
                         quaoar_core::expdesc::DeclType::WhileLoopDecl(while_loop) 
-                            => {
-                                self.parse_conditional(while_loop, backend)
-                            },
+                            => self.parse_conditional(while_loop, backend)
                     }
                 }
 
@@ -87,7 +87,8 @@ impl<'a> Codegen<'a> for CCompiler{
                 // on the C compiler's case, it's pointless to define the extern function twice, since it's
                 // already defined when generating the table of signatures. That's why we skip it here.
                 VoidstarTokenTypes::Extern => {
-                    if helpers::lookahead(backend).token_type() == VoidstarTokenTypes::OpenBraces{
+                    backend.cursor += 1;
+                    if backend.tokens[backend.cursor].token_type() == VoidstarTokenTypes::OpenBraces{
                         while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseBraces{
                             backend.cursor += 1;
                         }
@@ -96,6 +97,7 @@ impl<'a> Codegen<'a> for CCompiler{
                             backend.cursor += 1;
                         }
                     }
+                    backend.cursor += 1;
                 }
 
                 VoidstarTokenTypes::Function => {
@@ -126,6 +128,8 @@ impl<'a> Codegen<'a> for CCompiler{
                         ExpType::CallExp(exp_callee) => self.parse_fun_call(exp_callee),
                         ExpType::AddressExp(exp_literal) => self.parse_literal_expression(exp_literal),
                     };
+
+                    helpers::expect(VoidstarTokenTypes::SemiColon, backend);
                 }
 
                 VoidstarTokenTypes::OpenBraces => {
@@ -133,7 +137,7 @@ impl<'a> Codegen<'a> for CCompiler{
                 },
                 VoidstarTokenTypes::CloseBraces => {
                     backend.cursor+=1;
-                    break
+                    break;
                 },
 
                 _ => backend.cursor+=1

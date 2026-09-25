@@ -1,4 +1,4 @@
-use crate::{backend::Backend, error::QErrorTypes, expdesc::{ExpType, FunCall, FunDeclaration, Parameter}, internals::{helpers, q4r_expressions, q4r_parameters}, signature::Type, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::error, expdesc::{ExpType, FunCall, FunDeclaration, Parameter}, internals::{helpers, q4r_expressions, q4r_parameters}, signature::Type, tokens::VoidstarTokenTypes};
 
 pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> FunDeclaration<'a>{
     helpers::expect(VoidstarTokenTypes::Ident, backend);
@@ -15,7 +15,7 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> FunDec
             Ok(param) => params.push(param),
 
             Err(err) => {
-                if err.ty != QErrorTypes::Recoverable{
+                if err.ty != error::QErrorTypes::Recoverable{
                     panic!("unknown type as a parameter of `{}`: `{:#?}`", std::str::from_utf8(ident).unwrap(), backend.tokens[backend.cursor].token_type)
                 }
             },

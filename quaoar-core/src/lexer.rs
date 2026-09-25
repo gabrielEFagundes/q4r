@@ -1,17 +1,18 @@
 use core::panic;
 
-use crate::{tokens::{VoidstarToken, VoidstarTokenTypes}, *};
+use crate::{error::{error::self, lexer_err::LexerErr}, tokens::{VoidstarToken, VoidstarTokenTypes}, *};
 
 pub struct Lexer{
     source: Vec<u8>,
     line: usize,
     cursor: usize,
-    current: u8
+    current: u8,
+    debug: bool
 }
 
 impl Lexer{
-    pub fn new(source: Vec<u8>) -> Self{
-        Self { source, line: 1, cursor: 0, current: 0 }
+    pub fn new(source: Vec<u8>, debug: bool) -> Self{
+        Self { source, line: 1, cursor: 0, current: 0, debug }
     }
 
     fn end(&self) -> bool{
@@ -268,7 +269,11 @@ impl Lexer{
                     continue;
                 },
 
-                _ => panic!("lexer reached an impossible state on line {}, byte `{}`", self.line, self.source[self.cursor])
+                _ => {
+                    error::QError::handle_new_error(
+                        error::QErrorTypes::LexerErr(LexerErr::ImpossibleState), 
+                        self.line, self.cursor, self.debug);
+                }
             }
         }
 

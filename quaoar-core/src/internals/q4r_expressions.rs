@@ -80,7 +80,6 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
             }
 
             let bytes_value = &backend.source[current.start..current.end];
-            backend.cursor += 1;
 
             ExpType::LiteralExp(ExpLiteral { 
                 val: Literal::to_literal(bytes_value, current.token_type)
@@ -93,7 +92,6 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
             backend.cursor += 1;
             bytes_ident.extend_from_slice(&backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end]);
 
-            helpers::expect(VoidstarTokenTypes::SemiColon, backend);
             ExpType::AddressExp(ExpLiteral { 
                 val: Literal::to_literal(bytes_ident.as_slice(), VoidstarTokenTypes::Ident)
             })

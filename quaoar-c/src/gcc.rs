@@ -3,10 +3,10 @@ use std::{io::Write, process::{Command, Stdio}};
 const TARGET: &str = "-x";
 const OBJFILE: &str = "-o";
 
-/// `gcc -x c -o <prog_name> <<< '<code_bytes>'`
+/// `gcc -x c -std=c23 -o <prog_name> <<< '<code_bytes>'`
 pub fn mount_and_exec(bytes: &[u8]) -> Option<bool>{
     let child = Command::new("gcc")
-        .args([TARGET, "c", OBJFILE, "q4rgcc", "-"])
+        .args([TARGET, "c", "-std=c23", OBJFILE, "q4rgcc", "-"])
         .stdin(Stdio::piped())
         .spawn().ok()?;
 

@@ -15,6 +15,10 @@
 
     return value // value is now 5 thanks to the deref-write property of pointers!
     ```
+
+    It's worth noting that pointers in Quaoar are COMPLETELY optional!
+    You don't need to use them if your application doesn't require explicit memory management,
+    outside anything the internals already give you.
 */
 f main() int{
     int value = 5

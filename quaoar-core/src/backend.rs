@@ -9,11 +9,13 @@ pub struct Backend<'a>{
 
     pub signatures: HashMap<String, Signature<'a>>, // identifier & signature
     pub scopes: Vec<HashMap<String, Type>>, // Identifier and type
+
+    pub debug: bool
 }
 
 impl<'a> Backend<'a>{
-    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature<'a>>) -> Self{
-        Self { source, tokens, cursor: 0, signatures, scopes: Vec::from([HashMap::new()]) }
+    pub fn new(source: &'a[u8], tokens: &'a[VoidstarToken], signatures: HashMap<String, Signature<'a>>, debug: bool) -> Self{
+        Self { source, tokens, cursor: 0, signatures, scopes: Vec::from([HashMap::new()]), debug }
     }
 
     pub fn enter_scope(&mut self){

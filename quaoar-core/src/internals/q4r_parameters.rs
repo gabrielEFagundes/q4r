@@ -1,6 +1,6 @@
-use crate::{backend::Backend, error::QError, expdesc::Parameter, internals::helpers, signature::Type, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::{error::{self, QError}, parser_err::ParserErr}, expdesc::Parameter, internals::helpers, signature::Type, tokens::VoidstarTokenTypes};
 
-pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>, QError<'a>>{
+pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>, error::QError>{
     let mut current = backend.tokens[backend.cursor];
     match current.token_type{
         VoidstarTokenTypes::Asterisk => {
@@ -41,9 +41,12 @@ pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>,
 
         VoidstarTokenTypes::Comma => {
             backend.cursor += 1;
-            Err(QError::new_recoverable())
+            Err(error::QError::new_recoverable())
         }
 
-        _ => Err(QError::new(crate::error::QErrorTypes::ParserErr, ""))
+        _ => Err(QError::new(
+            error::QErrorTypes::ParserErr(ParserErr::UnknownSymbol), 
+            /*todo*/ 0, backend.tokens[backend.cursor].start, backend.debug
+        ))
     }
 }
