@@ -25,4 +25,4 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 - [ ] Enhance performance and optimize the source code
 - [ ] Overhaul `quac` (Q4r's cli tool)
 - [ ] Organize the source code.
-- [ ] Organize documentation
+- [x] Organize documentation (added licenses and pages)

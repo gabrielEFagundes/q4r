@@ -39,6 +39,9 @@ impl Lexer{
                 let start = self.cursor;
 
                 while self.current != QUOTES{
+                    if self.current == QUOTES && self.source[self.cursor-1] == BACKSLSH{
+                        self.advance();
+                    }
                     self.advance();
                 }
 

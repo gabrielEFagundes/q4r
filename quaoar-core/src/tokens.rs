@@ -27,6 +27,7 @@ pub enum VoidstarTokenTypes{
     Minus,
     Times,
     Slash,
+    BackSlash,
 
     Greater,
     Lesser,

@@ -30,6 +30,7 @@ const SEMICOL: u8 = b';';
 const PLUS: u8 = b'+';
 const MINUS: u8 = b'-';
 const SLASH: u8 = b'/';
+const BACKSLSH: u8 = b'\\';
 
 const GREATER: u8 = b'>';
 const LESSER: u8 = b'<';
@@ -68,7 +69,7 @@ const KEYWORDS: [(&[u8], VoidstarTokenTypes); 20] = [
     (b"workspace",   VoidstarTokenTypes::Workspace),
 ];
 
-const SYMBOLS: [(u8, VoidstarTokenTypes); 17] = [
+const SYMBOLS: [(u8, VoidstarTokenTypes); 18] = [
     (b'!', VoidstarTokenTypes::Not),
     (b'&', VoidstarTokenTypes::Ampersand),
     (b'(', VoidstarTokenTypes::OpenParents),
@@ -84,6 +85,7 @@ const SYMBOLS: [(u8, VoidstarTokenTypes); 17] = [
     (b'=', VoidstarTokenTypes::Equals),
     (b'[', VoidstarTokenTypes::OpenBrackets),
     (b']', VoidstarTokenTypes::CloseBrackets),
+    (b'\\', VoidstarTokenTypes::BackSlash),
     (b'{', VoidstarTokenTypes::OpenBraces),
     (b'}', VoidstarTokenTypes::CloseBraces),
 ];
