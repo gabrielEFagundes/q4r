@@ -15,9 +15,9 @@ pub enum DeclType<'a>{
 
 #[derive(Debug)]
 pub struct ExpOperator<'a>{
-    pub left: &'a[u8],
+    pub left: Box<ExpType<'a>>,
     pub operator: Operator,
-    pub right: &'a[u8]
+    pub right: Box<ExpType<'a>>
 }
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ pub struct ExpLiteral{
 
 pub struct ExpVariable<'a>{
     pub ty: Type,
-    pub val: &'a[u8]
+    pub val: Box<ExpType<'a>>
 }
 
 pub struct ComparisonDeclaration<'a>{

@@ -12,7 +12,7 @@ pub struct Lexer{
 
 impl Lexer{
     pub fn new(source: Vec<u8>, debug: bool) -> Self{
-        Self { source, line: 0, cursor: 0, current: 0, debug }
+        Self { source, line: 1, cursor: 0, current: 0, debug }
     }
 
     fn end(&self) -> bool{

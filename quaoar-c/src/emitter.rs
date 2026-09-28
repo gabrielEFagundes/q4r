@@ -49,6 +49,7 @@ impl<'a> Codegen<'a> for CCompiler{
                 | VoidstarTokenTypes::Char
                 | VoidstarTokenTypes::Void => {
                     let dec = Self::var_declaration(backend, false);
+                    dbg!(&dec);
                     helpers::expect(VoidstarTokenTypes::SemiColon, backend);
                     self.parse_var_decl(dec);
                 },

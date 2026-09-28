@@ -49,38 +49,33 @@ pub fn var_callee<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
 
             if helpers::lookahead(backend).token_type() == VoidstarTokenTypes::Ident{
                 backend.cursor += 1;
-                if helpers::lookahead(backend).token_type() == VoidstarTokenTypes::OpenParents{
-                    let fun_call = q4r_functions::fun_call(backend);
-
-                    return ExpType::CallExp(fun_call)
-                } else {
-                    let var_call_current = backend.tokens[backend.cursor];
-                    return ExpType::LiteralExp(ExpLiteral { 
-                        val: Literal::to_literal(
-                            &backend.source[var_call_current.start..var_call_current.end], 
-                            VoidstarTokenTypes::Ident
-                        ) 
-                    })
+                match q4r_expressions::expression(backend){
+                    ExpType::OperativeExp(exp_operator) => ExpType::OperativeExp(exp_operator),
+                    ExpType::LiteralExp(exp_literal) => ExpType::LiteralExp(exp_literal),
+                    ExpType::CallExp(fun_call) => ExpType::CallExp(fun_call),
+                    ExpType::AddressExp(exp_literal) => ExpType::AddressExp(exp_literal),
                 }
+                
             } else {
                 backend.cursor += 1;
                 return q4r_expressions::expression(backend);
             }
         },
 
-        VoidstarTokenTypes::Increment | VoidstarTokenTypes::Decrement => {
-            let identifier = &backend.source[
-                backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end
-            ];
-            backend.cursor += 1;
+        // FUCK YOU INCREMENT DECREMENT
+        // VoidstarTokenTypes::Increment | VoidstarTokenTypes::Decrement => {
+        //     let identifier = &backend.source[
+        //         backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end
+        //     ];
+        //     backend.cursor += 1;
 
-            let operator = Operator::map(backend.tokens[backend.cursor].token_type);
-            backend.cursor += 1;
+        //     let operator = Operator::map(backend.tokens[backend.cursor].token_type);
+        //     backend.cursor += 1;
 
-            let current = backend.tokens[backend.cursor];
+        //     let current = backend.tokens[backend.cursor];
 
-            ExpType::OperativeExp(ExpOperator { left: identifier, operator, right: &backend.source[current.start..current.end] })
-        },
+        //     ExpType::OperativeExp(ExpOperator { left: identifier, operator, right: &backend.source[current.start..current.end] })
+        // },
 
         _ => QError::handle_new_error(
             error::QErrorTypes::ParserErr(ParserErrOpts::UnknownSymbol), 

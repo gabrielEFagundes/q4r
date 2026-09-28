@@ -11,7 +11,7 @@ pub trait Codegen<'a>{
     }
 
     fn mount_expression(backend: &mut Backend<'a>) -> ExpOperator<'a>{
-        q4r_expressions::mount_expression(backend)
+        q4r_expressions::parse_primary(backend)
     }
 
     fn comparison_declaration(backend: &mut Backend<'a>) -> ComparisonDeclaration<'a>{
