@@ -113,7 +113,7 @@ impl<'a> Codegen<'a> for CCompiler{
 
                     let callee = Self::var_callee(backend);
                     match callee{
-                        ExpType::OperativeExp(_) => self.parse_var_assign(identifier, callee),
+                        ExpType::BinaryExp(_) => self.parse_var_assign(identifier, callee),
                         ExpType::LiteralExp(_) => self.parse_var_assign(identifier, callee),
                         ExpType::CallExp(fun_call) => self.parse_fun_call(fun_call),
                         ExpType::AddressExp(_) => self.parse_var_assign(identifier, callee),
@@ -124,7 +124,7 @@ impl<'a> Codegen<'a> for CCompiler{
                     backend.cursor+=1;
                     
                     match Self::expression(backend){
-                        ExpType::OperativeExp(exp_operator) => self.parse_operator_return(exp_operator),
+                        ExpType::BinaryExp(exp_operator) => self.parse_operator_return(exp_operator),
                         ExpType::LiteralExp(exp_literal) => self.parse_literal_return(exp_literal),
                         ExpType::CallExp(exp_callee) => self.parse_fun_call(exp_callee),
                         ExpType::AddressExp(exp_literal) => self.parse_literal_expression(exp_literal),

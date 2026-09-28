@@ -48,12 +48,7 @@ pub fn fun_call<'a>(backend: &mut Backend<'a>) -> FunCall<'a>{
     backend.cursor += 2;
 
     while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
-        match q4r_expressions::expression(backend){
-            crate::expdesc::ExpType::OperativeExp(exp_operator) => params.push(ExpType::OperativeExp(exp_operator)),
-            crate::expdesc::ExpType::LiteralExp(exp_literal) => params.push(ExpType::LiteralExp(exp_literal)),
-            crate::expdesc::ExpType::CallExp(fun_call) => params.push(ExpType::CallExp(fun_call)),
-            crate::expdesc::ExpType::AddressExp(exp_literal) => params.push(ExpType::AddressExp(exp_literal)),
-        }
+        params.push(q4r_expressions::parse_expr(backend));
         backend.cursor += 1;
         helpers::skip_if_comma(backend);
     }

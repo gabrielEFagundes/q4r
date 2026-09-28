@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ComparisonDeclaration, ExpLiteral, ExpOperator, ExpType::{self}, ForLoopDeclaration, FunCall, FunDeclaration, VarDeclaration}, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
+use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ComparisonDeclaration, ExpBinary, ExpLiteral, ExpType::{self}, ForLoopDeclaration, FunCall, FunDeclaration, VarDeclaration}, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
@@ -80,7 +80,7 @@ impl<'a> CCompiler{
 
     pub(crate) fn parse_branch_expression(&mut self, expression: ExpType<'a>){
         match expression{
-            ExpType::OperativeExp(exp_operator) => self.parse_operator_expression(exp_operator),
+            ExpType::BinaryExp(exp_operator) => self.parse_operator_expression(exp_operator),
             ExpType::LiteralExp(exp_literal) => self.parse_literal_expression(exp_literal),
             ExpType::CallExp(fun_call) => self.parse_fun_call(fun_call),
             ExpType::AddressExp(exp_literal) => self.parse_literal_expression(exp_literal),
@@ -100,15 +100,24 @@ impl<'a> CCompiler{
         }
     }
 
-    pub(crate) fn parse_operator_expression(&mut self, expression: ExpOperator){
-        // e.g. ((left)==(right)) or ((left)+(right))
-        emit!(
-            &mut self.c_src,
-            b'(', b'(', expression.left, b')',
-            expression.operator.to_byte_span(),
-            b'(', expression.right, b')', b')'
-        );
-    }
+        pub(crate) fn parse_operator_expression(&mut self, expression: ExpBinary){
+            // e.g. ((left)==(right)) or ((left)+(right))
+            emit!(
+                &mut self.c_src,
+                b'(', b'('
+            );
+
+            self.parse_branch_expression(*expression.left);
+
+            emit!(&mut self.c_src, b')',
+                expression.operator.to_byte_span(),
+                b'('
+            );
+
+            self.parse_branch_expression(*expression.right);
+
+            emit!(&mut self.c_src, b')', b')');
+        }
 
     pub(crate) fn parse_conditional(&mut self, cmp_expression: ComparisonDeclaration, backend: &mut Backend<'a>){
         // e.g. if expression{} or while expression{}
@@ -200,12 +209,22 @@ impl<'a> CCompiler{
         emit!(&mut self.c_src, &b"return "[..], expression.val.to_byte_span().as_slice(), b';');
     }
 
-    pub(crate) fn parse_operator_return(&mut self, expression: ExpOperator){
+    pub(crate) fn parse_operator_return(&mut self, expression: ExpBinary){
         emit!(
             &mut self.c_src, &b"return "[..],
-            b'(', expression.left, b')',
+            b'('
+        );
+
+        self.parse_branch_expression(*expression.left);
+
+        emit!(&mut self.c_src, b')',
             expression.operator.to_byte_span(), 
-            b'(', expression.right, b')', b';'
+            b'(');
+
+        self.parse_branch_expression(*expression.right);
+
+        emit!(&mut self.c_src,
+            b')', b';'
         );
     }
 

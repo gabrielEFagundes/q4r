@@ -2,7 +2,7 @@ use crate::signature::{DecKind, Literal, Operator, Type};
 
 #[derive(Debug)]
 pub enum ExpType<'a>{ 
-    OperativeExp(ExpOperator<'a>),
+    BinaryExp(ExpBinary<'a>),
     LiteralExp(ExpLiteral),
     CallExp(FunCall<'a>),
     AddressExp(ExpLiteral)
@@ -14,7 +14,7 @@ pub enum DeclType<'a>{
 }
 
 #[derive(Debug)]
-pub struct ExpOperator<'a>{
+pub struct ExpBinary<'a>{
     pub left: Box<ExpType<'a>>,
     pub operator: Operator,
     pub right: Box<ExpType<'a>>

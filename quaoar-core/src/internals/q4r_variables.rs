@@ -1,4 +1,4 @@
-use crate::{backend::Backend, error::{error::QError, parser_err::ParserErrOpts}, expdesc::{ExpLiteral, ExpOperator, ExpType, VarDeclaration}, internals::{helpers, q4r_expressions, q4r_functions}, prelude::error, signature::{Literal, Operator, Type}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::{error::QError, parser_err::ParserErrOpts}, expdesc::{ExpLiteral, ExpType, VarDeclaration}, internals::{helpers, q4r_expressions, q4r_functions}, prelude::error, signature::{Literal, Operator, Type}, tokens::VoidstarTokenTypes};
 
 pub fn var_declaration<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> VarDeclaration<'a>{
     let mut ty: Type;
@@ -18,12 +18,7 @@ pub fn var_declaration<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> VarDe
     ];
 
     let val: ExpType = if helpers::lookahead(backend).token_type == VoidstarTokenTypes::Equals{
-        match var_callee(backend){
-            ExpType::OperativeExp(exp_operator) => ExpType::OperativeExp(exp_operator),
-            ExpType::LiteralExp(exp_literal) => ExpType::LiteralExp(exp_literal),
-            ExpType::CallExp(fun_call) => ExpType::CallExp(fun_call),
-            ExpType::AddressExp(exp_literal) => ExpType::AddressExp(exp_literal),
-        }
+        var_callee(backend)
     }else{
         ExpType::LiteralExp(ExpLiteral{
             val: Literal::to_literal(&ty.default_literal().to_byte_span(), ty.as_token_type())
@@ -49,16 +44,11 @@ pub fn var_callee<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
 
             if helpers::lookahead(backend).token_type() == VoidstarTokenTypes::Ident{
                 backend.cursor += 1;
-                match q4r_expressions::expression(backend){
-                    ExpType::OperativeExp(exp_operator) => ExpType::OperativeExp(exp_operator),
-                    ExpType::LiteralExp(exp_literal) => ExpType::LiteralExp(exp_literal),
-                    ExpType::CallExp(fun_call) => ExpType::CallExp(fun_call),
-                    ExpType::AddressExp(exp_literal) => ExpType::AddressExp(exp_literal),
-                }
+                q4r_expressions::parse_expr(backend)
                 
             } else {
                 backend.cursor += 1;
-                return q4r_expressions::expression(backend);
+                return q4r_expressions::parse_expr(backend);
             }
         },
 

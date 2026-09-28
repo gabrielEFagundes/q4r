@@ -1,4 +1,4 @@
-use crate::{backend::Backend, error::parser_err::ParserErrOpts, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions, q4r_values, q4r_variables}, prelude::error, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::parser_err::ParserErrOpts, expdesc::{ExpBinary, ExpLiteral, ExpType}, internals::{helpers, q4r_functions, q4r_values, q4r_variables}, prelude::error, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
     match backend.tokens[backend.cursor].token_type{
@@ -37,14 +37,14 @@ pub fn parse_unary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
 }
 
 pub fn parse_expr<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
-    let mut left = parse_primary(backend);
+    let left = parse_primary(backend);
 
     backend.cursor += 1;
     let operator = Operator::map(backend.tokens[backend.cursor].token_type);
 
     backend.cursor += 1;
     let right = parse_primary(backend);
-
-    if helpers::lookahead(backend).token_type
-    todo!()
+    ExpType::BinaryExp(ExpBinary{
+        left: Box::new(left), operator, right: Box::new(right)
+    })
 }
