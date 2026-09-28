@@ -8,6 +8,7 @@ pub mod expdesc;
 pub mod header;
 pub mod backend;
 pub mod error;
+pub mod prelude;
 pub mod internals;
 
 const OPEN_PAREN: u8 = b'(';

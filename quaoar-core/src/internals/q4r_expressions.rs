@@ -1,4 +1,4 @@
-use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions, q4r_values, q4r_variables}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::parser_err::ParserErrOpts, expdesc::{ExpLiteral, ExpOperator, ExpType}, internals::{helpers, q4r_functions, q4r_values, q4r_variables}, prelude::error, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn mount_expression<'a>(backend: &mut Backend<'a>) -> ExpOperator<'a>{
     let left: &[u8];
@@ -97,6 +97,12 @@ pub fn expression<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
             })
         }
 
-        _ => panic!("illegal expression argument `{:#?}`", current.token_type)
+        _ => {
+            let current = backend.tokens[backend.cursor];
+            error::QError::handle_new_error(
+                error::QErrorTypes::ParserErr(ParserErrOpts::IllegalArgument), 
+                current.line, current.start, backend.debug
+            )
+        },
     }
 }

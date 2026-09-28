@@ -1,4 +1,4 @@
-use crate::{backend::Backend, expdesc::{ExpLiteral, ExpOperator, ExpType, VarDeclaration}, internals::{helpers, q4r_expressions, q4r_functions}, signature::{Literal, Operator, Type}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::{error::QError, parser_err::ParserErrOpts}, expdesc::{ExpLiteral, ExpOperator, ExpType, VarDeclaration}, internals::{helpers, q4r_expressions, q4r_functions}, prelude::error, signature::{Literal, Operator, Type}, tokens::VoidstarTokenTypes};
 
 pub fn var_declaration<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> VarDeclaration<'a>{
     let mut ty: Type;
@@ -82,6 +82,9 @@ pub fn var_callee<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
             ExpType::OperativeExp(ExpOperator { left: identifier, operator, right: &backend.source[current.start..current.end] })
         },
 
-        _ => panic!("invalid identifier call `{:#?}`", next)
+        _ => QError::handle_new_error(
+            error::QErrorTypes::ParserErr(ParserErrOpts::UnknownSymbol), 
+            backend.tokens[backend.cursor].line, backend.tokens[backend.cursor].start, backend.debug
+        )
     }
 }

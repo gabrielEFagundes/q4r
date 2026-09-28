@@ -10,7 +10,7 @@ fn main() {
         panic!("couldn't find argument for path");
     }
 
-    let is_debug_mode_active = false; // change this here now, `quac` will have a specific flag for this
+    let is_debug_mode_active = true; // change this here now, `quac` will have a specific flag for this
 
     let source = fs::read(&args[2]);
     let s = match source{
@@ -19,7 +19,7 @@ fn main() {
     };
     
     let t = Lexer::new(s.clone(), is_debug_mode_active).lexerize();
-    println!("{:#?}", t);
+    //println!("{:#?}", t);
 
     let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
     let signatures = binding.mount();

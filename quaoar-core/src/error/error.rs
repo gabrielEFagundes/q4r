@@ -1,4 +1,4 @@
-use crate::{die, error::{lexer_err::{LexerErr, LexerError}, parser_err::{ParserErr, ParserError}}};
+use crate::{die, error::{lexer_err::{LexerErrOpts, LexerError}, parser_err::{ParserErrOpts, ParserError}}};
 
 /// Encompasses every and any type of deviation a Q4r program might have.
 /// 
@@ -13,9 +13,9 @@ pub enum QErrorTypes{
     Recoverable,
 
     /// Encompasses every lexer error.
-    LexerErr(LexerErr),
+    LexerErr(LexerErrOpts),
     /// Encompasses every parser error.
-    ParserErr(ParserErr),
+    ParserErr(ParserErrOpts),
 
     /// Encompasses every lexer warning.
     LexerWarn,
@@ -57,7 +57,7 @@ impl<'a> QError{
         Self { ty: QErrorTypes::Recoverable, line: 0, pos: 0, panic_mode: false }
     }
 
-    pub fn handle_new_error(ty: QErrorTypes, line: usize, pos: usize, panic_mode: bool){
+    pub fn handle_new_error(ty: QErrorTypes, line: usize, pos: usize, panic_mode: bool) -> !{
         match ty{
             QErrorTypes::LexerErr(lexer_err) => Self::handle_lexer_err(
                 LexerError::new(lexer_err, line, pos), panic_mode
@@ -68,18 +68,19 @@ impl<'a> QError{
 
             QErrorTypes::LexerWarn => todo!("warnings not implemented yet"),
             QErrorTypes::ParserWarn => todo!("warnings not implemented yet"),
-            _ => return
+
+            _ => todo!()
         }
     }
 
-    fn handle_lexer_err(error: LexerError, panic_mode: bool){
+    fn handle_lexer_err(error: LexerError, panic_mode: bool) -> !{
         let msg = LexerError::handle_new(error.ty, error.line, error.pos).msg;
 
         if panic_mode{ panic!("{}", msg) }
         else{ die!("{}", msg) }
     }
 
-    fn handle_parser_err(error: ParserError, panic_mode: bool){
+    fn handle_parser_err(error: ParserError, panic_mode: bool) -> !{
         let msg = ParserError::handle_new(error).msg;
 
         if panic_mode{ panic!("{}", msg) }

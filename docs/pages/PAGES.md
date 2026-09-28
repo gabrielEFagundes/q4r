@@ -543,7 +543,6 @@ source.qo
     ▼
 Lexer (runs once)
     │  - zero-copy: tokens store byte spans (start/end) into source
-    │  - NUL sentinel appended to source buffer
     │  - Go-style automatic semicolon insertion
     ▼
 Token stream
@@ -567,7 +566,6 @@ Token stream
 
 - Tokens carry byte spans `(start: u32, end: u32)` into the source buffer — no owned strings, no allocation during scanning.
 - Source text is materialized from spans only at the point of use (identifier lookup, literal parsing).
-- A NUL byte (`0x00`) is appended to the source as an EOF sentinel, eliminating bounds checks.
 - Keywords and symbols are looked up via binary search over pre-sorted `const` arrays.
 
 ### Expression Parsing
@@ -618,5 +616,5 @@ Currently only `CCompiler` implements `CodeGen`. The v0.2 QBE backend will imple
 | While loop            | `while (cond) { }`            | `for cond{ }`                                 |
 | For loop              | `for (init; cond; incr)`      | `for i = 0; i < n; +1{ }`                    |
 | String type           | `char*`                        | `*char` (same ABI, reversed syntax)           |
-| Memory management     | Manual (`malloc`/`free`)       | Manual, with optional pointer-free programming|
+| Memory management     | Manual (`malloc`/`free`)       | Optionally manual or automatic|
 | Module system         | Header files + `#include`      | Workspaces (planned)                          |
