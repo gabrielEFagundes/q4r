@@ -18,7 +18,12 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 ## Quick tasks for current patch
 
 - [x] Implement `extern` blocks
-- [x] Implement global error handler (kinda)
+- [ ] Enhance global error handler with custom messages for each error
+- [ ] Add error diagnosis with position (kinda like rust)
+    ```plaintext
+    f main() integer{
+             ^^^^^^^ unknown type found here
+    ```
 - [ ] Fix bugs
     - [ ] Source code does not work properly when inline?
 - [ ] Stress pipeline with functions that touch the whole compiler

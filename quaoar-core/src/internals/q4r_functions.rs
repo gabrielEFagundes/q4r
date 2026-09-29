@@ -1,15 +1,16 @@
-use crate::{backend::Backend, error::{error, parser_err::ParserErrOpts}, expdesc::{ExpType, FunCall, FunDeclaration, Parameter}, internals::{helpers, q4r_expressions, q4r_parameters}, signature::Type, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::{error, parser_err::ParserErrOpts}, expdesc::{ExpType, Parameter, StmtType}, internals::{helpers::{self, advance, current, expect, lookahead}, q4r_expressions, q4r_parameters}, signature::Type, tokens::VoidstarTokenTypes};
 
-pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> FunDeclaration<'a>{
-    helpers::expect(VoidstarTokenTypes::Ident, backend);
+pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtType<'a>{
+    expect(VoidstarTokenTypes::Ident, backend);
+
     let ident = &backend.source[
         backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end
     ];
 
-    helpers::expect(VoidstarTokenTypes::OpenParents, backend);
+    expect(VoidstarTokenTypes::OpenParents, backend);
     let mut params: Vec<Parameter> = Vec::new();
 
-    backend.cursor+=1;
+    advance(1, backend);
     while backend.tokens[backend.cursor].token_type != VoidstarTokenTypes::CloseParents{
         match q4r_parameters::declare_parameter(backend){
             Ok(param) => params.push(param),
@@ -26,32 +27,33 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> FunDec
     }
 
     let returns = if Type::has(helpers::lookahead(backend).token_type){
-        backend.cursor += 1;
+        advance(1, backend);
         Type::map(backend.tokens[backend.cursor].token_type)
     } else {
         Type::Void
     };
 
-    if helpers::lookahead(backend).token_type == VoidstarTokenTypes::OpenBraces{
-        helpers::expect(VoidstarTokenTypes::OpenBraces, backend);
+    if lookahead(backend).token_type == VoidstarTokenTypes::OpenBraces{
+        expect(VoidstarTokenTypes::OpenBraces, backend);
 
     } else {
-        backend.cursor += 1;
+        advance(1, backend);
     }
 
-    FunDeclaration { returns, ident, params, is_extern }
+    StmtType::FunStatement { returns, ident, params, is_extern }
 }
 
-pub fn fun_call<'a>(backend: &mut Backend<'a>) -> FunCall<'a>{
+pub fn fun_call<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
     let ident = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
-    let mut params: Vec<ExpType<'a>> = Vec::new();
-    backend.cursor += 2;
+    expect(VoidstarTokenTypes::OpenParents, backend);
 
-    while backend.tokens[backend.cursor].token_type() != VoidstarTokenTypes::CloseParents{
+    let mut params: Vec<ExpType<'a>> = Vec::new();
+    advance(1, backend);
+
+    while current(backend).token_type != VoidstarTokenTypes::CloseParents{
         params.push(q4r_expressions::parse_expr(backend));
-        backend.cursor += 1;
         helpers::skip_if_comma(backend);
     }
 
-    FunCall { ident, params }
+    ExpType::CallExp { ident, params }
 }

@@ -1,4 +1,4 @@
-use crate::{backend::Backend, error::parser_err::ParserErrOpts, expdesc::{ExpBinary, ExpLiteral, ExpType}, internals::{helpers, q4r_functions, q4r_values, q4r_variables}, prelude::error, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::{error::{QError, QErrorTypes}, parser_err::ParserErrOpts}, expdesc::ExpType, internals::{helpers::{advance, current, lookahead, matches}, q4r_functions::{self, fun_call}}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
     match backend.tokens[backend.cursor].token_type{
@@ -6,45 +6,77 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
         |VoidstarTokenTypes::FloatLiteral
         |VoidstarTokenTypes::CharLiteral
         |VoidstarTokenTypes::BoolLiteral
-        |VoidstarTokenTypes::StringLiteral
-        |VoidstarTokenTypes::Ident => {
+        |VoidstarTokenTypes::StringLiteral => {
             let current = backend.tokens[backend.cursor];
-            backend.cursor += 1;
+            advance(1, backend);
 
-            ExpType::LiteralExp(ExpLiteral {
+            ExpType::LiteralExp {
                  val: Literal::to_literal(&backend.source[current.start..current.end], current.token_type)
-            })
+            }
         },
 
-        _ => todo!("fuck whoever's reading this")
+        VoidstarTokenTypes::Ident => {
+            // fun call
+            let next = lookahead(backend);
+            if next.token_type == VoidstarTokenTypes::OpenParents{
+                return q4r_functions::fun_call(backend)
+            }
+
+            let current = backend.tokens[backend.cursor];
+            advance(1, backend);
+            
+            ExpType::LiteralExp{
+                val: Literal::to_literal(&backend.source[current.start..current.end], current.token_type)
+            }
+        },
+
+        VoidstarTokenTypes::OpenParents => {
+            advance(1, backend);
+            let inner = parse_expr(backend);
+            matches(VoidstarTokenTypes::CloseParents, backend);
+            inner
+        }
+
+        _ => QError::handle_new_error(
+            QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken), 
+            current(backend).line, current(backend).start, backend.debug)
     }
 }
 
 pub fn parse_unary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
     match backend.tokens[backend.cursor].token_type{
         VoidstarTokenTypes::Ampersand => {
-            backend.cursor += 1;
-            let current = backend.tokens[backend.cursor];
-            let address_of = parse_primary(backend);
+            // backend.cursor += 1;
+            // let current = backend.tokens[backend.cursor];
+            // let address_of = parse_primary(backend);
             
-            ExpType::AddressExp(ExpLiteral { 
-                val: Literal::to_literal(&backend.source[current.start..current.end], VoidstarTokenTypes::Ident)
-            })
+            // ExpType::AddressExp(ExpLiteral { 
+            //     val: Literal::to_literal(&backend.source[current.start..current.end], VoidstarTokenTypes::Ident)
+            // })
+            todo!()
         },
 
-        _ => todo!("I'm rewriting this, please be patient")
+        VoidstarTokenTypes::Plus | VoidstarTokenTypes::Minus => {
+            todo!()
+        }
+
+        _ => parse_primary(backend)
     }
 }
 
 pub fn parse_expr<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
-    let left = parse_primary(backend);
+    let mut left = parse_unary(backend);
 
-    backend.cursor += 1;
-    let operator = Operator::map(backend.tokens[backend.cursor].token_type);
-
-    backend.cursor += 1;
-    let right = parse_primary(backend);
-    ExpType::BinaryExp(ExpBinary{
-        left: Box::new(left), operator, right: Box::new(right)
-    })
+    while Operator::is_legal(backend.tokens[backend.cursor].token_type){
+        let operator = Operator::map(current(backend).token_type);
+        advance(1, backend);
+        let right = parse_unary(backend);
+        left = ExpType::BinaryExp{
+            left: Box::new(left), 
+            operator, 
+            right: Box::new(right) 
+        };
+    }
+    
+    left
 }

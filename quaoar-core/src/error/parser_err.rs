@@ -6,6 +6,7 @@ pub enum ParserErrOpts{
     UnknownSymbol,
     UnknownType,
     IllegalArgument,
+    UnexpectedToken,
 }
 
 #[derive(PartialEq, Eq)]
@@ -38,6 +39,10 @@ impl<'a> ParserError{
             ParserErrOpts::UnknownType => Self::throw_parser_err(
                 self.ty, self.line, self.pos, 
                 format_args!("unknown type found on line {}:{}", self.line, self.pos)
+            ),
+            ParserErrOpts::UnexpectedToken => Self::throw_parser_err(
+                self.ty, self.line, self.pos, 
+                format_args!("unexpected token on line: {}:{}", self.line, self.pos)
             ),
         }
     }

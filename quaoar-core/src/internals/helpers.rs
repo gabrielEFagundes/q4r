@@ -7,12 +7,31 @@ pub fn lookahead<'a>(backend: &mut Backend<'a>) -> VoidstarToken{
     backend.tokens[backend.cursor]
 }
 
+pub fn current<'a>(backend: &mut Backend<'a>) -> VoidstarToken{
+    backend.tokens[backend.cursor]
+}
+
+pub fn advance<'a>(amount: usize, backend: &mut Backend<'a>) -> VoidstarToken{
+    backend.cursor += amount;
+    current(backend)
+}
+
+/// Advances past the current token and compares with the expected.
 pub fn expect<'a>(expected: VoidstarTokenTypes, backend: &mut Backend<'a>){
     backend.cursor += 1;
     if backend.cursor < backend.tokens.len() &&
         backend.tokens[backend.cursor].token_type != expected{ 
         panic!("found {:#?} instead of {:#?}", backend.tokens[backend.cursor].token_type, expected) 
     }
+}
+
+/// Compares the current token with the expected and, if the token types match, advances past it.
+pub fn matches<'a>(expected: VoidstarTokenTypes, backend: &mut Backend<'a>){
+    if backend.cursor < backend.tokens.len() &&
+        backend.tokens[backend.cursor].token_type != expected{ 
+        panic!("found {:#?} instead of {:#?}", backend.tokens[backend.cursor].token_type, expected) 
+    }
+    backend.cursor += 1;
 }
 
 pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>){

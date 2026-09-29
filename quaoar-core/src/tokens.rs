@@ -107,4 +107,8 @@ impl VoidstarToken{
     pub fn end(&self) -> usize{
         self.end
     }
+
+    pub fn line(&self) -> usize{
+        self.line
+    }
 }
