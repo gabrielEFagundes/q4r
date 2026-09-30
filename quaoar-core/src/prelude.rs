@@ -1,1 +1,1 @@
-pub use crate::error::error;
+pub use crate::diagnosis::error;

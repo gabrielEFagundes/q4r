@@ -1,9 +1,7 @@
 use core::panic;
 
 use crate::{
-    error::{error, lexer_err::LexerErrOpts},
-    tokens::{VoidstarToken, VoidstarTokenTypes},
-    *,
+    diagnosis::error::QError, tokens::{VoidstarToken, VoidstarTokenTypes}, *,
 };
 
 pub struct Lexer {
@@ -382,14 +380,7 @@ impl Lexer {
                     continue;
                 }
 
-                _ => {
-                    error::QError::handle_new_error(
-                        error::QErrorTypes::LexerErr(LexerErrOpts::ImpossibleState),
-                        self.line,
-                        self.cursor,
-                        self.debug,
-                    );
-                }
+                _ => QError::evaluate_new_err(format_args!("lexer reached an impossible state on line {}:{}", self.line, self.cursor), self.debug)
             }
         }
 

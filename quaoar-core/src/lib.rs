@@ -2,12 +2,12 @@ use crate::tokens::VoidstarTokenTypes;
 
 pub mod backend;
 pub mod codegen;
-pub mod error;
 pub mod expdesc;
 pub mod header;
+pub mod diagnosis;
+pub mod prelude;
 pub mod internals;
 pub mod lexer;
-pub mod prelude;
 pub mod signature;
 pub mod tokens;
 

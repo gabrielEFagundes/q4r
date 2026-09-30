@@ -1,16 +1,8 @@
 use crate::{
-    backend::Backend,
-    error::{
-        error::{QError, QErrorTypes},
-        parser_err::ParserErrOpts,
-    },
-    expdesc::ExpType,
-    internals::{
+    backend::Backend, diagnosis::error::QError, expdesc::ExpType, internals::{
         helpers::{advance, current, lookahead, matches},
         q4r_functions,
-    },
-    signature::{Literal, Operator},
-    tokens::VoidstarTokenTypes,
+    }, signature::{Literal, Operator}, tokens::VoidstarTokenTypes,
 };
 
 pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
@@ -56,12 +48,7 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
             inner
         }
 
-        _ => QError::handle_new_error(
-            QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken),
-            current(backend).line,
-            current(backend).start,
-            backend.debug,
-        ),
+        _ => QError::evaluate_new_err(format_args!("unexpected token found on line {}:{}", current(backend).line, current(backend).start), backend.debug)
     }
 }
 

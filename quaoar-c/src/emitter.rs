@@ -1,16 +1,7 @@
 use std::collections::HashMap;
 
 use quaoar_core::{
-    backend::Backend,
-    codegen::Codegen,
-    error::{
-        error::{self, QErrorTypes},
-        parser_err::ParserErrOpts,
-    },
-    expdesc::StmtType,
-    internals::helpers,
-    signature::Signature,
-    tokens::VoidstarTokenTypes,
+    backend::Backend, codegen::Codegen, diagnosis::error::QError, expdesc::StmtType, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
 };
 
 use crate::compiler::CCompiler;
@@ -57,12 +48,9 @@ impl<'a> Codegen<'a> for CCompiler {
                                     self.emit_op_assign_stmt(Self::assign_op_statement(backend));
                                 }
 
-                                _ => error::QError::handle_new_error(
-                                    QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken),
-                                    helpers::current(backend).line(),
-                                    helpers::current(backend).start(),
-                                    backend.debug,
-                                ),
+                                _ => QError::evaluate_new_err(
+                                    format_args!("unexpected token found on line {}:{}", helpers::current(backend).line(), helpers::current(backend).start()), backend.debug
+                                )
                             }
                         }
                         _ => panic!("bad usage of asterisk at the beggining of statement"),
@@ -90,14 +78,12 @@ impl<'a> Codegen<'a> for CCompiler {
                     match loops {
                         StmtType::LoopStmt(_) => self.emit_for_loop(loops, backend),
 
-                        StmtType::RelationalStmt(_) => self.emit_conditional(loops, backend),
-
-                        _ => error::QError::handle_new_error(
-                            QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken),
-                            helpers::current(backend).line(),
-                            helpers::current(backend).start(),
-                            backend.debug,
-                        ),
+                        StmtType::RelationalStmt(_)
+                            => self.emit_conditional(loops, backend),
+                        
+                        _ => QError::evaluate_new_err(
+                            format_args!("unexpected token found on line {}:{}", helpers::current(backend).line(), helpers::current(backend).start()), backend.debug
+                        )
                     }
                 }
 
@@ -159,12 +145,9 @@ impl<'a> Codegen<'a> for CCompiler {
                             self.emit_op_assign_stmt(Self::assign_op_statement(backend));
                         }
 
-                        _ => error::QError::handle_new_error(
-                            QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken),
-                            helpers::current(backend).line(),
-                            helpers::current(backend).start(),
-                            backend.debug,
-                        ),
+                        _ => QError::evaluate_new_err(
+                            format_args!("unexpected token found on line {}:{}", helpers::current(backend).line(), helpers::current(backend).start()), backend.debug
+                        )
                     }
                 }
 
