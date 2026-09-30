@@ -1,11 +1,10 @@
 # Current active work
 
-Currently, I'm working on enhancing the code of v0.1, in the means of:
-- Optimizing performance;
-- Organizing the source code for the compiler itself;
-- Covering more cases of uses.
-
-For that last part, I'm stressing the whole pipeline with AI generated code for simple expressions (such as factorial, radian, etc) and also the import of external libraries with the `extern` keyword.
+After the first pull request from `tree/voidstar-lang` to `tree/dev`, I've been working on enhancing the code itself:
+- Solve simple bugs (see [quick tasks](#quick-tasks-for-current-patch))
+- A few missing features, such as AND and OR operators (not bitwise, algebraic)
+- Better error diagnosing
+- `quac`!
 
 ## On the roadmap
 
@@ -27,6 +26,7 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 - [ ] Fix bugs
     - [ ] Source code does not work properly when inline?
     - [ ] v0.1: C keywords are not accepted properly (e.g. `double`), even though quaoar doesn't have these as keywords.
+- [ ] Add `&&` (AND) and `||` (OR) operands
 - [x] Stress pipeline with functions that touch the whole compiler
 - [x] Enhance performance and optimize the source code
 - [ ] Overhaul `quac` (Q4r's cli tool)
