@@ -1,0 +1,30 @@
+/*
+    Pointers are variables that referentiate a memory address, instead of
+    an actual value.
+
+    Unlike C, pointers in Quaoar are defined by adding an asterisk (*) 
+    **before** the variable type.
+
+    Addressing the memory value of variables is just like C, with an
+    ampersand (&) before the variable itself.
+
+    ```quaoar
+    int value = 10
+    *int pointer = &value
+    *pointer = 5
+
+    return value // value is now 5 thanks to the deref-write property of pointers!
+    ```
+
+    It's worth noting that pointers in Quaoar are COMPLETELY optional!
+    You don't need to use them if your application doesn't require explicit memory management,
+    outside anything the internals already give you.
+*/
+f main() int{
+    int value = 5
+    // int another = 10
+    *int p = &value
+    *p = 10
+
+    return value // 10 if deref-write reached, 5 if it didn't
+}

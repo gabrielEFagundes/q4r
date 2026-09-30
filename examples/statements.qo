@@ -1,0 +1,31 @@
+f main() int{
+    if cmp('a', 'a'){
+        return 0
+    }
+
+    return 1
+}
+
+/*
+    Q4r has relational statements such as this one:
+
+    ```quaoar
+    if 10 > 5{
+        return true
+    } else if 10 < 5{
+        return false
+    } else {
+        // math's broken!
+        return false
+    }
+    ```
+
+    Besides relational statements, there are variable declarations,
+    return statements, function declarations, etc.
+*/
+f cmp(char a, char b) bool{
+    if a == b{
+        return true
+    }
+    return false
+}

@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "quaoar-c",
+    "quaoar-cli",
+    "quaoar-core"
+]
+resolver = "2"
