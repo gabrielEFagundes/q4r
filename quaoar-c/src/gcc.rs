@@ -17,8 +17,5 @@ pub fn mount_and_exec(bytes: &[u8]) -> Option<bool>{
 }
 
 pub fn exists() -> bool{
-    match Command::new("gcc").arg("--version").status(){
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    Command::new("gcc").arg("--version").status().is_ok()
 }

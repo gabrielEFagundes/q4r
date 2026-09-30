@@ -54,7 +54,7 @@ impl Lexer{
                 self.advance();
                 let v = self.cursor;
                 self.advance_this(2);
-                return VoidstarToken::new(VoidstarTokenTypes::CharLiteral, v, v+1, self.line, true);
+                VoidstarToken::new(VoidstarTokenTypes::CharLiteral, v, v+1, self.line, true)
             },
 
             GREATER => {
@@ -215,7 +215,7 @@ impl Lexer{
         }
         let end = self.cursor;
         
-        match KEYWORDS.binary_search_by(|&(k, _)| k.cmp(&&self.source[start..end]))
+        match KEYWORDS.binary_search_by(|&(k, _)| k.cmp(&self.source[start..end]))
                 .ok()
                 .and_then(|i| KEYWORDS.get(i)){
                     Some(token) => {
@@ -252,7 +252,7 @@ impl Lexer{
                 self.advance();
             }
             end = self.cursor;
-            return VoidstarToken::new(VoidstarTokenTypes::FloatLiteral, start, end, self.line, true);
+            VoidstarToken::new(VoidstarTokenTypes::FloatLiteral, start, end, self.line, true)
         }
     }
 
@@ -280,7 +280,7 @@ impl Lexer{
                 LINE_FEED => {
                     self.line+=1;
 
-                    if tokens.len() > 0 && tokens[tokens.len()-1].last_could_end_stmt{
+                    if !tokens.is_empty() && tokens[tokens.len()-1].last_could_end_stmt{
                         tokens.push(VoidstarToken::new(VoidstarTokenTypes::SemiColon, self.cursor, self.cursor, self.line, false));
                     }
 

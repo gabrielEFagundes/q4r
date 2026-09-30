@@ -20,10 +20,8 @@ pub struct CompilerError{
 /// Not implemented yet as of version 0.1, which is why it's incomplete.
 #[allow(unused)]
 pub trait CompilerErrorTrait{
-    fn new(ty: CompilerErr, line: usize, pos: usize) -> CompilerError{
-        match ty{
-            
-        }
+    fn new(ty: CompilerErr, line: usize, pos: usize) -> Self where Self: std::marker::Sized{
+        todo!()
     }
 
     fn throw_compiler_err(ty: CompilerErr, line: usize, pos: usize, msg: fmt::Arguments) -> CompilerError{

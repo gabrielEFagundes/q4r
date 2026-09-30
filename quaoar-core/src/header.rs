@@ -56,14 +56,14 @@ impl<'a> SignatureMounter<'a>{
                 break;
             }
 
-            let ty: Type;
-            if self.is_pointer(){
+            
+            let ty: Type = if self.is_pointer(){
                 self.forward();
-                ty = Type::map_pointer(Type::map(self.current_token.token_type));
+                Type::map_pointer(Type::map(self.current_token.token_type))
 
             } else {
-                ty = Type::map(self.current_token.token_type);
-            }
+                Type::map(self.current_token.token_type)
+            };
 
             self.forward();
             let ident = &self.source[self.current_token.start..self.current_token.end];

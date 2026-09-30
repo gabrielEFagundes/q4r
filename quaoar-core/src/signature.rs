@@ -47,14 +47,11 @@ impl Type{
 
     /// Returns `true` if the `VoidstarTokenTypes` type is valid inside `Type`, false otherwise
     pub fn has(token_type: VoidstarTokenTypes) -> bool{
-        match token_type{
-            VoidstarTokenTypes::Void
+        matches!(token_type, VoidstarTokenTypes::Void
             |VoidstarTokenTypes::Int
             |VoidstarTokenTypes::Float
             |VoidstarTokenTypes::Char
-            |VoidstarTokenTypes::Bool => true,
-            _ => false
-        }
+            |VoidstarTokenTypes::Bool)
     }
 
     pub fn as_token_type(&self) -> VoidstarTokenTypes{
@@ -86,7 +83,7 @@ pub enum Literal{
     IntLiteral(isize), FloatLiteral(f32), CharLiteral(char), BoolLiteral(bool), StringLiteral(String),
     PointerLiteral(Box<Literal>),
     
-    #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"] 
+    /// Used only on v0.1 snapshot, completely unstable in terms of updates
     VarLiteral(Vec<u8>)
 }
 
@@ -149,7 +146,6 @@ impl Literal{
         }
     }
 
-    #[deprecated = "Used only on v0.1 snapshot, completely unstable in terms of updates"]
     pub fn to_identifier(bytes: Vec<u8>) -> Literal{
         Literal::VarLiteral(bytes)
     }
@@ -228,30 +224,23 @@ impl Operator{
     }
 
     pub fn is_comparative(token_type: VoidstarTokenTypes) -> bool{
-        match token_type{
-            VoidstarTokenTypes::CompEquals
+        matches!(token_type, VoidstarTokenTypes::CompEquals
             | VoidstarTokenTypes::NotEquals
             | VoidstarTokenTypes::Greater
             | VoidstarTokenTypes::GreaterEq
             | VoidstarTokenTypes::Lesser
-            | VoidstarTokenTypes::LesserEq => true,
-            _ => false
-        }
+            | VoidstarTokenTypes::LesserEq)
     }
 
     pub fn is_arithmetic(token_type: VoidstarTokenTypes) -> bool{
-        match token_type{
-            VoidstarTokenTypes::Plus
+        matches!(token_type, VoidstarTokenTypes::Plus
             |VoidstarTokenTypes::Minus
             |VoidstarTokenTypes::Slash
-            |VoidstarTokenTypes::Asterisk => true,
-            _ => false
-        }
+            |VoidstarTokenTypes::Asterisk)
     }
 
     pub fn is_legal(token_type: VoidstarTokenTypes) -> bool{
-        match token_type{
-            VoidstarTokenTypes::Plus
+        matches!(token_type, VoidstarTokenTypes::Plus
             | VoidstarTokenTypes::Minus
             | VoidstarTokenTypes::Slash
             | VoidstarTokenTypes::Asterisk
@@ -262,9 +251,7 @@ impl Operator{
             | VoidstarTokenTypes::LesserEq
             | VoidstarTokenTypes::Ident
             | VoidstarTokenTypes::IntLiteral
-            | VoidstarTokenTypes::FloatLiteral => true,
-            _ => false
-        }
+            | VoidstarTokenTypes::FloatLiteral)
     }
 }
 

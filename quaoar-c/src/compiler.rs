@@ -23,6 +23,12 @@ pub struct CCompiler{
 }
 
 #[allow(unused)]
+impl Default for CCompiler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> CCompiler{
     pub fn new() -> Self{
         Self{ c_src: Vec::new() }
@@ -58,7 +64,7 @@ impl<'a> CCompiler{
                 Signature::Global { ty, value:_ } => {
                     let fintype = if ty.eq(&Type::Bool){ 
                         &Type::Int
-                    } else { &ty };
+                    } else { ty };
 
                     emit!(&mut self.c_src, fintype.to_byte_span().as_slice(), b' ', i.0.as_bytes(), b';');
                 },
@@ -69,16 +75,6 @@ impl<'a> CCompiler{
     #[inline]
     pub(crate) fn emit_simple(&mut self, to_emit: &'a[u8]){
         emit!(&mut self.c_src, to_emit);
-    }
-
-    #[inline]
-    pub(crate) fn emit_increment(&mut self, amount: &'a[u8]){
-        emit!(&mut self.c_src, &b"+="[..], amount, b';');
-    }
-
-    #[inline]
-    pub(crate) fn emit_decrement(&mut self, amount: &'a[u8]){
-        emit!(&mut self.c_src, &b"-="[..], amount, b';');
     }
 
     pub(crate) fn emit_branch_expression(&mut self, expression: ExpType<'a>){
@@ -264,7 +260,7 @@ impl<'a> CCompiler{
             self.emit_simple(b",");
         }
         // if there are parameters, remove the last trailing comma
-        if(params_len > 0){
+        if params_len > 0{
             self.c_src.pop();
         }
 

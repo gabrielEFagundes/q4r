@@ -15,7 +15,7 @@ pub struct LexerError{
     pub pos: usize
 }
 
-impl<'a> LexerError{
+impl LexerError{
     pub fn new(ty: LexerErrOpts, line: usize, pos: usize) -> Self{
         Self { ty, msg: String::new(), line, pos }
     }

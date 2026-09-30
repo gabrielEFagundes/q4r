@@ -32,7 +32,7 @@ pub struct QError{
     pub panic_mode: bool
 }
 
-impl<'a> QError{
+impl QError{
     pub fn new(ty: QErrorTypes, line: usize, pos: usize, panic_mode: bool) -> Self{
         Self { ty, line, pos, panic_mode }
     }

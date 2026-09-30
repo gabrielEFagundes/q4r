@@ -17,7 +17,7 @@ pub struct ParserError{
     pub pos: usize
 }
 
-impl<'a> ParserError{
+impl ParserError{
     pub fn new(ty: ParserErrOpts, line: usize, pos: usize) -> Self{
         Self { ty, msg: String::new(), line, pos }
     }

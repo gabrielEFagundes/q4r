@@ -1,4 +1,4 @@
-name: Release_Bot
+name: Release Bot
 
 on:
   push:
