@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use quaoar_core::{
-    backend::Backend, codegen::Codegen, diagnosis::error::QError, expdesc::StmtType, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
+    backend::Backend, codegen::Codegen, diagnosis::error::QError, expdesc::StmtType,
+    internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
 };
 
 use crate::compiler::CCompiler;
@@ -49,8 +50,13 @@ impl<'a> Codegen<'a> for CCompiler {
                                 }
 
                                 _ => QError::evaluate_new_err(
-                                    format_args!("unexpected token found on line {}:{}", helpers::current(backend).line(), helpers::current(backend).start()), backend.debug
-                                )
+                                    format_args!(
+                                        "unexpected token found on line {}:{}",
+                                        helpers::current(backend).line(),
+                                        helpers::current(backend).start()
+                                    ),
+                                    backend.debug,
+                                ),
                             }
                         }
                         _ => panic!("bad usage of asterisk at the beggining of statement"),
@@ -78,12 +84,16 @@ impl<'a> Codegen<'a> for CCompiler {
                     match loops {
                         StmtType::LoopStmt(_) => self.emit_for_loop(loops, backend),
 
-                        StmtType::RelationalStmt(_)
-                            => self.emit_conditional(loops, backend),
-                        
+                        StmtType::RelationalStmt(_) => self.emit_conditional(loops, backend),
+
                         _ => QError::evaluate_new_err(
-                            format_args!("unexpected token found on line {}:{}", helpers::current(backend).line(), helpers::current(backend).start()), backend.debug
-                        )
+                            format_args!(
+                                "unexpected token found on line {}:{}",
+                                helpers::current(backend).line(),
+                                helpers::current(backend).start()
+                            ),
+                            backend.debug,
+                        ),
                     }
                 }
 
@@ -146,8 +156,13 @@ impl<'a> Codegen<'a> for CCompiler {
                         }
 
                         _ => QError::evaluate_new_err(
-                            format_args!("unexpected token found on line {}:{}", helpers::current(backend).line(), helpers::current(backend).start()), backend.debug
-                        )
+                            format_args!(
+                                "unexpected token found on line {}:{}",
+                                helpers::current(backend).line(),
+                                helpers::current(backend).start()
+                            ),
+                            backend.debug,
+                        ),
                     }
                 }
 

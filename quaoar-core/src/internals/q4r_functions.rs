@@ -1,8 +1,13 @@
 use crate::{
-    backend::Backend, diagnosis::error::{self, QError}, expdesc::{ExpType, Parameter, StmtType}, internals::{
+    backend::Backend,
+    diagnosis::error::{self, QError},
+    expdesc::{ExpType, Parameter, StmtType},
+    internals::{
         helpers::{self, advance, current, expect, lookahead},
         q4r_expressions, q4r_parameters,
-    }, signature::Type, tokens::VoidstarTokenTypes,
+    },
+    signature::Type,
+    tokens::VoidstarTokenTypes,
 };
 
 pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtType<'a> {
@@ -20,8 +25,15 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtTy
             Ok(param) => params.push(param),
 
             Err(err) => {
-                if err.ty != error::QErrorTypes::Recoverable{
-                    QError::evaluate_new_err(format_args!("unknown type found on line {}:{}", current(backend).line, current(backend).start), backend.debug)
+                if err.ty != error::QErrorTypes::Recoverable {
+                    QError::evaluate_new_err(
+                        format_args!(
+                            "unknown type found on line {}:{}",
+                            current(backend).line,
+                            current(backend).start
+                        ),
+                        backend.debug,
+                    )
                 }
             }
         }

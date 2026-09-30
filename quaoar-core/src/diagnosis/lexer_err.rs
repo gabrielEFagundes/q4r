@@ -1,5 +1,5 @@
 #[derive(PartialEq, Eq)]
-pub enum LexerErrOpts{
+pub enum LexerErrOpts {
     ImpossibleState,
     UnknownSymbol,
     BadDotSlice,

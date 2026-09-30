@@ -1,5 +1,13 @@
 use crate::{
-    backend::Backend, diagnosis::{error::{self, QError}, parser_err::ParserErrOpts}, expdesc::Parameter, internals::helpers, signature::Type, tokens::VoidstarTokenTypes,
+    backend::Backend,
+    diagnosis::{
+        error::{self, QError},
+        parser_err::ParserErrOpts,
+    },
+    expdesc::Parameter,
+    internals::helpers,
+    signature::Type,
+    tokens::VoidstarTokenTypes,
 };
 
 pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>, error::QError> {
