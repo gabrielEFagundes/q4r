@@ -101,7 +101,7 @@ f testPointers(){
 }
 
 // --- Nested function calls ---
-f double(int x) int{
+f doubled(int x) int{
     return x * 2
 }
 
@@ -110,9 +110,9 @@ f addOne(int x) int{
 }
 
 f testNestedCalls(){
-    check("double(5)", double(5), 10)
-    check("addOne(double(3))", addOne(double(3)), 7)
-    check("double(addOne(4))", double(addOne(4)), 10)
+    check("double(5)", doubled(5), 10)
+    check("addOne(double(3))", addOne(doubled(3)), 7)
+    check("double(addOne(4))", doubled(addOne(4)), 10)
 }
 
 // --- While loop (for cond{}) ---

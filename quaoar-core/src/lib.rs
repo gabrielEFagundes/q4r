@@ -1,15 +1,15 @@
 use crate::tokens::VoidstarTokenTypes;
 
-pub mod tokens;
-pub mod lexer;
-pub mod signature;
+pub mod backend;
 pub mod codegen;
+pub mod error;
 pub mod expdesc;
 pub mod header;
-pub mod backend;
-pub mod error;
-pub mod prelude;
 pub mod internals;
+pub mod lexer;
+pub mod prelude;
+pub mod signature;
+pub mod tokens;
 
 const OPEN_PAREN: u8 = b'(';
 const CLOSE_PAREN: u8 = b')';
@@ -48,26 +48,26 @@ const SPACE: u8 = b' ';
 const HALT: u8 = b'\0';
 
 const KEYWORDS: [(&[u8], VoidstarTokenTypes); 20] = [
-    (b"bool",        VoidstarTokenTypes::Bool),
-    (b"char",        VoidstarTokenTypes::Char),
-    (b"cross",       VoidstarTokenTypes::Cross),
-    (b"else",        VoidstarTokenTypes::Else),
-    (b"extern",      VoidstarTokenTypes::Extern),
-    (b"f",           VoidstarTokenTypes::Function),
-    (b"false",       VoidstarTokenTypes::BoolLiteral),
-    (b"float",       VoidstarTokenTypes::Float),
-    (b"for",         VoidstarTokenTypes::For),
-    (b"goto",        VoidstarTokenTypes::Goto),
-    (b"if",          VoidstarTokenTypes::If),
-    (b"int",         VoidstarTokenTypes::Int),
-    (b"null",        VoidstarTokenTypes::Null),
-    (b"return",      VoidstarTokenTypes::Return),
-    (b"static",      VoidstarTokenTypes::Static),
-    (b"true",        VoidstarTokenTypes::BoolLiteral),
-    (b"use",         VoidstarTokenTypes::Use),
-    (b"void",        VoidstarTokenTypes::Void),
-    (b"while",       VoidstarTokenTypes::While),
-    (b"workspace",   VoidstarTokenTypes::Workspace),
+    (b"bool", VoidstarTokenTypes::Bool),
+    (b"char", VoidstarTokenTypes::Char),
+    (b"cross", VoidstarTokenTypes::Cross),
+    (b"else", VoidstarTokenTypes::Else),
+    (b"extern", VoidstarTokenTypes::Extern),
+    (b"f", VoidstarTokenTypes::Function),
+    (b"false", VoidstarTokenTypes::BoolLiteral),
+    (b"float", VoidstarTokenTypes::Float),
+    (b"for", VoidstarTokenTypes::For),
+    (b"goto", VoidstarTokenTypes::Goto),
+    (b"if", VoidstarTokenTypes::If),
+    (b"int", VoidstarTokenTypes::Int),
+    (b"null", VoidstarTokenTypes::Null),
+    (b"return", VoidstarTokenTypes::Return),
+    (b"static", VoidstarTokenTypes::Static),
+    (b"true", VoidstarTokenTypes::BoolLiteral),
+    (b"use", VoidstarTokenTypes::Use),
+    (b"void", VoidstarTokenTypes::Void),
+    (b"while", VoidstarTokenTypes::While),
+    (b"workspace", VoidstarTokenTypes::Workspace),
 ];
 
 const SYMBOLS: [(u8, VoidstarTokenTypes); 18] = [

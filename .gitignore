@@ -6,3 +6,6 @@ tests/
 # Added by cargo
 
 /target
+
+# vscode
+.vscode

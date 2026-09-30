@@ -1,8 +1,18 @@
-use crate::{backend::Backend, error::{error::{self, QError}, parser_err::ParserErrOpts}, expdesc::Parameter, internals::helpers, signature::Type, tokens::VoidstarTokenTypes};
+use crate::{
+    backend::Backend,
+    error::{
+        error::{self, QError},
+        parser_err::ParserErrOpts,
+    },
+    expdesc::Parameter,
+    internals::helpers,
+    signature::Type,
+    tokens::VoidstarTokenTypes,
+};
 
-pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>, error::QError>{
+pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>, error::QError> {
     let mut current = backend.tokens[backend.cursor];
-    match current.token_type{
+    match current.token_type {
         VoidstarTokenTypes::Asterisk => {
             helpers::expect_type(backend);
 
@@ -15,8 +25,12 @@ pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>,
             let ident = &backend.source[current.start..current.end];
             backend.cursor += 1;
 
-            Ok(Parameter { ty, ident, is_etc: false })
-        },
+            Ok(Parameter {
+                ty,
+                ident,
+                is_etc: false,
+            })
+        }
 
         VoidstarTokenTypes::Int
         | VoidstarTokenTypes::Float
@@ -30,14 +44,22 @@ pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>,
             let ident = &backend.source[current.start..current.end];
             backend.cursor += 1;
 
-            Ok(Parameter { ty, ident, is_etc: false })
-        },
+            Ok(Parameter {
+                ty,
+                ident,
+                is_etc: false,
+            })
+        }
 
         // ty is ignored here, as typeless ellipsis excludes it.
         VoidstarTokenTypes::Ellipsis => {
             helpers::expect(VoidstarTokenTypes::CloseParents, backend);
-            Ok(Parameter { ty: Type::Void, ident: b"...", is_etc: true })
-        },
+            Ok(Parameter {
+                ty: Type::Void,
+                ident: b"...",
+                is_etc: true,
+            })
+        }
 
         VoidstarTokenTypes::Comma => {
             backend.cursor += 1;
@@ -45,8 +67,10 @@ pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Result<Parameter<'a>,
         }
 
         _ => Err(QError::new(
-            error::QErrorTypes::ParserErr(ParserErrOpts::UnknownSymbol), 
-            backend.tokens[backend.cursor].line, backend.tokens[backend.cursor].start, backend.debug
-        ))
+            error::QErrorTypes::ParserErr(ParserErrOpts::UnknownSymbol),
+            backend.tokens[backend.cursor].line,
+            backend.tokens[backend.cursor].start,
+            backend.debug,
+        )),
     }
 }
