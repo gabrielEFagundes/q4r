@@ -183,7 +183,8 @@ impl Literal{
 #[derive(Clone, Copy, Debug)]
 pub enum Operator{
     EqualsEquals, Different, Greater, GreaterEq, Lesser, LesserEq,
-    Plus, Minus, Multiplication, Division, Increment, Decrement
+    Plus, Minus, Multiplication, Division, 
+    Increment, Decrement, Multiply, Divide
 }
 
 impl Operator{
@@ -201,6 +202,8 @@ impl Operator{
             VoidstarTokenTypes::Slash => Operator::Division,
             VoidstarTokenTypes::Increment => Operator::Increment,
             VoidstarTokenTypes::Decrement => Operator::Decrement,
+            VoidstarTokenTypes::Multiply => Operator::Multiply,
+            VoidstarTokenTypes::Divide => Operator::Divide,
             _ => panic!("invalid operator type `{:#?}`", token_type)
         }
     }
@@ -218,7 +221,9 @@ impl Operator{
             Operator::Multiplication => b"*",
             Operator::Division => b"/",
             Operator::Increment => b"+=",
-            Operator::Decrement => b"-="
+            Operator::Decrement => b"-=",
+            Operator::Multiply => b"*=",
+            Operator::Divide => b"/=",
         }
     }
 
@@ -289,7 +294,6 @@ impl DecKind{
 /// Each signature must hold the function's name, parameters and return type
 ///
 /// Or, if that's the case, the type and value of the global variable
-#[derive(Debug)]
 pub enum Signature<'a>{
     Function{ returns: Type, params: Vec<Parameter<'a>>, is_extern: bool },
     Global{ ty: Type, value: Vec<u8> }

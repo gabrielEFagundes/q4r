@@ -7,10 +7,12 @@ pub fn lookahead<'a>(backend: &mut Backend<'a>) -> VoidstarToken{
     backend.tokens[backend.cursor]
 }
 
+#[inline]
 pub fn current<'a>(backend: &mut Backend<'a>) -> VoidstarToken{
     backend.tokens[backend.cursor]
 }
 
+#[inline]
 pub fn advance<'a>(amount: usize, backend: &mut Backend<'a>) -> VoidstarToken{
     backend.cursor += amount;
     current(backend)
@@ -31,11 +33,11 @@ pub fn matches<'a>(expected: VoidstarTokenTypes, backend: &mut Backend<'a>){
         backend.tokens[backend.cursor].token_type != expected{ 
         panic!("found {:#?} instead of {:#?}", backend.tokens[backend.cursor].token_type, expected) 
     }
-    backend.cursor += 1;
+    advance(1, backend);
 }
 
 pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>){
-    backend.cursor += 1;
+    advance(1, backend);
     if !expected.iter().any(|t| *t == backend.tokens[backend.cursor].token_type){
         panic!("found {:#?} instead of {:#?}", backend.tokens[backend.cursor].token_type, expected)
     }
@@ -53,7 +55,7 @@ pub fn expect_type<'a>(backend: &mut Backend<'a>){
 }
 
 pub fn skip_if_comma<'a>(backend: &mut Backend<'a>){
-    if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::Comma{
+    if current(backend).token_type == VoidstarTokenTypes::Comma{
         backend.cursor += 1;
     }
 }

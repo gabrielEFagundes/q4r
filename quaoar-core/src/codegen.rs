@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{backend::Backend, expdesc::{ExpType::self, StmtType}, internals::{q4r_expressions, q4r_functions, q4r_statements, q4r_variables}, signature::Signature};
+use crate::{backend::Backend, expdesc::{AssignOpStmt, AssignStmt, ExpType::self, StmtType}, internals::{q4r_expressions, q4r_functions, q4r_statements, q4r_variables}, signature::Signature};
 
 /// Trait used by the support modules that generate code
 /// 
@@ -26,8 +26,12 @@ pub trait Codegen<'a>{
         q4r_variables::var_statement(backend, is_pointer)
     }
 
-    fn assign_statement(backend: &mut Backend<'a>) -> ExpType<'a>{
+    fn assign_statement(backend: &mut Backend<'a>) -> AssignStmt<'a>{
         q4r_statements::assign_statement(backend)
+    }
+
+    fn assign_op_statement(backend: &mut Backend<'a>) -> AssignOpStmt<'a>{
+        q4r_statements::assign_op_statement(backend)
     }
 
     fn fun_declaration(backend: &mut Backend<'a>, is_extern: bool) -> StmtType<'a>{

@@ -40,7 +40,7 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtTy
         advance(1, backend);
     }
 
-    StmtType::FunStatement { returns, ident, params, is_extern }
+    StmtType::fun_stmt(returns, ident, params, is_extern)
 }
 
 pub fn fun_call<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
@@ -55,5 +55,6 @@ pub fn fun_call<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
         helpers::skip_if_comma(backend);
     }
 
+    advance(1, backend);
     ExpType::CallExp { ident, params }
 }

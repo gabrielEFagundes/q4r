@@ -1,56 +1,56 @@
-use crate::{backend::Backend, error::{error::{QError, QErrorTypes}, parser_err::ParserErrOpts}, expdesc::{ExpType, StmtType}, internals::{helpers::{self, advance}, q4r_expressions, q4r_values}, signature::DecKind, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, expdesc::{AssignOpStmt, AssignStmt, StmtType}, internals::{helpers::{advance, current, expect, lookahead, matches}, q4r_expressions, q4r_values}, signature::{DecKind, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn relational_statement<'a>(backend: &mut Backend<'a>) -> StmtType<'a>{
-    backend.cursor+=1;
+    advance(1, backend);
     let expression = q4r_expressions::parse_expr(backend);
     
-    StmtType::RelationalStmt { kind: DecKind::If, expression }
+    StmtType::relational_stmt(DecKind::If, expression)
 }
 
-pub fn loop_statement<'a>(backend: &mut Backend<'a>) -> StmtType<'a>{
-    backend.cursor += 1;
-    let iterator = &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+pub fn loop_statement<'a>(backend: &mut Backend<'a>) -> StmtType<'a>{    
+    expect(VoidstarTokenTypes::Ident, backend);
 
-    let init_expression = q4r_expressions::parse_expr(backend);
+    let next = lookahead(backend);
 
-    backend.cursor += 1;
-    if backend.tokens[backend.cursor].token_type == VoidstarTokenTypes::SemiColon{
-        backend.cursor += 1;
+    // while-styled loop
+    if Operator::is_comparative(next.token_type){
+        StmtType::relational_stmt(DecKind::While, q4r_expressions::parse_expr(backend))
+
+    // cfor-styled loop
+    } else if next.token_type == VoidstarTokenTypes::Equals{
+        let initializer = assign_statement(backend);
+
+        matches(VoidstarTokenTypes::SemiColon, backend);
         let exp = q4r_expressions::parse_expr(backend);
 
-        backend.cursor += 1;
-        let incrementer = q4r_values::unary_literal(backend);
+        matches(VoidstarTokenTypes::SemiColon, backend);
+        let incrementer: crate::signature::Literal = q4r_values::unary_literal(backend);
 
-        StmtType::ForLoopStmt { 
-            kind: DecKind::For, iterator, initializer: init_expression, exp, incrementer 
-        }
+        StmtType::loop_stmt(DecKind::For, initializer, exp, incrementer)
 
-    }else{
-        StmtType::RelationalStmt { kind: DecKind::While, expression: init_expression }
+    } else {
+        panic!()
     }
 }
 
-pub fn assign_statement<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
-    let next = helpers::lookahead(backend).token_type;
-    match next{
-        // var assignment
-        VoidstarTokenTypes::Equals => {
-            advance(2, backend);
-            q4r_expressions::parse_expr(backend)
-        },
+pub fn assign_statement<'a>(backend: &mut Backend<'a>) -> AssignStmt<'a>{
+    let ident = &backend.source[current(backend).start..current(backend).end];
 
-        // i = i + /* whatever expression */
-        VoidstarTokenTypes::Increment
-        | VoidstarTokenTypes::Decrement => {
-            advance(2, backend);
+    advance(2, backend);
+    let val = q4r_expressions::parse_expr(backend);
 
-            
-            todo!()
-        }
+    AssignStmt { ident, val }
+}
 
-        _ => QError::handle_new_error(
-            QErrorTypes::ParserErr(ParserErrOpts::UnknownSymbol), 
-            backend.tokens[backend.cursor].line, backend.tokens[backend.cursor].start, backend.debug
-        )
-    }
+// i += /* whatever expression */
+pub fn assign_op_statement<'a>(backend: &mut Backend<'a>) -> AssignOpStmt<'a>{
+    let ident = &backend.source[current(backend).start..current(backend).end];
+
+    advance(1, backend);
+    let op = Operator::map(current(backend).token_type);
+
+    advance(1, backend);
+    let val = q4r_expressions::parse_expr(backend);
+
+    AssignOpStmt { ident, op, val }
 }

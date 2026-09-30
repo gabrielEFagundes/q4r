@@ -65,6 +65,8 @@ pub enum VoidstarTokenTypes{
 
     Increment,
     Decrement,
+    Multiply,
+    Divide,
 
     Function,
     Goto,

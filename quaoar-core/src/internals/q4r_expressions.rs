@@ -1,4 +1,4 @@
-use crate::{backend::Backend, error::{error::{QError, QErrorTypes}, parser_err::ParserErrOpts}, expdesc::ExpType, internals::{helpers::{advance, current, lookahead, matches}, q4r_functions::{self, fun_call}}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
+use crate::{backend::Backend, error::{error::{QError, QErrorTypes}, parser_err::ParserErrOpts}, expdesc::ExpType, internals::{helpers::{advance, current, lookahead, matches}, q4r_functions::self}, signature::{Literal, Operator}, tokens::VoidstarTokenTypes};
 
 pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
     match backend.tokens[backend.cursor].token_type{
@@ -44,20 +44,23 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
 }
 
 pub fn parse_unary<'a>(backend: &mut Backend<'a>) -> ExpType<'a>{
-    match backend.tokens[backend.cursor].token_type{
+    match current(backend).token_type{
         VoidstarTokenTypes::Ampersand => {
-            // backend.cursor += 1;
-            // let current = backend.tokens[backend.cursor];
-            // let address_of = parse_primary(backend);
-            
-            // ExpType::AddressExp(ExpLiteral { 
-            //     val: Literal::to_literal(&backend.source[current.start..current.end], VoidstarTokenTypes::Ident)
-            // })
-            todo!()
+            advance(1, backend);
+            ExpType::AddressExp { val: Box::new(parse_primary(backend)) }
         },
 
-        VoidstarTokenTypes::Plus | VoidstarTokenTypes::Minus => {
-            todo!()
+        VoidstarTokenTypes::Asterisk
+        | VoidstarTokenTypes::Minus => {
+            let op = Operator::map(current(backend).token_type);
+            advance(1, backend);
+
+            ExpType::SignedExp { op, val: Box::new(parse_primary(backend)) }
+        },
+
+        VoidstarTokenTypes::Plus => {
+            advance(1, backend);
+            parse_primary(backend)
         }
 
         _ => parse_primary(backend)

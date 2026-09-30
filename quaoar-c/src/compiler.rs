@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{ExpType::{self}, StmtType}, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
+use quaoar_core::{backend::Backend, codegen::Codegen, expdesc::{AssignOpStmt, AssignStmt, ExpType::{self}, StmtType}, signature::{Signature, Type}, tokens::VoidstarTokenTypes};
 use crate::r#impl::AppendTo;
 
 use crate::emit;
 
-/// The `quaoar-c` compiler generates a source string 
+/// The `quaoar-c` compiler generates a source bytespan 
 /// and parses it to the first gcc compiler Q4r finds on PATH.
 /// 
 /// `gcc -x c -o <prog_name> <<< '<code_str>'`
@@ -33,7 +33,7 @@ impl<'a> CCompiler{
             match i.1{
                 Signature::Function { returns, params, is_extern } => {
                     if *is_extern{
-                        self.parse_simple(b"extern ");
+                        self.emit_simple(b"extern ");
                     }
 
                     emit!(
@@ -43,7 +43,7 @@ impl<'a> CCompiler{
 
                     for i in 0..params.len(){
                         if params[i].is_etc{
-                            self.parse_simple(b"...");
+                            self.emit_simple(b"...");
                         } else {
                             emit!(&mut self.c_src, params[i].ty.to_byte_span().as_slice());
 
@@ -66,44 +66,52 @@ impl<'a> CCompiler{
         }
     }
 
-    pub(crate) fn parse_simple(&mut self, to_emit: &'a[u8]){
+    #[inline]
+    pub(crate) fn emit_simple(&mut self, to_emit: &'a[u8]){
         emit!(&mut self.c_src, to_emit);
     }
 
-    pub(crate) fn parse_increment(&mut self, amount: &'a[u8]){
+    #[inline]
+    pub(crate) fn emit_increment(&mut self, amount: &'a[u8]){
         emit!(&mut self.c_src, &b"+="[..], amount, b';');
     }
 
-    pub(crate) fn parse_decrement(&mut self, amount: &'a[u8]){
+    #[inline]
+    pub(crate) fn emit_decrement(&mut self, amount: &'a[u8]){
         emit!(&mut self.c_src, &b"-="[..], amount, b';');
     }
 
-    pub(crate) fn parse_branch_expression(&mut self, expression: ExpType<'a>){
+    pub(crate) fn emit_branch_expression(&mut self, expression: ExpType<'a>){
         match expression{
             ExpType::BinaryExp { left, operator, right } 
                 => {
                     let exp_operator = ExpType::BinaryExp { left, operator, right };
-                    self.parse_operator_expression(exp_operator)
+                    self.emit_operator_expression(exp_operator)
                 },
             ExpType::LiteralExp { val } 
                 => {
                     let exp_literal = ExpType::LiteralExp { val };
-                    self.parse_literal_expression(exp_literal)
+                    self.emit_literal_expression(exp_literal)
                 },
             ExpType::CallExp { ident, params }
                 => {
                     let fun_call = ExpType::CallExp { ident, params };
-                    self.parse_fun_call(fun_call)
+                    self.emit_fun_call(fun_call)
                 },
             ExpType::AddressExp { val }
                 => {
-                    let address_of = ExpType::LiteralExp { val };
-                    self.parse_literal_expression(address_of)
+                    emit!(&mut self.c_src, b'&');
+                    self.emit_branch_expression(*val);
                 },
+            ExpType::SignedExp { op, val }
+                => {
+                    emit!(&mut self.c_src, op.to_byte_span());
+                    self.emit_branch_expression(*val);
+                }
         }
     }
 
-    pub(crate) fn parse_literal_expression(&mut self, expression: ExpType){
+    pub(crate) fn emit_literal_expression(&mut self, expression: ExpType){
         // e.g. (literal)                               enhance this for everywhere it appears
         let ExpType::LiteralExp { val } = expression else {panic!()};
         
@@ -118,112 +126,110 @@ impl<'a> CCompiler{
         }
     }
 
-        pub(crate) fn parse_operator_expression(&mut self, expression: ExpType){
-            // e.g. ((left)==(right)) or ((left)+(right))
-            let ExpType::BinaryExp { left, operator, right } = expression else {panic!()};
+    pub(crate) fn emit_operator_expression(&mut self, expression: ExpType){
+        // e.g. ((left)==(right)) or ((left)+(right))
+        let ExpType::BinaryExp { left, operator, right } = expression else {panic!()};
 
-            emit!(
-                &mut self.c_src,
-                b'(', b'('
-            );
+        emit!(
+            &mut self.c_src,
+            b'(', b'('
+        );
 
-            self.parse_branch_expression(*left);
+        self.emit_branch_expression(*left);
 
-            emit!(&mut self.c_src, b')',
-                operator.to_byte_span(),
-                b'('
-            );
+        emit!(&mut self.c_src, b')',
+            operator.to_byte_span(),
+            b'('
+        );
 
-            self.parse_branch_expression(*right);
+        self.emit_branch_expression(*right);
 
-            emit!(&mut self.c_src, b')', b')');
-        }
+        emit!(&mut self.c_src, b')', b')');
+    }
 
-    pub(crate) fn parse_conditional(&mut self, cmp_expression: StmtType, backend: &mut Backend<'a>){
+    pub(crate) fn emit_conditional(&mut self, cmp_expression: StmtType, backend: &mut Backend<'a>){
         // e.g. if expression{} or while expression{}
-        let StmtType::RelationalStmt { kind, expression } = cmp_expression else {panic!()};
+        let StmtType::RelationalStmt(stmt) = cmp_expression else {panic!()};
 
-        emit!(&mut self.c_src, kind.to_byte_span(), b' ');
-        self.parse_branch_expression(expression);
+        emit!(&mut self.c_src, stmt.kind.to_byte_span(), b' ');
+        self.emit_branch_expression(stmt.exp);
 
         emit!(&mut self.c_src, b'{');
         self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }
 
-    pub fn parse_for_loop(&mut self, for_declaration: StmtType, backend: &mut Backend<'a>){
-        let StmtType::ForLoopStmt { 
-            kind, 
-            iterator, 
-            initializer, 
-            exp, 
-            incrementer 
-        } = for_declaration else {panic!()};
+    pub fn emit_for_loop(&mut self, for_declaration: StmtType, backend: &mut Backend<'a>){
+        let StmtType::LoopStmt(stmt) = for_declaration else {panic!()};
 
         emit!(
-            &mut self.c_src, kind.to_byte_span(), b'(',
-            &b"int"[..], b' ', iterator, b'='
+            &mut self.c_src, stmt.kind.to_byte_span(), b'(',
+            &b"int "[..]
         );
-        self.parse_branch_expression(initializer);
 
-        emit!(&mut self.c_src, b';');
-        self.parse_branch_expression(exp);
+        let identifier = stmt.initializer.ident;
+        self.emit_assign_stmt(stmt.initializer);
+        self.emit_branch_expression(stmt.exp);
 
         emit!(
-            &mut self.c_src, b';', iterator, b'+', b'=', 
-            incrementer.to_byte_span().as_slice(),
+            &mut self.c_src, b';', identifier, b'+', b'=', 
+            stmt.incrementer.to_byte_span().as_slice(),
             b')', b'{'
         );
         self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }
 
-    pub(crate) fn parse_else(&mut self, backend: &mut Backend<'a>){
+    pub(crate) fn emit_else(&mut self, backend: &mut Backend<'a>){
         emit!(&mut self.c_src, &b"else"[..], b'{');
         self.generate(backend);
         emit!(&mut self.c_src, b'}');
     }
 
-    pub(crate) fn parse_var_decl(&mut self, declaration: StmtType){
+    pub(crate) fn emit_var_decl(&mut self, declaration: StmtType){
         // e.g. type var = value;
-        let StmtType::VarStatement { ty, ident, val } = declaration else {panic!()};
+        let StmtType::VarStmt(stmt) = declaration else {panic!()};
 
         emit!(
             &mut self.c_src, 
-            ty.to_byte_span().as_slice(), b' ', ident, b'='
+            stmt.ty.to_byte_span().as_slice(), b' ', stmt.ident, b'='
         );
-        self.parse_branch_expression(val);
+        self.emit_branch_expression(stmt.val);
         emit!(&mut self.c_src, b';');
     }
 
-    pub(crate) fn parse_var_stmt(&mut self, identifier: &'a[u8], expression: ExpType<'a>){
+    pub(crate) fn emit_assign_stmt(&mut self, statement: AssignStmt<'a>){
         emit!(
             &mut self.c_src,
-            identifier, b'='
+            statement.ident, b'='
         );
-        self.parse_branch_expression(expression);
+        self.emit_branch_expression(statement.val);
         emit!(&mut self.c_src, b';')
     }
 
-    pub(crate) fn parse_fun_decl(&mut self, declaration: StmtType, backend: &mut Backend<'a>){
+    pub(crate) fn emit_op_assign_stmt(&mut self, statement: AssignOpStmt<'a>){
+        emit!(
+            &mut self.c_src,
+            statement.ident, statement.op.to_byte_span()
+        );
+        self.emit_branch_expression(statement.val);
+        emit!(&mut self.c_src, b';')
+    }
+    
+    pub(crate) fn emit_fun_decl(&mut self, declaration: StmtType, backend: &mut Backend<'a>){
         // int function(int p1, int p2){ }
-        let StmtType::FunStatement { 
-            returns, 
-            ident, 
-            params, 
-            is_extern 
-        } = declaration else {panic!()};
+        let StmtType::FunStmt(stmt) = declaration else {panic!()};
         
-        if is_extern{ self.parse_simple(b"extern "); }
+        if stmt.is_extern{ self.emit_simple(b"extern "); }
 
         emit!(
             &mut self.c_src,
-            returns.to_byte_span().as_slice(), b' ',
-            ident, b'('
+            stmt.returns.to_byte_span().as_slice(), b' ',
+            stmt.ident, b'('
         );
 
-        for i in 0..params.len(){
-            let current = &params[i];
+        for i in 0..stmt.params.len(){
+            let current = &stmt.params[i];
 
             if current.is_etc{
                 emit!(&mut self.c_src, current.ident);
@@ -233,7 +239,7 @@ impl<'a> CCompiler{
                     current.ty.to_byte_span().as_slice(), b' ', current.ident
                 );
 
-                if i != params.len()-1{
+                if i != stmt.params.len()-1{
                     emit!(&mut self.c_src, b',');
                 }
             }
@@ -244,7 +250,7 @@ impl<'a> CCompiler{
         emit!(&mut self.c_src, b'}');
     }
 
-    pub(crate) fn parse_fun_call(&mut self, call: ExpType<'a>){
+    pub(crate) fn emit_fun_call(&mut self, call: ExpType<'a>){
         let ExpType::CallExp { ident, params } = call else {panic!()};
 
         emit!(
@@ -254,20 +260,20 @@ impl<'a> CCompiler{
         );
         let params_len = params.len();
         for i in params{
-            self.parse_branch_expression(i);
-            self.parse_simple(b",");
+            self.emit_branch_expression(i);
+            self.emit_simple(b",");
         }
         // if there are parameters, remove the last trailing comma
         if(params_len > 0){
             self.c_src.pop();
         }
 
-        emit!(&mut self.c_src, b')', b')', b';');
+        emit!(&mut self.c_src, b')', b')');
     }
 
-    pub(crate) fn parse_return(&mut self, expression: ExpType<'a>){
+    pub(crate) fn emit_return(&mut self, expression: ExpType<'a>){
         emit!(&mut self.c_src, &b"return"[..]);
-        self.parse_branch_expression(expression);
+        self.emit_branch_expression(expression);
         emit!(&mut self.c_src, b';');
     }
 }

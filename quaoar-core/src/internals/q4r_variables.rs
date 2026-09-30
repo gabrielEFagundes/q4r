@@ -4,7 +4,6 @@ pub fn var_statement<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> StmtTyp
     let mut ty: Type;
 
     if is_pointer{
-        advance(1, backend);
         ty = Type::map(backend.tokens[backend.cursor].token_type);
         ty = ty.map_pointer();
     } else {
@@ -26,5 +25,5 @@ pub fn var_statement<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> StmtTyp
         }
     };
 
-    StmtType::VarStatement { ty, ident, val }
+    StmtType::var_stmt(ty, ident, val)
 }

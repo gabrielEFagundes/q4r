@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use quaoar_core::{backend::Backend, codegen::Codegen, error::{error::{self, QErrorTypes}, parser_err::ParserErrOpts}, expdesc::{ExpType::self, StmtType}, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes};
+use quaoar_core::{backend::Backend, codegen::Codegen, error::{error::{self, QErrorTypes}, parser_err::ParserErrOpts}, expdesc::StmtType, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes};
 
 use crate::{compiler::CCompiler};
 
@@ -16,27 +16,41 @@ impl<'a> Codegen<'a> for CCompiler{
                 // asterisks located HERE on Q4r will always mean it's a pointer
                 // expressions consume the multiplication asterisks as they parse.
                 VoidstarTokenTypes::Asterisk => {
-                    match helpers::lookahead(backend).token_type(){
+                    helpers::advance(1, backend);
+                    match helpers::current(backend).token_type(){
                         VoidstarTokenTypes::Int
                         | VoidstarTokenTypes::Float
                         | VoidstarTokenTypes::Bool
                         | VoidstarTokenTypes::Char
                         | VoidstarTokenTypes::Void => {
                             let dec = Self::var_statement(backend, true);
-                            helpers::expect(VoidstarTokenTypes::SemiColon, backend);
-                            self.parse_var_decl(dec);
+                            self.emit_var_decl(dec);
                         },
 
                         VoidstarTokenTypes::Ident => {
-                            backend.cursor += 1;
-                            let identifier = &backend.source[
-                                backend.tokens[backend.cursor].start()..backend.tokens[backend.cursor].end()
-                            ];
+                            let next = helpers::lookahead(backend);
+                            match next.token_type(){
+                                VoidstarTokenTypes::OpenParents => {
+                                    self.emit_branch_expression(Self::parse_expr(backend));
+                                },
 
-                            let mut v = Vec::from(b"*");
-                            v.extend_from_slice(identifier);
+                                VoidstarTokenTypes::Equals => {
+                                    self.emit_simple(b"*");
+                                    self.emit_assign_stmt(Self::assign_statement(backend));
+                                }
 
-                            self.parse_var_stmt(v.as_slice(), Self::assign_statement(backend));
+                                VoidstarTokenTypes::Increment
+                                | VoidstarTokenTypes::Decrement
+                                | VoidstarTokenTypes::Multiply
+                                | VoidstarTokenTypes::Divide => {
+                                    self.emit_op_assign_stmt(Self::assign_op_statement(backend));
+                                }
+
+                                _ => error::QError::handle_new_error(
+                                    QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken), 
+                                    helpers::current(backend).line(), helpers::current(backend).start(), backend.debug
+                                )
+                            }
                         },
                         _ => panic!("bad usage of asterisk at the beggining of statement")
                     }
@@ -48,24 +62,24 @@ impl<'a> Codegen<'a> for CCompiler{
                 | VoidstarTokenTypes::Char
                 | VoidstarTokenTypes::Void => {
                     let dec = Self::var_statement(backend, false);
-                    self.parse_var_decl(dec);
+                    self.emit_var_decl(dec);
                 },
 
                 VoidstarTokenTypes::If => {
                     let cmp = Self::relational_statement(backend);
                     backend.cursor+=1;
 
-                    self.parse_conditional(cmp, backend);
+                    self.emit_conditional(cmp, backend);
                 }
 
                 VoidstarTokenTypes::For => {
                     let loops = Self::loop_statement(backend);
                     match loops {
-                        StmtType::ForLoopStmt { kind, iterator, initializer, exp, incrementer } 
-                            => self.parse_for_loop(loops, backend),
+                        StmtType::LoopStmt(_)
+                            => self.emit_for_loop(loops, backend),
 
-                        StmtType::RelationalStmt { kind, expression }
-                            => self.parse_conditional(loops, backend)
+                        StmtType::RelationalStmt(_)
+                            => self.emit_conditional(loops, backend),
                         
                         _ => error::QError::handle_new_error(
                             QErrorTypes::ParserErr(ParserErrOpts::UnexpectedToken), 
@@ -79,11 +93,11 @@ impl<'a> Codegen<'a> for CCompiler{
                     let current = backend.tokens[backend.cursor];
 
                     if current.token_type() == VoidstarTokenTypes::If{
-                        self.parse_simple(b"else ");
+                        self.emit_simple(b"else ");
                         let cmp = Self::relational_statement(backend);
-                        self.parse_conditional(cmp, backend);
+                        self.emit_conditional(cmp, backend);
                     }else {
-                        self.parse_else(backend);
+                        self.emit_else(backend);
                     }
                 }
 
@@ -105,24 +119,26 @@ impl<'a> Codegen<'a> for CCompiler{
 
                 VoidstarTokenTypes::Function => {
                     let fun = Self::fun_declaration(backend, false);
-                    self.parse_fun_decl(fun, backend);
+                    self.emit_fun_decl(fun, backend);
                 }
 
                 VoidstarTokenTypes::Ident => {
-                    let identifier = &backend.source[
-                        backend.tokens[backend.cursor].start()..backend.tokens[backend.cursor].end()
-                    ];
-
                     let next = helpers::lookahead(backend);
                     match next.token_type(){
                         VoidstarTokenTypes::OpenParents => {
-                            self.parse_branch_expression(Self::parse_expr(backend));
+                            self.emit_fun_call(Self::parse_expr(backend));
+                            self.emit_simple(b";");
                         },
 
-                        VoidstarTokenTypes::Equals
-                        | VoidstarTokenTypes::Increment
-                        | VoidstarTokenTypes::Decrement => {
-                            self.parse_var_stmt(identifier, Self::assign_statement(backend));
+                        VoidstarTokenTypes::Equals => {
+                            self.emit_assign_stmt(Self::assign_statement(backend));
+                        }
+
+                        VoidstarTokenTypes::Increment
+                        | VoidstarTokenTypes::Decrement
+                        | VoidstarTokenTypes::Multiply
+                        | VoidstarTokenTypes::Divide => {
+                            self.emit_op_assign_stmt(Self::assign_op_statement(backend));
                         }
 
                         _ => error::QError::handle_new_error(
@@ -135,7 +151,7 @@ impl<'a> Codegen<'a> for CCompiler{
                 VoidstarTokenTypes::Return => {
                     backend.cursor+=1;
                     
-                    self.parse_return(Self::parse_expr(backend));
+                    self.emit_return(Self::parse_expr(backend));
 
                     helpers::matches(VoidstarTokenTypes::SemiColon, backend);
                 }

@@ -109,7 +109,7 @@ impl Lexer{
                     },
                     _ => VoidstarToken::new(VoidstarTokenTypes::Plus, start, self.cursor, self.line, false)
                 }
-            }
+            },
             MINUS => {
                 match self.advance() {
                     EQ => {
@@ -119,7 +119,47 @@ impl Lexer{
                     },
                     _ => VoidstarToken::new(VoidstarTokenTypes::Minus, start, self.cursor, self.line, false)
                 }
-            }
+            },
+            ASTRSK => {
+                match self.advance() {
+                    EQ => {
+                        self.advance();
+                        end = self.cursor;
+                        VoidstarToken::new(VoidstarTokenTypes::Multiply, start, end, self.line, false)
+                    },
+                    _ => VoidstarToken::new(VoidstarTokenTypes::Asterisk, start, self.cursor, self.line, false)
+                }
+            },
+            SLASH => {
+                    match self.advance(){
+                        SLASH => {
+                            loop{
+                                self.advance();
+                                if self.end() || self.current == LINE_FEED || self.current == HALT{
+                                    return VoidstarToken::default();
+                                }
+                            }
+                        }
+
+                        ASTRSK => {
+                            loop{
+                                self.advance();
+                                if self.current == LINE_FEED{ self.line += 1; }
+                                if self.current == ASTRSK && self.advance() == SLASH{
+                                    self.advance();
+                                    return VoidstarToken::default();
+                                }
+                            }
+                        },
+
+                        EQ => {
+                            self.advance();
+                            end = self.cursor;
+                            VoidstarToken::new(VoidstarTokenTypes::Divide, start, end, self.line, false)
+                        }
+                        _ => VoidstarToken::new(VoidstarTokenTypes::Slash, self.cursor, self.cursor, self.line, false)
+                    }
+                }
 
             CLOSE_BRACE => {
                 self.advance();
@@ -223,39 +263,19 @@ impl Lexer{
         while !self.end(){
             match self.current{
                 OPEN_PAREN | CLOSE_PAREN | OPEN_BRACE | CLOSE_BRACE | OPEN_BRACKET | CLOSE_BRACKET |
-                DOT | COMMA | COLON | SEMICOL | EQ | NOT | ASTRSK | AMPERSND | QUOTES | APOSTROPHE | PLUS | MINUS |
+                DOT | COMMA | COLON | SEMICOL | EQ | NOT | SLASH | ASTRSK | AMPERSND | QUOTES | APOSTROPHE | PLUS | MINUS |
                 GREATER | LESSER => {
-                    tokens.push(self.symbol());
+                    let symbol = self.symbol();
+                    
+                    if symbol.token_type == VoidstarTokenTypes::default(){
+                        continue;
+                    }
+
+                    tokens.push(symbol);
                 },
 
                 val if val.is_ascii_alphabetic() => tokens.push(self.keyword()),
                 val if val.is_ascii_digit() => tokens.push(self.digit()),
-
-                SLASH => {
-                    self.advance();
-                    match self.current{
-                        SLASH => {
-                            loop{
-                                self.advance();
-                                if self.end() || self.current == LINE_FEED || self.current == HALT{
-                                    break;
-                                }
-                            }
-                        }
-
-                        ASTRSK => {
-                            loop{
-                                self.advance();
-                                if self.current == LINE_FEED{ self.line += 1; }
-                                if self.current == ASTRSK && self.advance() == SLASH{
-                                    break;
-                                }
-                            }
-                            self.advance();
-                        }
-                        _ => tokens.push(VoidstarToken::new(VoidstarTokenTypes::Slash, self.cursor, self.cursor, self.line, false))
-                    }
-                }
 
                 LINE_FEED => {
                     self.line+=1;
