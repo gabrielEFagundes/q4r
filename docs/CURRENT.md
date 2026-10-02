@@ -8,27 +8,26 @@ After the first pull request from `tree/voidstar-lang` to `tree/dev`, I've been 
 
 ## On the roadmap
 
-I still need to implement annotations (metaprogramming) support and `cross` tables. But that's something I'll leave for v0.2, and will implement as I work with QBE, since quite a few things will change on the `expdesc.rs` file, making my life miserable to write all those features back onto the `CCompiler` backend.
+As of v0.1.1, I'm enhancing the C compiler backend myself until I'm satisfied with the result.
 
-After those implementations are finished, I'll enhance `quac` (or the `quaoar-cli` module) to add support for both backends and to make it a cooler command line program.
+After some patches for v0.1, I'll release it and dive into v0.2.
 
 Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 
 ## Quick tasks for current patch
 
-- [x] Implement `extern` blocks
-- [ ] Enhance global error handler with custom messages for each error
+- [ ] Fix bugs
+    - [ ] Source code does not work properly when inline?
+    - [ ] v0.1: C keywords are not accepted properly (e.g. `double`), even though quaoar doesn't have these as keywords.
 - [ ] Add error diagnosis with position (kinda like rust)
     ```plaintext
     f main() integer{
              ^^^^^^^ unknown type found here
     ```
-- [ ] Fix bugs
-    - [ ] Source code does not work properly when inline?
-    - [ ] v0.1: C keywords are not accepted properly (e.g. `double`), even though quaoar doesn't have these as keywords.
 - [ ] Add `&&` (AND) and `||` (OR) operands
+- [ ] Overhaul `quac` (Q4r's cli tool)
+- [x] Implement `extern` blocks
 - [x] Stress pipeline with functions that touch the whole compiler
 - [x] Enhance performance and optimize the source code
-- [ ] Overhaul `quac` (Q4r's cli tool)
 - [x] Organize the source code.
 - [x] Organize documentation (added licenses and pages)
