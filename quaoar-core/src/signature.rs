@@ -210,7 +210,7 @@ pub enum Operator {
     Multiply,
     Divide,
     And,
-    Or
+    Or,
 }
 
 impl Operator {

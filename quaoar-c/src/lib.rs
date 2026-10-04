@@ -11,7 +11,7 @@ pub mod zigcc;
 
 const TERMINATORS: [VoidstarTokenTypes; 2] = [
     VoidstarTokenTypes::SemiColon,
-    VoidstarTokenTypes::CloseBraces
+    VoidstarTokenTypes::CloseBraces,
 ];
 
 enum Compilers {
