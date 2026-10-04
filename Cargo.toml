@@ -6,5 +6,5 @@ members = [
 ]
 resolver = "2"
 
-[package]
+[workspace.package]
 license = "MIT OR Apache-2.0"

@@ -1,7 +1,7 @@
 use core::panic;
 
 use crate::{
-    diagnosis::error::QError,
+    errors::error::QError,
     tokens::{VoidstarToken, VoidstarTokenTypes},
     *,
 };
@@ -264,7 +264,25 @@ impl Lexer {
                         self.line, count
                     ),
                 }
-            }
+            },
+
+            AMPERSND => match self.advance() {
+                AMPERSND => {
+                    self.advance();
+                    end = self.cursor;
+                    VoidstarToken::new(VoidstarTokenTypes::And, start, end, self.line, false)
+                },
+                _ => VoidstarToken::new(VoidstarTokenTypes::Ampersand, start, self.cursor, self.line, false)
+            },
+            
+            PIPE => match self.advance(){
+                PIPE => {
+                    self.advance();
+                    end = self.cursor;
+                    VoidstarToken::new(VoidstarTokenTypes::Or, start, end, self.line, false)
+                },
+                _ => VoidstarToken::new(VoidstarTokenTypes::Pipe, start, self.cursor, self.line, false)
+            },
 
             _ => {
                 match SYMBOLS
@@ -347,7 +365,7 @@ impl Lexer {
             match self.current {
                 OPEN_PAREN | CLOSE_PAREN | OPEN_BRACE | CLOSE_BRACE | OPEN_BRACKET
                 | CLOSE_BRACKET | DOT | COMMA | COLON | SEMICOL | EQ | NOT | SLASH | ASTRSK
-                | AMPERSND | QUOTES | APOSTROPHE | PLUS | MINUS | GREATER | LESSER => {
+                | AMPERSND | QUOTES | APOSTROPHE | PIPE | PLUS | MINUS | GREATER | LESSER => {
                     let symbol = self.symbol();
 
                     if symbol.token_type == VoidstarTokenTypes::default() {

@@ -1,6 +1,6 @@
 use crate::{
     backend::Backend,
-    diagnosis::error::QError,
+    errors::error::QError,
     expdesc::ExpType,
     internals::{
         helpers::{advance, current, lookahead, matches},
@@ -95,7 +95,7 @@ pub fn parse_unary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
 pub fn parse_expr<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
     let mut left = parse_unary(backend);
 
-    while Operator::is_legal(backend.tokens[backend.cursor].token_type) {
+    while Operator::is_legal(current(backend).token_type) {
         let operator = Operator::map(current(backend).token_type);
         advance(1, backend);
         let right = parse_unary(backend);

@@ -3,6 +3,8 @@ tests/
 */q4rzig
 */q4rgcc
 
+_*.qo
+
 # Added by cargo
 
 /target

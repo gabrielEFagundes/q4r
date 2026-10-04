@@ -60,6 +60,19 @@ pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>
     }
 }
 
+pub fn matches_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>) {
+    if !expected
+        .iter()
+        .any(|t| *t == backend.tokens[backend.cursor].token_type)
+    {
+        panic!(
+            "found {:#?} instead of {:#?}",
+            backend.tokens[backend.cursor].token_type, expected
+        )
+    }
+    advance(1, backend);
+}
+
 #[inline]
 pub fn expect_type<'a>(backend: &mut Backend<'a>) {
     expect_any(

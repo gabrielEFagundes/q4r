@@ -16,16 +16,15 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 
 ## Quick tasks for current patch
 
-- [ ] Fix bugs
-    - [ ] Source code does not work properly when inline?
-    - [ ] v0.1: C keywords are not accepted properly (e.g. `double`), even though quaoar doesn't have these as keywords.
 - [ ] Add error diagnosis with position (kinda like rust)
     ```plaintext
     f main() integer{
              ^^^^^^^ unknown type found here
     ```
-- [ ] Add `&&` (AND) and `||` (OR) operands
 - [ ] Overhaul `quac` (Q4r's cli tool)
+- [x] Fix bugs
+    - [x] Source code does not work properly when inline?
+- [x] Add `&&` (AND) and `||` (OR) operands
 - [x] Implement `extern` blocks
 - [x] Stress pipeline with functions that touch the whole compiler
 - [x] Enhance performance and optimize the source code

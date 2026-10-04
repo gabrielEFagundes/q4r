@@ -1,7 +1,7 @@
 use core::fmt;
 
 use crate::{
-    diagnosis::{lexer_err::LexerErrOpts, parser_err::ParserErrOpts},
+    errors::{lexer_err::LexerErrOpts, parser_err::ParserErrOpts},
     die,
 };
 

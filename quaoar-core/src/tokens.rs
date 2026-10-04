@@ -11,7 +11,11 @@ pub enum VoidstarTokenTypes {
     SemiColon,
 
     Asterisk,
+
     Ampersand,
+    And,
+    Pipe,
+    Or,
 
     OpenParents,
     CloseParents,

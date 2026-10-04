@@ -2,6 +2,7 @@
 name = "quaoar-cli"
 version = "0.1.0"
 edition = "2024"
+license.workspace = true
 
 [dependencies]
 quaoar-core = { path="../quaoar-core" }

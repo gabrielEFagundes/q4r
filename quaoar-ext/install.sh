@@ -1,13 +1,23 @@
 # this installation is for dev only, the final extension will be available
 # on VSCode's extensions store, or equivalent (VSCodium, Cursor, etc)
 
-# currently only available for VSCode
+# currently only available for VSCode & VSCodium
 NO_FORMAT="\033[0m";
 F_BOLD="\033[1m";
 C_YELLOW3="\033[38;5;184m";
 C_GREEN3="\033[38;5;40m";
 
-TARGET="$HOME/.vscode/extensions";
+TARGET="";
+
+if [ -d "$HOME/.vscode" ]; then
+    echo "Found vscode dir, will install in there.";
+    TARGET="$HOME/.vscode/extensions";
+
+elif [ -d "$HOME/.vscode-oss" ]; then
+    echo "Found vscodium dir, will install in there";
+    TARGET="$HOME/.vscode-oss/extensions";
+fi
+
 EXTENSION_NAME="gabrielEFagundes.quaoar_extension_pack-0.1.0";
 EXT="$(pwd)/quaoar-ext";
 

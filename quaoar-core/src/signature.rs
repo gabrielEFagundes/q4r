@@ -209,6 +209,8 @@ pub enum Operator {
     Decrement,
     Multiply,
     Divide,
+    And,
+    Or
 }
 
 impl Operator {
@@ -228,6 +230,8 @@ impl Operator {
             VoidstarTokenTypes::Decrement => Operator::Decrement,
             VoidstarTokenTypes::Multiply => Operator::Multiply,
             VoidstarTokenTypes::Divide => Operator::Divide,
+            VoidstarTokenTypes::And => Operator::And,
+            VoidstarTokenTypes::Or => Operator::Or,
             _ => panic!("invalid operator type `{:#?}`", token_type),
         }
     }
@@ -248,6 +252,8 @@ impl Operator {
             Operator::Decrement => b"-=",
             Operator::Multiply => b"*=",
             Operator::Divide => b"/=",
+            Operator::And => b"&&",
+            Operator::Or => b"||",
         }
     }
 
@@ -285,6 +291,8 @@ impl Operator {
                 | VoidstarTokenTypes::GreaterEq
                 | VoidstarTokenTypes::Lesser
                 | VoidstarTokenTypes::LesserEq
+                | VoidstarTokenTypes::And
+                | VoidstarTokenTypes::Or
                 | VoidstarTokenTypes::Ident
                 | VoidstarTokenTypes::IntLiteral
                 | VoidstarTokenTypes::FloatLiteral

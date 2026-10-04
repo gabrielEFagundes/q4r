@@ -2,7 +2,7 @@ use crate::tokens::VoidstarTokenTypes;
 
 pub mod backend;
 pub mod codegen;
-pub mod diagnosis;
+pub mod errors;
 pub mod expdesc;
 pub mod header;
 pub mod internals;
@@ -39,6 +39,7 @@ const EQ: u8 = b'=';
 const NOT: u8 = b'!';
 const ASTRSK: u8 = b'*';
 const AMPERSND: u8 = b'&';
+const PIPE: u8 = b'|';
 
 const LINE_FEED: u8 = b'\n';
 const TABULATION: u8 = b'\t';
@@ -70,7 +71,7 @@ const KEYWORDS: [(&[u8], VoidstarTokenTypes); 20] = [
     (b"workspace", VoidstarTokenTypes::Workspace),
 ];
 
-const SYMBOLS: [(u8, VoidstarTokenTypes); 18] = [
+const SYMBOLS: [(u8, VoidstarTokenTypes); 19] = [
     (b'!', VoidstarTokenTypes::Not),
     (b'&', VoidstarTokenTypes::Ampersand),
     (b'(', VoidstarTokenTypes::OpenParents),
@@ -88,5 +89,6 @@ const SYMBOLS: [(u8, VoidstarTokenTypes); 18] = [
     (b']', VoidstarTokenTypes::CloseBrackets),
     (b'\\', VoidstarTokenTypes::BackSlash),
     (b'{', VoidstarTokenTypes::OpenBraces),
+    (b'|', VoidstarTokenTypes::Pipe),
     (b'}', VoidstarTokenTypes::CloseBraces),
 ];

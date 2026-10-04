@@ -1,6 +1,6 @@
 use crate::{
     backend::Backend,
-    diagnosis::{
+    errors::{
         error::{self, QError},
         parser_err::ParserErrOpts,
     },

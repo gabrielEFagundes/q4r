@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use quaoar_core::{
-    backend::Backend, codegen::Codegen, diagnosis::error::QError, expdesc::StmtType,
+    backend::Backend, codegen::Codegen, errors::error::QError, expdesc::StmtType,
     internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
 };
 
-use crate::compiler::CCompiler;
+use crate::{TERMINATORS, compiler::CCompiler};
 
 impl<'a> Codegen<'a> for CCompiler {
     fn generate_headers(&mut self, signatures: &HashMap<String, Signature>) -> &mut Self {
@@ -171,7 +171,7 @@ impl<'a> Codegen<'a> for CCompiler {
 
                     self.emit_return(Self::parse_expr(backend));
 
-                    helpers::matches(VoidstarTokenTypes::SemiColon, backend);
+                    helpers::matches_any(&TERMINATORS, backend);
                 }
 
                 VoidstarTokenTypes::OpenBraces => backend.cursor += 1,

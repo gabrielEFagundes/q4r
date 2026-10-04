@@ -1,3 +1,5 @@
+use quaoar_core::tokens::VoidstarTokenTypes;
+
 use crate::Compilers::{Gcc, Zig};
 
 pub mod compiler;
@@ -6,6 +8,11 @@ pub mod gcc;
 pub mod r#impl;
 pub mod macros;
 pub mod zigcc;
+
+const TERMINATORS: [VoidstarTokenTypes; 2] = [
+    VoidstarTokenTypes::SemiColon,
+    VoidstarTokenTypes::CloseBraces
+];
 
 enum Compilers {
     Gcc,

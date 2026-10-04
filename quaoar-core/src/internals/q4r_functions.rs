@@ -1,6 +1,6 @@
 use crate::{
     backend::Backend,
-    diagnosis::error::{self, QError},
+    errors::error::{self, QError},
     expdesc::{ExpType, Parameter, StmtType},
     internals::{
         helpers::{self, advance, current, expect, lookahead},
