@@ -19,7 +19,7 @@ fn main() {
     };
 
     let t = Lexer::new(s.clone(), is_debug_mode_active).lexerize();
-    //println!("\n{:#?}", t);
+    println!("\n{:#?}", t);
 
     let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
     let signatures = binding.mount();

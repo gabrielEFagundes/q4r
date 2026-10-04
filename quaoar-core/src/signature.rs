@@ -210,7 +210,8 @@ pub enum Operator {
     Multiply,
     Divide,
     And,
-    Or
+    Or,
+    Not
 }
 
 impl Operator {
@@ -232,6 +233,7 @@ impl Operator {
             VoidstarTokenTypes::Divide => Operator::Divide,
             VoidstarTokenTypes::And => Operator::And,
             VoidstarTokenTypes::Or => Operator::Or,
+            VoidstarTokenTypes::Not => Operator::Not,
             _ => panic!("invalid operator type `{:#?}`", token_type),
         }
     }
@@ -254,6 +256,7 @@ impl Operator {
             Operator::Divide => b"/=",
             Operator::And => b"&&",
             Operator::Or => b"||",
+            Operator::Not => b"!",
         }
     }
 
@@ -266,6 +269,13 @@ impl Operator {
                 | VoidstarTokenTypes::GreaterEq
                 | VoidstarTokenTypes::Lesser
                 | VoidstarTokenTypes::LesserEq
+        )
+    }
+
+    pub fn is_boolean_algebra(&self) -> bool{
+        matches!(
+            self,
+            Operator::And | Operator::Or
         )
     }
 
@@ -287,12 +297,14 @@ impl Operator {
                 | VoidstarTokenTypes::Slash
                 | VoidstarTokenTypes::Asterisk
                 | VoidstarTokenTypes::CompEquals
+                | VoidstarTokenTypes::NotEquals
                 | VoidstarTokenTypes::Greater
                 | VoidstarTokenTypes::GreaterEq
                 | VoidstarTokenTypes::Lesser
                 | VoidstarTokenTypes::LesserEq
                 | VoidstarTokenTypes::And
                 | VoidstarTokenTypes::Or
+                | VoidstarTokenTypes::Not
                 | VoidstarTokenTypes::Ident
                 | VoidstarTokenTypes::IntLiteral
                 | VoidstarTokenTypes::FloatLiteral

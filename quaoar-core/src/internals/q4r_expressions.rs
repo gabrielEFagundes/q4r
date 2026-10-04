@@ -1,13 +1,7 @@
 use crate::{
-    backend::Backend,
-    errors::error::QError,
-    expdesc::ExpType,
-    internals::{
-        helpers::{advance, current, lookahead, matches},
-        q4r_functions,
-    },
-    signature::{Literal, Operator},
-    tokens::VoidstarTokenTypes,
+    backend::Backend, errors::error::QError, expdesc::ExpType, internals::{
+        helpers::{advance, current, expect_any, lookahead, matches}, q4r_functions,
+    }, signature::{Literal, Operator}, tokens::VoidstarTokenTypes,
 };
 
 pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
@@ -73,6 +67,15 @@ pub fn parse_unary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
             }
         }
 
+        // meh
+        VoidstarTokenTypes::Not => {
+            expect_any(&[VoidstarTokenTypes::BoolLiteral, VoidstarTokenTypes::Ident, VoidstarTokenTypes::OpenParents], backend);
+            ExpType::SignedExp { 
+                op: Operator::Not, 
+                val: Box::new(parse_primary(backend))
+            }
+        }
+
         VoidstarTokenTypes::Asterisk | VoidstarTokenTypes::Minus => {
             let op = Operator::map(current(backend).token_type);
             advance(1, backend);
@@ -98,7 +101,14 @@ pub fn parse_expr<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
     while Operator::is_legal(current(backend).token_type) {
         let operator = Operator::map(current(backend).token_type);
         advance(1, backend);
-        let right = parse_unary(backend);
+
+        let right;
+        if operator.is_boolean_algebra(){
+            right = parse_expr(backend); 
+
+        }else{
+            right = parse_unary(backend);
+        }
         left = ExpType::BinaryExp {
             left: Box::new(left),
             operator,
