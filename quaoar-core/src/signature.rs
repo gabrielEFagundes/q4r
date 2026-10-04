@@ -211,7 +211,7 @@ pub enum Operator {
     Divide,
     And,
     Or,
-    Not
+    Not,
 }
 
 impl Operator {
@@ -272,11 +272,8 @@ impl Operator {
         )
     }
 
-    pub fn is_boolean_algebra(&self) -> bool{
-        matches!(
-            self,
-            Operator::And | Operator::Or
-        )
+    pub fn is_boolean_algebra(&self) -> bool {
+        matches!(self, Operator::And | Operator::Or)
     }
 
     pub fn is_arithmetic(token_type: VoidstarTokenTypes) -> bool {
