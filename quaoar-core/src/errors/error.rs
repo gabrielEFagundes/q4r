@@ -1,8 +1,8 @@
 use core::fmt;
 
 use crate::{
-    errors::{lexer_err::LexerErrOpts, parser_err::ParserErrOpts},
     die,
+    errors::{lexer_err::LexerErrOpts, parser_err::ParserErrOpts},
 };
 
 /// Encompasses every and any type of deviation a Q4r program might have.

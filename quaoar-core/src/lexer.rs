@@ -264,24 +264,36 @@ impl Lexer {
                         self.line, count
                     ),
                 }
-            },
+            }
 
             AMPERSND => match self.advance() {
                 AMPERSND => {
                     self.advance();
                     end = self.cursor;
                     VoidstarToken::new(VoidstarTokenTypes::And, start, end, self.line, false)
-                },
-                _ => VoidstarToken::new(VoidstarTokenTypes::Ampersand, start, self.cursor, self.line, false)
+                }
+                _ => VoidstarToken::new(
+                    VoidstarTokenTypes::Ampersand,
+                    start,
+                    self.cursor,
+                    self.line,
+                    false,
+                ),
             },
-            
-            PIPE => match self.advance(){
+
+            PIPE => match self.advance() {
                 PIPE => {
                     self.advance();
                     end = self.cursor;
                     VoidstarToken::new(VoidstarTokenTypes::Or, start, end, self.line, false)
-                },
-                _ => VoidstarToken::new(VoidstarTokenTypes::Pipe, start, self.cursor, self.line, false)
+                }
+                _ => VoidstarToken::new(
+                    VoidstarTokenTypes::Pipe,
+                    start,
+                    self.cursor,
+                    self.line,
+                    false,
+                ),
             },
 
             _ => {
