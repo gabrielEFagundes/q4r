@@ -1,0 +1,29 @@
+{
+  "name": "quaoar-lang",
+  "displayName": "Q4r Language Extension",
+  "description": "Syntax highlighting for the Quaoar language (or the old Voidstar)",
+  "version": "0.0.1",
+  "publisher": "gabrielEFagundes",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "quaoar",
+        "aliases": ["Quaoar", "quaoar"],
+        "extensions": [".qo", ".qoa", ".qua"],
+        "configuration": "./language-configuration.json",
+        "icon": {"light": "./fav-light.svg", "dark": "./fav-dark.svg"}
+      }
+    ],
+    "grammars": [
+      {
+        "language": "quaoar",
+        "scopeName": "source.quaoar",
+        "path": "./syntaxes/q4r.tmLanguage.json"
+      }
+    ]
+  }
+}

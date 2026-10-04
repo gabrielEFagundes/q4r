@@ -1,0 +1,27 @@
+name: autofix.ci
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      # runs clippy
+      - name: Run Fixers
+        run: |
+          cargo clippy --fix --all-targets --all-features --allow-dirty
+          cargo fmt --all
+
+      # then runs the autofix.ci action
+      - uses: autofix-ci/action@v1

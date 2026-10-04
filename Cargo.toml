@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "quaoar-c",
+    "quaoar-cli",
+    "quaoar-core"
+]
+resolver = "2"
+
+[workspace.package]
+license = "MIT OR Apache-2.0"
