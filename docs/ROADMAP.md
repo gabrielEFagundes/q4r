@@ -54,6 +54,10 @@ You can consider this language close to stable once it reaches this version.
 
 This version is where Q4r will finally reach its stability, and prove itself as an actually usable language by rewriting my own projects.
 
+## 2.0 - Quantum Computing
+
+When I say Quaoar will encompass everything, I actually mean it. I'll add support to quantum computing onto a branch of Q4r, I'm not sure about the name, but it shall be a standalone language, like the QDK, instead of a framework/lib inside another language, such as `Qiskit`.
+
 ## Future?
 
 I plan on working in Quaoar for a long time, since I do have fun working on it and I'd absolutely love to see it being used in actual, real life projects.

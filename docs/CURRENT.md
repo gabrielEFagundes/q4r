@@ -22,11 +22,6 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
              ^^^^^^^ unknown type found here
     ```
 - [ ] Overhaul `quac` (Q4r's cli tool)
-- [x] Fix bugs
-    - [x] Source code does not work properly when inline?
-- [x] Add `&&` (AND) and `||` (OR) operands
-- [x] Implement `extern` blocks
-- [x] Stress pipeline with functions that touch the whole compiler
-- [x] Enhance performance and optimize the source code
-- [x] Organize the source code.
-- [x] Organize documentation (added licenses and pages)
+- [ ] Change certain types to more performance efficient ones
+    - [ ] `HashMap` to `FxHashMap`
+    - [ ] `String` to `EcoString`
