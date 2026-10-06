@@ -1,3 +1,5 @@
+use ecow::EcoString;
+
 use crate::{
     expdesc::Parameter,
     signature::Literal::{
@@ -97,7 +99,7 @@ pub enum Literal {
     FloatLiteral(f32),
     CharLiteral(char),
     BoolLiteral(bool),
-    StringLiteral(String),
+    StringLiteral(EcoString),
     PointerLiteral(Box<Literal>),
 
     /// Used only on v0.1 snapshot, completely unstable in terms of updates
@@ -183,7 +185,7 @@ impl Literal {
     }
 
     /// Guaranteed to be a string at this point of compilation
-    pub fn parse_str(bytes: &[u8]) -> String {
+    pub fn parse_str(bytes: &[u8]) -> EcoString {
         std::str::from_utf8(bytes).unwrap().parse().unwrap()
     }
 

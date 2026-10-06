@@ -1,14 +1,14 @@
-use std::collections::HashMap;
-
+use ecow::EcoString;
 use quaoar_core::{
     backend::Backend, codegen::Codegen, errors::error::QError, expdesc::StmtType,
     internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
 };
+use rustc_hash::FxHashMap;
 
 use crate::{TERMINATORS, compiler::CCompiler};
 
 impl<'a> Codegen<'a> for CCompiler {
-    fn generate_headers(&mut self, signatures: &HashMap<String, Signature>) -> &mut Self {
+    fn generate_headers(&mut self, signatures: &FxHashMap<EcoString, Signature>) -> &mut Self {
         self.gen_signature_headers(signatures);
         self
     }

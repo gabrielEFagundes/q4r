@@ -1,7 +1,8 @@
 // This parser is only used to generate the signatures table in memory
 // It does not generate C or ASM code.
 
-use std::collections::HashMap;
+use ecow::{EcoString, string::ToEcoString};
+use rustc_hash::FxHashMap;
 
 use crate::{
     expdesc::Parameter,
@@ -50,7 +51,7 @@ impl<'a> SignatureMounter<'a> {
 
     fn mount_function(
         &mut self,
-        map: &mut HashMap<String, Signature<'a>>,
+        map: &mut FxHashMap<EcoString, Signature<'a>>,
         is_function_extern: bool,
     ) {
         self.forward();
@@ -101,7 +102,7 @@ impl<'a> SignatureMounter<'a> {
 
         self.forward();
         map.insert(
-            unsafe { str::from_utf8_unchecked(ident).to_string() },
+            unsafe { str::from_utf8_unchecked(ident).to_eco_string() },
             Signature::Function {
                 returns,
                 params,
@@ -110,8 +111,8 @@ impl<'a> SignatureMounter<'a> {
         );
     }
 
-    pub fn mount(&mut self) -> HashMap<String, Signature<'a>> {
-        let mut map: HashMap<String, Signature> = HashMap::new();
+    pub fn mount(&mut self) -> FxHashMap<EcoString, Signature<'a>> {
+        let mut map: FxHashMap<EcoString, Signature> = FxHashMap::default();
         self.current_token = self.tokens[self.cursor];
 
         while self.cursor < self.tokens.len() - 1 {
@@ -164,7 +165,7 @@ impl<'a> SignatureMounter<'a> {
                     }
 
                     map.insert(
-                        unsafe { str::from_utf8_unchecked(ident).to_string() },
+                        unsafe { str::from_utf8_unchecked(ident).to_eco_string() },
                         Signature::Global { ty, value },
                     );
                 }

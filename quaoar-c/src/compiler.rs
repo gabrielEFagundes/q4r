@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::r#impl::AppendTo;
+use ecow::EcoString;
 use quaoar_core::{
     backend::Backend,
     codegen::Codegen,
@@ -12,6 +11,7 @@ use quaoar_core::{
     signature::{Signature, Type},
     tokens::VoidstarTokenTypes,
 };
+use rustc_hash::FxHashMap;
 
 use crate::emit;
 
@@ -44,7 +44,7 @@ impl<'a> CCompiler {
         Self { c_src: Vec::new() }
     }
 
-    pub(crate) fn gen_signature_headers(&mut self, signatures: &HashMap<String, Signature>) {
+    pub(crate) fn gen_signature_headers(&mut self, signatures: &FxHashMap<EcoString, Signature>) {
         for i in signatures {
             match i.1 {
                 Signature::Function {

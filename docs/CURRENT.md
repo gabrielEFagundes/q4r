@@ -21,7 +21,8 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
     f main() integer{
              ^^^^^^^ unknown type found here
     ```
-- [ ] Overhaul `quac` (Q4r's cli tool)
-- [ ] Change certain types to more performance efficient ones
-    - [ ] `HashMap` to `FxHashMap`
-    - [ ] `String` to `EcoString`
+- [x] Change certain types to more performant ones
+    - [x] `HashMap` to `FxHashMap`
+    - [x] `String` to `EcoString`
+
+- [x] Overhaul `quac` (Q4r's cli tool)
