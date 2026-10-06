@@ -9,7 +9,7 @@ permissions:
   contents: write
   pull-requests: read   # needed to list the PR's commits
 
-# two PRs merged back to back must not race on VERSION/CHANGELOG
+# two PRs merged back to back must not race on Cargo.toml/CHANGELOG
 concurrency:
   group: release
   cancel-in-progress: false
@@ -20,19 +20,29 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      # the built-in GITHUB_TOKEN can't bypass the branch ruleset, so push as our GitHub App instead
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}   # deprecated in favor of client-id, still works
+          private-key: ${{ secrets.RELEASE_APP_KEY }}
+          permission-contents: write              # least privilege: token only gets what it needs
+
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}   # default would be the PR merge ref, not main
+          token: ${{ steps.app-token.outputs.token }}      # persisted, so the later git push runs as the app
 
-      - name: Configure git identity
+      - name: Configure git identity (the app's bot user)
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          run: |
-            USER_ID=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
-            git config user.name "${APP_SLUG}[bot]"
-            git config user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+        run: |
+          USER_ID=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
 
       - name: Determine bump type from PR title
         id: bump
@@ -48,19 +58,40 @@ jobs:
           echo "type=$BUMP" >> "$GITHUB_OUTPUT"
           echo "section=$SECTION" >> "$GITHUB_OUTPUT"
 
-      - name: Bump VERSION
+      - name: Bump version in Cargo.toml
         if: steps.bump.outputs.type != 'none'
         id: version
+        env:
+          BUMP: ${{ steps.bump.outputs.type }}
         run: |
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$(cat VERSION)"
-          case "${{ steps.bump.outputs.type }}" in
+          # section-aware: only touches `version = "..."` under [package] or [workspace.package],
+          # never dependency versions like [dependencies.foo] version = "1"
+          CURRENT=$(awk '
+            /^\[/ { in_pkg = ($0 ~ /^\[(workspace\.)?package\][[:space:]]*(#.*)?$/) }
+            in_pkg && /^version[[:space:]]*=[[:space:]]*"/ {
+              match($0, /"[^"]+"/); print substr($0, RSTART+1, RLENGTH-2); exit
+            }' Cargo.toml)
+          if ! [[ "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Need a plain X.Y.Z version in Cargo.toml, got '$CURRENT'"; exit 1
+          fi
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "$BUMP" in
             major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
             minor) MINOR=$((MINOR+1)); PATCH=0 ;;
             patch) PATCH=$((PATCH+1)) ;;
           esac
           NEW="$MAJOR.$MINOR.$PATCH"
-          echo "$NEW" > VERSION
+          awk -v new="$NEW" '
+            /^\[/ { in_pkg = ($0 ~ /^\[(workspace\.)?package\][[:space:]]*(#.*)?$/) }
+            in_pkg && !done && /^version[[:space:]]*=[[:space:]]*"/ { sub(/"[^"]*"/, "\"" new "\""); done = 1 }
+            { print }' Cargo.toml > Cargo.toml.new && mv Cargo.toml.new Cargo.toml
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: Sync Cargo.lock
+        if: steps.bump.outputs.type != 'none'
+        run: |
+          # keeps the lockfile in step so `cargo build --locked` doesn't fail after a release
+          if [ -f Cargo.lock ]; then cargo update --workspace; fi
 
       - name: Collect PR commits
         if: steps.bump.outputs.type != 'none'
@@ -131,7 +162,8 @@ jobs:
       - name: Commit and tag
         if: steps.bump.outputs.type != 'none'
         run: |
-          git add VERSION CHANGELOG.md
+          git add Cargo.toml CHANGELOG.md
+          [ -f Cargo.lock ] && git add Cargo.lock || true
           git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
           git tag "v${{ steps.version.outputs.new_version }}"
           git push origin HEAD
