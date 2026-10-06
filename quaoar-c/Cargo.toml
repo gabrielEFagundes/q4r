@@ -1,8 +1,11 @@
 [package]
 name = "quaoar-c"
-version = "0.1.0"
 edition = "2024"
 license.workspace = true
+version.workspace = true
 
 [dependencies]
 quaoar-core = { path="../quaoar-core" }
+
+rustc-hash = "2.1.3"
+ecow = "0.3.1"

@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use ecow::EcoString;
+use rustc_hash::FxHashMap;
 
 use crate::{
     signature::{Signature, Type},
@@ -10,8 +11,8 @@ pub struct Backend<'a> {
     pub tokens: &'a [VoidstarToken],
     pub cursor: usize,
 
-    pub signatures: HashMap<String, Signature<'a>>, // identifier & signature
-    pub scopes: Vec<HashMap<String, Type>>,         // Identifier and type
+    pub signatures: FxHashMap<EcoString, Signature<'a>>, // identifier & signature
+    pub scopes: Vec<FxHashMap<EcoString, Type>>,         // Identifier and type
 
     pub debug: bool,
 }
@@ -20,7 +21,7 @@ impl<'a> Backend<'a> {
     pub fn new(
         source: &'a [u8],
         tokens: &'a [VoidstarToken],
-        signatures: HashMap<String, Signature<'a>>,
+        signatures: FxHashMap<EcoString, Signature<'a>>,
         debug: bool,
     ) -> Self {
         Self {
@@ -28,20 +29,20 @@ impl<'a> Backend<'a> {
             tokens,
             cursor: 0,
             signatures,
-            scopes: Vec::from([HashMap::new()]),
+            scopes: Vec::new(),
             debug,
         }
     }
 
     pub fn enter_scope(&mut self) {
-        self.scopes.push(HashMap::new());
+        self.scopes.push(FxHashMap::default());
     }
 
     pub fn exit_scope(&mut self) {
         self.scopes.pop();
     }
 
-    pub fn declare_in_scope(&mut self, ident: String, ty: Type) {
+    pub fn declare_in_scope(&mut self, ident: EcoString, ty: Type) {
         self.scopes.last_mut().unwrap().insert(ident, ty);
     }
 

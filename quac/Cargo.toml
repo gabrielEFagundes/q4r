@@ -1,9 +1,11 @@
 [package]
-name = "quaoar-cli"
-version = "0.1.0"
+name = "quac"
 edition = "2024"
 license.workspace = true
+version.workspace = true
 
 [dependencies]
 quaoar-core = { path="../quaoar-core" }
 quaoar-c = { path="../quaoar-c" }
+
+getopts = "0.2"

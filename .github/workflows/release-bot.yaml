@@ -1,111 +1,172 @@
-name: Release Bot
+name: Release
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches: [main]
 
 permissions:
   contents: write
+  pull-requests: read   # needed to list the PR's commits
+
+# two PRs merged back to back must not race on Cargo.toml/CHANGELOG
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
-    # guard: don't re-trigger on the bot's own release commit
-    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    # closed != merged: only run when the PR was actually merged
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # the built-in GITHUB_TOKEN can't bypass the branch ruleset, so push as our GitHub App instead
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}   # deprecated in favor of client-id, still works
+          private-key: ${{ secrets.RELEASE_APP_KEY }}
+          permission-contents: write              # least privilege: token only gets what it needs
+
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # need full history + tags for git describe/log
+          ref: ${{ github.event.pull_request.base.ref }}   # default would be the PR merge ref, not main
+          token: ${{ steps.app-token.outputs.token }}      # persisted, so the later git push runs as the app
 
-      - name: Configure git identity
+      - name: Configure git identity (the app's bot user)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
         run: |
-          git config user.name "quaoar-release-bot"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          USER_ID=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
 
-      - name: Find last tag
-        id: last_tag
-        run: |
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
-      - name: Collect commits since last tag
-        run: |
-          RANGE="${{ steps.last_tag.outputs.tag }}"
-          if [ -n "$RANGE" ]; then RANGE="$RANGE..HEAD"; fi
-          git log $RANGE --pretty=format:"%s" > commits.txt
-
-      - name: Determine bump type
+      - name: Determine bump type from PR title
         id: bump
+        env:
+          TITLE: ${{ github.event.pull_request.title }}   # via env, never interpolated into the script
         run: |
-          CURRENT_MAJOR=$(cut -d. -f1 VERSION)
-          BUMP="none"
-          if [ "$CURRENT_MAJOR" = "0" ] && grep -qE '^release(\(.+\))?:' commits.txt; then
-            BUMP="release"   # explicit gate: only way out of 0.x
-          elif grep -qE '^[a-zA-Z]+(\(.+\))?!:' commits.txt || grep -qi 'BREAKING CHANGE' commits.txt; then
-            if [ "$CURRENT_MAJOR" = "0" ]; then
-              BUMP="minor"   # pre-1.0: breaking changes don't touch major
-            else
-              BUMP="major"
-            fi
-          elif grep -qE '^feat(\(.+\))?:' commits.txt; then
-            BUMP="minor"
-          elif grep -qE '^fix(\(.+\))?:' commits.txt; then
-            BUMP="patch"
+          BUMP="none"; SECTION=""
+          if   echo "$TITLE" | grep -qiE '^[[:space:]]*\[RELEASE\]';        then BUMP="major"; SECTION="Release"
+          elif echo "$TITLE" | grep -qiE '^[[:space:]]*\[FEAT\]';           then BUMP="minor"; SECTION="Features"
+          elif echo "$TITLE" | grep -qiE '^[[:space:]]*\[BREAKING\]';       then BUMP="minor"; SECTION="Breaking changes"
+          elif echo "$TITLE" | grep -qiE '^[[:space:]]*\[(PATCH|FIX)\]';    then BUMP="patch"; SECTION="Fixes"
           fi
           echo "type=$BUMP" >> "$GITHUB_OUTPUT"
+          echo "section=$SECTION" >> "$GITHUB_OUTPUT"
 
-      - name: Bump VERSION
+      - name: Bump version in Cargo.toml
         if: steps.bump.outputs.type != 'none'
         id: version
+        env:
+          BUMP: ${{ steps.bump.outputs.type }}
         run: |
-          if [ "${{ steps.bump.outputs.type }}" = "release" ]; then
-            NEW="1.0.0"
-          else
-            CURRENT=$(cat VERSION)
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
-            case "${{ steps.bump.outputs.type }}" in
-              major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
-              minor) MINOR=$((MINOR+1)); PATCH=0 ;;
-              patch) PATCH=$((PATCH+1)) ;;
-            esac
-            NEW="$MAJOR.$MINOR.$PATCH"
+          # section-aware: only touches `version = "..."` under [package] or [workspace.package],
+          # never dependency versions like [dependencies.foo] version = "1"
+          CURRENT=$(awk '
+            /^\[/ { in_pkg = ($0 ~ /^\[(workspace\.)?package\][[:space:]]*(#.*)?$/) }
+            in_pkg && /^version[[:space:]]*=[[:space:]]*"/ {
+              match($0, /"[^"]+"/); print substr($0, RSTART+1, RLENGTH-2); exit
+            }' Cargo.toml)
+          if ! [[ "$CURRENT" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Need a plain X.Y.Z version in Cargo.toml, got '$CURRENT'"; exit 1
           fi
-          echo "$NEW" > VERSION
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR+1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR+1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH+1)) ;;
+          esac
+          NEW="$MAJOR.$MINOR.$PATCH"
+          awk -v new="$NEW" '
+            /^\[/ { in_pkg = ($0 ~ /^\[(workspace\.)?package\][[:space:]]*(#.*)?$/) }
+            in_pkg && !done && /^version[[:space:]]*=[[:space:]]*"/ { sub(/"[^"]*"/, "\"" new "\""); done = 1 }
+            { print }' Cargo.toml > Cargo.toml.new && mv Cargo.toml.new Cargo.toml
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
 
-      - name: Update CHANGELOG
+      - name: Sync Cargo.lock
         if: steps.bump.outputs.type != 'none'
         run: |
-          DATE=$(date +%Y-%m-%d)
+          # keeps the lockfile in step so `cargo build --locked` doesn't fail after a release
+          if [ -f Cargo.lock ]; then cargo update --workspace; fi
+
+      - name: Collect PR commits
+        if: steps.bump.outputs.type != 'none'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # works for any merge method; skips merge commits like "Merge branch 'main' into ..."
+          gh api "repos/$REPO/pulls/$PR/commits" --paginate \
+            --jq '.[] | select((.parents | length) == 1) | "\(.commit.message | split("\n")[0])"' \
+            > pr_commits.txt
+
+      - name: Build CHANGELOG entry and release body
+        if: steps.bump.outputs.type != 'none'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+          PR: ${{ github.event.pull_request.number }}
+          SECTION: ${{ steps.bump.outputs.section }}
+          NEW: ${{ steps.version.outputs.new_version }}
+          CHANGELOG_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.base.ref }}/CHANGELOG.md
+        run: |
+          CLEAN=$(echo "$TITLE" | sed -E 's/^[[:space:]]*\[[A-Za-z]+\][[:space:]]*//')
+          FEAT='^(feat(\(.+\))?!?:|\[(FEAT|BREAKING)\])[[:space:]]*'
+          FIX='^(fix(\(.+\))?!?:|\[(PATCH|FIX)\])[[:space:]]*'
+
+          # CHANGELOG.md: version header + commits grouped by type
           {
-            echo "## v${{ steps.version.outputs.new_version }} - $DATE"
+            echo "## v$NEW - $(date +%Y-%m-%d)"
             echo ""
-            if grep -qE '^feat(\(.+\))?!?:' commits.txt; then
+            if grep -qiE "$FEAT" pr_commits.txt; then
               echo "### Features"
-              grep -E '^feat(\(.+\))?!?:' commits.txt | sed -E 's/^feat(\(.+\))?!?:/- /'
+              grep -iE "$FEAT" pr_commits.txt | sed -E "s/$FEAT/- /I"
               echo ""
             fi
-            if grep -qE '^fix(\(.+\))?!?:' commits.txt; then
+            if grep -qiE "$FIX" pr_commits.txt; then
               echo "### Fixes"
-              grep -E '^fix(\(.+\))?!?:' commits.txt | sed -E 's/^fix(\(.+\))?!?:/- /'
+              grep -iE "$FIX" pr_commits.txt | sed -E "s/$FIX/- /I"
               echo ""
             fi
-            if grep -vE '^(feat|fix)(\(.+\))?!?:' commits.txt | grep -q .; then
+            if grep -viE "$FEAT|$FIX" pr_commits.txt | grep -q .; then
               echo "### Other changes"
-              grep -vE '^(feat|fix)(\(.+\))?!?:' commits.txt | sed -E 's/^/- /'
+              grep -viE "$FEAT|$FIX" pr_commits.txt | sed -E 's/^/- /'
               echo ""
             fi
           } > new_entry.md
+          # no commits at all (e.g. only merge commits): fall back to the PR title
+          if [ "$(wc -l < new_entry.md)" -le 2 ]; then
+            { echo "### $SECTION"; echo "- $CLEAN (#$PR)"; echo ""; } >> new_entry.md
+          fi
           cat new_entry.md CHANGELOG.md > tmp_changelog && mv tmp_changelog CHANGELOG.md
+
+          # Release page: PR body (falls back to title) + footer link
+          printf '%s\n' "$BODY" | tr -d '\r' > pr_body.md
+          {
+            if grep -q '[^[:space:]]' pr_body.md; then
+              cat pr_body.md
+            else
+              echo "### $SECTION"
+              echo "- $CLEAN (#$PR)"
+            fi
+            echo ""
+            echo "---"
+            echo "See [CHANGELOG.md]($CHANGELOG_URL) for more info."
+          } > release_body.md
 
       - name: Commit and tag
         if: steps.bump.outputs.type != 'none'
         run: |
-          git add VERSION CHANGELOG.md
+          git add Cargo.toml CHANGELOG.md
+          [ -f Cargo.lock ] && git add Cargo.lock || true
           git commit -m "chore(release): v${{ steps.version.outputs.new_version }}"
           git tag "v${{ steps.version.outputs.new_version }}"
-          git push origin main
+          git push origin HEAD
           git push origin "v${{ steps.version.outputs.new_version }}"
 
       - name: Create GitHub release
@@ -113,4 +174,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ steps.version.outputs.new_version }}"
-          body_path: new_entry.md
+          body_path: release_body.md

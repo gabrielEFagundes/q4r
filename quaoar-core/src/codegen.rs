@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use ecow::EcoString;
+use rustc_hash::FxHashMap;
 
 use crate::{
     backend::Backend,
@@ -47,7 +48,7 @@ pub trait Codegen<'a> {
         q4r_functions::fun_call(backend)
     }
 
-    fn generate_headers(&mut self, signatures: &HashMap<String, Signature>) -> &mut Self;
+    fn generate_headers(&mut self, signatures: &FxHashMap<EcoString, Signature>) -> &mut Self;
 
     fn generate(&mut self, backend: &mut Backend<'a>) -> Vec<u8>;
 }
