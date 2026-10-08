@@ -1,7 +1,7 @@
 use std::fs;
 
 use quaoar_c::compiler::CCompiler;
-use quaoar_core::{
+use quac_core::{
     backend::Backend, 
     codegen::Codegen, 
     header::SignatureMounter, 

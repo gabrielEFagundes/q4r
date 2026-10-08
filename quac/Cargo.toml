@@ -5,7 +5,7 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-quaoar-core = { path="../quaoar-core" }
+quac-core = { path="../quaoar-core/quac-core" }
 quaoar-c = { path="../quaoar-c" }
 
 getopts = "0.2"

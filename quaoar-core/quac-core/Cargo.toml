@@ -1,5 +1,5 @@
 [package]
-name = "quaoar-core"
+name = "quac-core"
 edition = "2024"
 license.workspace = true
 version.workspace = true

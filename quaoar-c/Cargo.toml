@@ -5,7 +5,7 @@ license.workspace = true
 version.workspace = true
 
 [dependencies]
-quaoar-core = { path="../quaoar-core" }
+quac-core = { path="../quaoar-core/quac-core" }
 
 rustc-hash = "2.1.3"
 ecow = "0.3.1"

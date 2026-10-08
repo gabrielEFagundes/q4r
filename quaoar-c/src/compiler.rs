@@ -1,6 +1,6 @@
 use crate::r#impl::AppendTo;
 use ecow::EcoString;
-use quaoar_core::{
+use quac_core::{
     backend::Backend,
     codegen::Codegen,
     expdesc::{

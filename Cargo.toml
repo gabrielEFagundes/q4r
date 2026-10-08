@@ -2,7 +2,7 @@
 members = [
     "quaoar-c",
     "quac",
-    "quaoar-core"
+    "quaoar-core/quac-core"
 ]
 resolver = "2"
 

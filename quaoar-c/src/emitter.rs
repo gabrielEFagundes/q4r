@@ -1,5 +1,5 @@
 use ecow::EcoString;
-use quaoar_core::{
+use quac_core::{
     backend::Backend, codegen::Codegen, errors::error::QError, expdesc::StmtType,
     internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
 };

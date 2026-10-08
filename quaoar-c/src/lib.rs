@@ -1,4 +1,4 @@
-use quaoar_core::tokens::VoidstarTokenTypes;
+use quac_core::tokens::VoidstarTokenTypes;
 
 use crate::Compilers::{Gcc, Zig};
 

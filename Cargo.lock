@@ -22,8 +22,16 @@ name = "quac"
 version = "0.1.2"
 dependencies = [
  "getopts",
+ "quac-core",
  "quaoar-c",
- "quaoar-core",
+]
+
+[[package]]
+name = "quac-core"
+version = "0.1.2"
+dependencies = [
+ "ecow",
+ "rustc-hash",
 ]
 
 [[package]]
@@ -31,15 +39,7 @@ name = "quaoar-c"
 version = "0.1.2"
 dependencies = [
  "ecow",
- "quaoar-core",
- "rustc-hash",
-]
-
-[[package]]
-name = "quaoar-core"
-version = "0.1.2"
-dependencies = [
- "ecow",
+ "quac-core",
  "rustc-hash",
 ]
 
