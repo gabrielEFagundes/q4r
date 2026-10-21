@@ -14,9 +14,9 @@ const CHAR_DEF: char = ' ';
 const BOOL_DEF: bool = false;
 
 /// Usable types
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Default, Debug, PartialEq, Eq, Clone)]
 pub enum Type {
-    Void,
+    #[default] Void,
     Int,
     Float,
     Char,

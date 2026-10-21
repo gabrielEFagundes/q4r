@@ -25,6 +25,8 @@ pub enum ExpType<'a> {
         op: Operator,
         val: Box<ExpType<'a>>,
     },
+
+    BadExp
 }
 
 pub enum StmtType<'a> {
@@ -111,6 +113,7 @@ pub struct FunStmt<'a> {
     pub is_extern: bool,
 }
 
+#[derive(Default)]
 pub struct Parameter<'a> {
     pub ty: Type,
     pub ident: &'a [u8],

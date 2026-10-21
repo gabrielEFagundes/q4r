@@ -49,14 +49,15 @@ impl<'a> Codegen<'a> for CCompiler {
                                     self.emit_op_assign_stmt(Self::assign_op_statement(backend));
                                 }
 
-                                _ => QError::evaluate_new_err(
-                                    format_args!(
-                                        "unexpected token found on line {}:{}",
-                                        helpers::current(backend).line(),
-                                        helpers::current(backend).start()
-                                    ),
-                                    backend.debug,
-                                ),
+                                _ => {
+                                    let current = helpers::current(backend);
+                                    backend.errors.push(
+                                        QError { 
+                                            span: current.span(),
+                                            msg: "unexpected token found here".to_string()
+                                        }
+                                    )
+                                }
                             }
                         }
                         _ => panic!("bad usage of asterisk at the beggining of statement"),
@@ -86,14 +87,15 @@ impl<'a> Codegen<'a> for CCompiler {
 
                         StmtType::RelationalStmt(_) => self.emit_conditional(loops, backend),
 
-                        _ => QError::evaluate_new_err(
-                            format_args!(
-                                "unexpected token found on line {}:{}",
-                                helpers::current(backend).line(),
-                                helpers::current(backend).start()
-                            ),
-                            backend.debug,
-                        ),
+                        _ => {
+                            let current = helpers::current(backend);
+                            backend.errors.push(
+                                QError { 
+                                    span: current.span(),
+                                    msg: "unexpected token found here".to_string()
+                                }
+                            );
+                        }
                     }
                 }
 
@@ -155,14 +157,15 @@ impl<'a> Codegen<'a> for CCompiler {
                             self.emit_op_assign_stmt(Self::assign_op_statement(backend));
                         }
 
-                        _ => QError::evaluate_new_err(
-                            format_args!(
-                                "unexpected token found on line {}:{}",
-                                helpers::current(backend).line(),
-                                helpers::current(backend).start()
-                            ),
-                            backend.debug,
-                        ),
+                        _ => {
+                            let current = helpers::current(backend);
+                            backend.errors.push(
+                                QError {
+                                    span: current.span(),
+                                    msg: "unexpected token found here".to_string()
+                                }
+                            );
+                        },
                     }
                 }
 

@@ -2,8 +2,7 @@ use ecow::EcoString;
 use rustc_hash::FxHashMap;
 
 use crate::{
-    signature::{Signature, Type},
-    tokens::VoidstarToken,
+    errors::error::QError, signature::{Signature, Type}, tokens::VoidstarToken,
 };
 
 pub struct Backend<'a> {
@@ -14,6 +13,7 @@ pub struct Backend<'a> {
     pub signatures: FxHashMap<EcoString, Signature<'a>>, // identifier & signature
     pub scopes: Vec<FxHashMap<EcoString, Type>>,         // Identifier and type
 
+    pub errors: Vec<QError>,
     pub debug: bool,
 }
 
@@ -30,6 +30,7 @@ impl<'a> Backend<'a> {
             cursor: 0,
             signatures,
             scopes: Vec::new(),
+            errors: Vec::new(),
             debug,
         }
     }

@@ -12,6 +12,7 @@ pub struct Lexer {
     cursor: usize,
     current: u8,
     debug: bool,
+    errors: Vec<QError>
 }
 
 impl Lexer {
@@ -22,6 +23,7 @@ impl Lexer {
             cursor: 0,
             current: 0,
             debug,
+            errors: Vec::new()
         }
     }
 
@@ -64,9 +66,7 @@ impl Lexer {
                 self.advance();
                 VoidstarToken::new(
                     VoidstarTokenTypes::StringLiteral,
-                    start,
-                    end,
-                    self.line,
+                    tokens::Span { start, end, line: self.line },
                     true,
                 )
             }
@@ -75,20 +75,18 @@ impl Lexer {
                 self.advance();
                 let v = self.cursor;
                 self.advance_this(2);
-                VoidstarToken::new(VoidstarTokenTypes::CharLiteral, v, v + 1, self.line, true)
+                VoidstarToken::new(VoidstarTokenTypes::CharLiteral, tokens::Span { start: v, end: v+1, line: self.line }, true)
             }
 
             GREATER => match self.advance() {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::GreaterEq, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::GreaterEq, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Greater,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -96,13 +94,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::LesserEq, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::LesserEq, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Lesser,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -110,13 +106,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::CompEquals, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::CompEquals, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Equals,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -125,13 +119,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::NotEquals, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::NotEquals, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Not,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -140,13 +132,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::Increment, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::Increment, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Plus,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -154,13 +144,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::Decrement, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::Decrement, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Minus,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -168,13 +156,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::Multiply, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::Multiply, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Asterisk,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -200,13 +186,11 @@ impl Lexer {
                 EQ => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::Divide, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::Divide, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Slash,
-                    self.cursor,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start: self.cursor, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -214,16 +198,14 @@ impl Lexer {
             CLOSE_BRACE => {
                 self.advance();
                 end = self.cursor;
-                VoidstarToken::new(VoidstarTokenTypes::CloseBraces, start, end, self.line, true)
+                VoidstarToken::new(VoidstarTokenTypes::CloseBraces, tokens::Span { start, end, line: self.line }, true)
             }
             CLOSE_BRACKET => {
                 self.advance();
                 end = self.cursor;
                 VoidstarToken::new(
                     VoidstarTokenTypes::CloseBrackets,
-                    start,
-                    end,
-                    self.line,
+                    tokens::Span { start, end, line: self.line },
                     true,
                 )
             }
@@ -232,9 +214,7 @@ impl Lexer {
                 end = self.cursor;
                 VoidstarToken::new(
                     VoidstarTokenTypes::CloseParents,
-                    start,
-                    end,
-                    self.line,
+                    tokens::Span { start, end, line: self.line },
                     true,
                 )
             }
@@ -248,21 +228,22 @@ impl Lexer {
 
                 end = self.cursor;
                 match count {
-                    1 => VoidstarToken::new(VoidstarTokenTypes::Dot, start, end, self.line, false),
+                    1 => VoidstarToken::new(VoidstarTokenTypes::Dot, tokens::Span { start, end, line: self.line }, false),
                     2 => {
-                        VoidstarToken::new(VoidstarTokenTypes::DotDot, start, end, self.line, false)
+                        VoidstarToken::new(VoidstarTokenTypes::DotDot, tokens::Span { start, end, line: self.line }, false)
                     }
                     3 => VoidstarToken::new(
                         VoidstarTokenTypes::Ellipsis,
-                        start,
-                        end,
-                        self.line,
+                        tokens::Span { start, end, line: self.line },
                         false,
                     ),
-                    _ => panic!(
-                        "too many dots at line {}: there are {} dots!",
-                        self.line, count
-                    ),
+                    _ => {
+                        self.errors.push(QError { 
+                            span: tokens::Span { start, end, line: self.line }, 
+                            msg: "too many dots here".to_string()
+                        });
+                        VoidstarToken::new(VoidstarTokenTypes::Halt, tokens::Span { start, end, line: self.line }, false)
+                    }
                 }
             }
 
@@ -270,13 +251,11 @@ impl Lexer {
                 AMPERSND => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::And, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::And, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Ampersand,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -285,13 +264,11 @@ impl Lexer {
                 PIPE => {
                     self.advance();
                     end = self.cursor;
-                    VoidstarToken::new(VoidstarTokenTypes::Or, start, end, self.line, false)
+                    VoidstarToken::new(VoidstarTokenTypes::Or, tokens::Span { start, end, line: self.line }, false)
                 }
                 _ => VoidstarToken::new(
                     VoidstarTokenTypes::Pipe,
-                    start,
-                    self.cursor,
-                    self.line,
+                    tokens::Span { start, end: self.cursor, line: self.line },
                     false,
                 ),
             },
@@ -305,7 +282,7 @@ impl Lexer {
                     Some(token) => {
                         self.advance();
                         let end = self.cursor;
-                        VoidstarToken::new(token.1, start, end, self.line, false)
+                        VoidstarToken::new(token.1, tokens::Span { start, end, line: self.line }, false)
                     }
                     None => panic!("unknown symbol at {}, line {}", self.current, self.line),
                 }
@@ -327,11 +304,11 @@ impl Lexer {
         {
             Some(token) => {
                 if token.1 == VoidstarTokenTypes::BoolLiteral {
-                    return VoidstarToken::new(token.1, start, end, self.line, true); // bool literals can return a semicolon
+                    return VoidstarToken::new(token.1, tokens::Span { start, end, line: self.line }, true); // bool literals can return a semicolon
                 }
-                VoidstarToken::new(token.1, start, end, self.line, false)
+                VoidstarToken::new(token.1, tokens::Span { start, end, line: self.line }, false)
             }
-            None => VoidstarToken::new(VoidstarTokenTypes::Ident, start, end, self.line, true),
+            None => VoidstarToken::new(VoidstarTokenTypes::Ident, tokens::Span { start, end, line: self.line }, true),
         }
     }
 
@@ -348,7 +325,7 @@ impl Lexer {
                 }
             }
             end = self.cursor;
-            return VoidstarToken::new(VoidstarTokenTypes::IntLiteral, start, end, self.line, true);
+            return VoidstarToken::new(VoidstarTokenTypes::IntLiteral, tokens::Span { start, end, line: self.line }, true);
         }
         // honestly, it's an overhead, but it keeps things organized
         #[allow(unused)]
@@ -361,9 +338,7 @@ impl Lexer {
             end = self.cursor;
             VoidstarToken::new(
                 VoidstarTokenTypes::FloatLiteral,
-                start,
-                end,
-                self.line,
+                tokens::Span { start, end, line: self.line },
                 true,
             )
         }
@@ -396,9 +371,7 @@ impl Lexer {
                     if !tokens.is_empty() && tokens[tokens.len() - 1].last_could_end_stmt {
                         tokens.push(VoidstarToken::new(
                             VoidstarTokenTypes::SemiColon,
-                            self.cursor,
-                            self.cursor,
-                            self.line,
+                            tokens::Span { start: self.cursor, end: self.cursor, line: self.line },
                             false,
                         ));
                     }
@@ -412,13 +385,10 @@ impl Lexer {
                     continue;
                 }
 
-                _ => QError::evaluate_new_err(
-                    format_args!(
-                        "lexer reached an impossible state on line {}:{}",
-                        self.line, self.cursor
-                    ),
-                    self.debug,
-                ),
+                _ => self.errors.push(QError{
+                    span: tokens::Span { start: self.cursor, end: self.cursor, line: self.line },
+                    msg: "lexer reached an impossible state here".to_string()
+                }),
             }
         }
 

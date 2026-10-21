@@ -83,13 +83,18 @@ pub enum VoidstarTokenTypes {
     Halt,
 }
 
+#[derive(Default, Clone, Copy)]
+pub struct Span{
+    pub start: usize,
+    pub end: usize,
+    pub line: usize
+}
+
 /// The `Token` struct used by Q4r
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct VoidstarToken {
     pub(crate) token_type: VoidstarTokenTypes,
-    pub(crate) start: usize,
-    pub(crate) end: usize,
-    pub(crate) line: usize,
+    pub(crate) span: Span,
     pub(crate) last_could_end_stmt: bool,
 }
 
@@ -97,37 +102,43 @@ impl VoidstarToken {
     /// Creates a new `VoidstarToken`
     pub fn new(
         token_type: VoidstarTokenTypes,
-        start: usize,
-        end: usize,
-        line: usize,
+        span: Span,
         last_could_end_stmt: bool,
     ) -> Self {
         Self {
             token_type,
-            start,
-            end,
-            line,
+            span,
             last_could_end_stmt,
         }
     }
 
+    #[inline]
     pub fn token_type(&self) -> VoidstarTokenTypes {
         self.token_type
     }
 
+    #[inline]
     pub fn set_token_type(&mut self, new: VoidstarTokenTypes) {
         self.token_type = new;
     }
 
+    #[inline]
     pub fn start(&self) -> usize {
-        self.start
+        self.span.start
     }
 
+    #[inline]
     pub fn end(&self) -> usize {
-        self.end
+        self.span.end
     }
 
+    #[inline]
     pub fn line(&self) -> usize {
-        self.line
+        self.span.line
+    }
+
+    #[inline]
+    pub fn span(&self) -> Span{
+        self.span
     }
 }

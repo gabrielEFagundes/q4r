@@ -1,13 +1,7 @@
 use crate::{
-    backend::Backend,
-    errors::error::QError,
-    expdesc::ExpType,
-    internals::{
-        helpers::{advance, current, expect_any, lookahead, matches},
-        q4r_functions,
-    },
-    signature::{Literal, Operator},
-    tokens::VoidstarTokenTypes,
+    backend::Backend, errors::error::QError, expdesc::ExpType, internals::{
+        helpers::{self, advance, current, expect_any, lookahead, matches}, q4r_functions,
+    }, signature::{Literal, Operator}, tokens::VoidstarTokenTypes,
 };
 
 pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
@@ -22,7 +16,7 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
 
             ExpType::LiteralExp {
                 val: Literal::to_literal(
-                    &backend.source[current.start..current.end],
+                    &backend.source[current.start()..current.end()],
                     current.token_type,
                 ),
             }
@@ -40,7 +34,7 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
 
             ExpType::LiteralExp {
                 val: Literal::to_literal(
-                    &backend.source[current.start..current.end],
+                    &backend.source[current.start()..current.end()],
                     current.token_type,
                 ),
             }
@@ -53,14 +47,16 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
             inner
         }
 
-        _ => QError::evaluate_new_err(
-            format_args!(
-                "unexpected token found on line {}:{}",
-                current(backend).line,
-                current(backend).start
-            ),
-            backend.debug,
-        ),
+        _ => {
+            let current = current(backend);
+            backend.errors.push(QError{
+                span: current.span,
+                msg: "unexpected token found here".to_string()
+            });
+            helpers::goto_safety(backend);
+
+            ExpType::BadExp
+        }
     }
 }
 

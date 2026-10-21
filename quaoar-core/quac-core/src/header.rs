@@ -55,7 +55,7 @@ impl<'a> SignatureMounter<'a> {
         is_function_extern: bool,
     ) {
         self.forward();
-        let ident = &self.source[self.current_token.start..self.current_token.end];
+        let ident = &self.source[self.current_token.start()..self.current_token.end()];
         let mut params: Vec<Parameter> = Vec::new();
 
         // fucking mess
@@ -85,7 +85,7 @@ impl<'a> SignatureMounter<'a> {
             };
 
             self.forward();
-            let ident = &self.source[self.current_token.start..self.current_token.end];
+            let ident = &self.source[self.current_token.start()..self.current_token.end()];
             params.push(Parameter {
                 ty,
                 ident,
@@ -154,14 +154,14 @@ impl<'a> SignatureMounter<'a> {
                     let ty = Type::map(self.current_token.token_type);
                     self.forward();
 
-                    let ident = &self.source[self.current_token.start..self.current_token.end];
+                    let ident = &self.source[self.current_token.start()..self.current_token.end()];
                     let mut value = ty.default_literal().to_byte_span();
 
                     if self.peekaboo().token_type == VoidstarTokenTypes::Equals {
                         self.forward();
                         self.forward();
                         value =
-                            self.source[self.current_token.start..self.current_token.end].to_vec();
+                            self.source[self.current_token.start()..self.current_token.end()].to_vec();
                     }
 
                     map.insert(

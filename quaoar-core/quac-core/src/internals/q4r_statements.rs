@@ -42,7 +42,7 @@ pub fn loop_statement<'a>(backend: &mut Backend<'a>) -> StmtType<'a> {
 }
 
 pub fn assign_statement<'a>(backend: &mut Backend<'a>) -> AssignStmt<'a> {
-    let ident = &backend.source[current(backend).start..current(backend).end];
+    let ident = &backend.source[current(backend).start()..current(backend).end()];
 
     advance(2, backend);
     let val = q4r_expressions::parse_expr(backend);
@@ -52,7 +52,7 @@ pub fn assign_statement<'a>(backend: &mut Backend<'a>) -> AssignStmt<'a> {
 
 // i += /* whatever expression */
 pub fn assign_op_statement<'a>(backend: &mut Backend<'a>) -> AssignOpStmt<'a> {
-    let ident = &backend.source[current(backend).start..current(backend).end];
+    let ident = &backend.source[current(backend).start()..current(backend).end()];
 
     advance(1, backend);
     let op = Operator::map(current(backend).token_type);

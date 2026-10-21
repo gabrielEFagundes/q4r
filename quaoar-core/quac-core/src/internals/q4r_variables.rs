@@ -22,7 +22,7 @@ pub fn var_statement<'a>(backend: &mut Backend<'a>, is_pointer: bool) -> StmtTyp
     expect(VoidstarTokenTypes::Ident, backend);
 
     let ident =
-        &backend.source[backend.tokens[backend.cursor].start..backend.tokens[backend.cursor].end];
+        &backend.source[backend.tokens[backend.cursor].start()..backend.tokens[backend.cursor].end()];
 
     let val: ExpType = if helpers::lookahead(backend).token_type == VoidstarTokenTypes::Equals {
         advance(2, backend);

@@ -127,7 +127,8 @@ impl<'a> CCompiler {
             ExpType::SignedExp { op, val } => {
                 emit!(&mut self.c_src, op.to_byte_span());
                 self.emit_branch_expression(*val);
-            }
+            },
+            ExpType::BadExp => { /* nothing to do, it'll never get here, the c runtime takes care of any runtime errors */ }
         }
     }
 

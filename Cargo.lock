@@ -35,6 +35,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "quac-doctor"
+version = "0.1.2"
+
+[[package]]
 name = "quaoar-c"
 version = "0.1.2"
 dependencies = [

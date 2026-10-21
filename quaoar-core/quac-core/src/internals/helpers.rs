@@ -1,6 +1,5 @@
 use crate::{
-    backend::Backend,
-    tokens::{VoidstarToken, VoidstarTokenTypes},
+    backend::Backend, errors::error::QError, tokens::{VoidstarToken, VoidstarTokenTypes},
 };
 
 pub fn lookahead<'a>(backend: &mut Backend<'a>) -> VoidstarToken {
@@ -53,10 +52,11 @@ pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>
         .iter()
         .any(|t| *t == backend.tokens[backend.cursor].token_type)
     {
-        panic!(
-            "found {:#?} instead of {:#?}",
-            backend.tokens[backend.cursor].token_type, expected
-        )
+        let current = current(backend);
+        backend.errors.push(QError{
+            span: current.span,
+            msg: format_args!("next is found to be {:#?} instead of {:#?}", current.token_type, expected).to_string()
+        });
     }
 }
 
@@ -65,10 +65,11 @@ pub fn matches_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a
         .iter()
         .any(|t| *t == backend.tokens[backend.cursor].token_type)
     {
-        panic!(
-            "found {:#?} instead of {:#?}",
-            backend.tokens[backend.cursor].token_type, expected
-        )
+        let current = current(backend);
+        backend.errors.push(QError{
+            span: current.span,
+            msg: format_args!("current is found to be {:#?} instead of {:#?}", current.token_type, expected).to_string()
+        });
     }
     advance(1, backend);
 }
@@ -88,6 +89,12 @@ pub fn expect_type<'a>(backend: &mut Backend<'a>) {
 
 pub fn skip_if_comma<'a>(backend: &mut Backend<'a>) {
     if current(backend).token_type == VoidstarTokenTypes::Comma {
+        backend.cursor += 1;
+    }
+}
+
+pub fn goto_safety<'a>(backend: &mut Backend<'a>){
+    while current(backend).token_type != VoidstarTokenTypes::SemiColon{
         backend.cursor += 1;
     }
 }
