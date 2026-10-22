@@ -17,7 +17,7 @@ pub fn compile(conf: Config){
         Err(reason) => panic!("{}", reason),
     };
 
-    let t = Lexer::new(s.clone(), conf.debug_mode).lexerize();
+    let t = Lexer::new(s.clone()).lexerize();
 
     let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
     let signatures = binding.mount();

@@ -21,6 +21,9 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
     f main() integer{
              ^^^^^^^ unknown type found here
     ```
+    This is done by storing where the first byte of a newline begins, with a binary search, though the logic is still in development.
+
+    **e.g.** the is pos 22 >= 35 (line 3)? No, is pos 22 >= 12 (line 2)? Yes, it's on line 2.
 - [x] Change certain types to more performant ones
     - [x] `HashMap` to `FxHashMap`
     - [x] `String` to `EcoString`

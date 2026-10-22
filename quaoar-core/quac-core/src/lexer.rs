@@ -11,18 +11,16 @@ pub struct Lexer {
     line: usize,
     cursor: usize,
     current: u8,
-    debug: bool,
     errors: Vec<QError>
 }
 
 impl Lexer {
-    pub fn new(source: Vec<u8>, debug: bool) -> Self {
+    pub fn new(source: Vec<u8>) -> Self {
         Self {
             source,
             line: 1,
             cursor: 0,
             current: 0,
-            debug,
             errors: Vec::new()
         }
     }
