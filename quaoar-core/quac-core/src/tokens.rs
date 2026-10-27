@@ -85,8 +85,11 @@ pub enum VoidstarTokenTypes {
 
 #[derive(Default, Clone, Copy)]
 pub struct Span{
+    /// Starting byte position
     pub start: usize,
+    /// Ending byte position
     pub end: usize,
+    /// The span's line
     pub line: usize
 }
 

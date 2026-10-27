@@ -16,16 +16,14 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 
 ## Quick tasks for current patch
 
-- [ ] Add error diagnosis with position (kinda like rust)
-    ```plaintext
-    f main() integer{
-             ^^^^^^^ unknown type found here
-    ```
-    This is done by storing where the first byte of a newline begins, with a binary search, though the logic is still in development.
-
-    **e.g.** the is pos 22 >= 35 (line 3)? No, is pos 22 >= 12 (line 2)? Yes, it's on line 2.
-- [x] Change certain types to more performant ones
-    - [x] `HashMap` to `FxHashMap`
-    - [x] `String` to `EcoString`
-
-- [x] Overhaul `quac` (Q4r's cli tool)
+- [ ] Add error codes for future diagnosing;
+- [ ] Add documentation comments
+- [ ] Add copyright comments
+  ```rust
+  /*
+    SPDX-License-Identifier: MPL-2.0
+    Copyright (c) 2026 Gabriel Ehrat Fagundes and the Contributing Community
+  */
+  ```
+- [ ] Implement colors on the error rendenrer (`ViewRenderer`)
+- [ ] Enhance `quac-doctor`'s module code

@@ -23,6 +23,7 @@ version = "0.1.2"
 dependencies = [
  "getopts",
  "quac-core",
+ "quac-doctor",
  "quaoar-c",
 ]
 
@@ -38,6 +39,7 @@ dependencies = [
 name = "quac-doctor"
 version = "0.1.2"
 dependencies = [
+ "ecow",
  "quac-core",
 ]
 

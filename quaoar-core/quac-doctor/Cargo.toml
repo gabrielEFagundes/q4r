@@ -6,3 +6,5 @@ version.workspace = true
 
 [dependencies]
 quac-core = { path = "../quac-core" }
+
+ecow = "0.3.1"

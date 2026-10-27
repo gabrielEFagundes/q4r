@@ -342,7 +342,15 @@ impl Lexer {
         }
     }
 
-    pub fn lexerize(&mut self) -> Vec<VoidstarToken> {
+    pub fn jump_to_safety(&mut self){
+        while self.current != CLOSE_PAREN ||
+              self.current != CLOSE_BRACE{
+            if self.end(){ return; }
+            self.advance();
+        }
+    }
+
+    pub fn lexerize(&mut self) -> (Vec<VoidstarToken>, Vec<QError>) {
         let mut tokens: Vec<VoidstarToken> = Vec::new();
         self.current = self.source[self.cursor];
 
@@ -383,13 +391,19 @@ impl Lexer {
                     continue;
                 }
 
-                _ => self.errors.push(QError{
-                    span: tokens::Span { start: self.cursor, end: self.cursor, line: self.line },
-                    msg: "lexer reached an impossible state here".to_string()
-                }),
+                _ => {
+                    let start = self.cursor;
+                    self.advance();
+
+                    self.errors.push(QError{
+                        span: tokens::Span { start, end: self.cursor, line: self.line },
+                        msg: "lexer reached an impossible state here".to_string()
+                    });
+                    self.jump_to_safety();
+                }
             }
         }
 
-        tokens
+        (tokens, self.errors.clone())
     }
 }

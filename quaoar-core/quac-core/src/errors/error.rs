@@ -23,6 +23,7 @@ pub enum QErrorTypes {
     ParserWarn,
 }
 
+#[derive(Clone)]
 pub struct QError {
     pub span: Span,
     pub msg: String
