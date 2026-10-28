@@ -18,12 +18,11 @@ pub fn compile(conf: Config){
         Ok(_) => source.unwrap(),
         Err(reason) => panic!("{}", reason),
     };
-
+    let path = helpers::get_absolute_path(&conf.path);
     let sourcemap = feed_lines(&s);
 
     let t = Lexer::new(s.clone()).lexerize();
     if !t.1.is_empty(){
-        let path = helpers::get_absolute_path(&conf.path);
         quac_doctor::diagnose(t.1, s, sourcemap, path);
         return;
     }
@@ -38,5 +37,13 @@ pub fn compile(conf: Config){
         .generate_headers(&c_compiler.signatures)
         .generate(&mut c_compiler);
 
+    if !c_compiler.errors.is_empty(){
+        quac_doctor::diagnose(c_compiler.errors, s, sourcemap, path);
+        return;
+    }
+
+    for i in &bytes{
+        print!("{}", *i as char);
+    }
     quaoar_c::exec(&bytes);
 }

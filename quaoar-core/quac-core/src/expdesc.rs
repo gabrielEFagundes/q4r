@@ -41,6 +41,8 @@ pub enum StmtType<'a> {
     LoopStmt(LoopStmt<'a>),
 
     RelationalStmt(RelationalStmt<'a>),
+
+    BadStmt
 }
 
 impl<'a> StmtType<'a> {
