@@ -65,7 +65,7 @@ Pipeline: **lexer → pass 1 (signature table) → pass 2 (codegen) → external
 - Accepted costs: `Literal::StringLiteral` uses `EcoString`
 - Prefer small, focused PRs. One language feature or one fix per PR.
 - Run `cargo fmt`, `cargo clippy`, and `cargo test` before submitting, even though the repo have workflows for this.
-<!-- - New language features need: a parser change, codegen change, an example program, and an update to `quaoar-docs.md`. -->
+- New language features need: a parser change, codegen change, an example program, and an update to [Quaoar Syntax](../docs/syntax/BASIC-SYNTAX.md).
 
 ## For AI agents specifically
 
