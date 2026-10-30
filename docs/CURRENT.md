@@ -1,8 +1,11 @@
 ## On the roadmap
 
-As of v0.1.1, I'm enhancing the C compiler backend myself until I'm satisfied with the result.
+`2026/10/30` 
+  |- I finished an intial version of the diagnoser, I'll now focus on v0.2
+  |-
 
-After some patches for v0.1, I'll release it and dive into v0.2.
+  |- The QBE update will bring patches that will fix most of the compiler's pipeline, so files will change a **lot**!
+  |-
 
 Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
 

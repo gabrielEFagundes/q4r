@@ -102,6 +102,8 @@ pub fn parse_unary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
     }
 }
 
+// this is strictly a left to right parse, which is bad
+// I'll be fixing as I go for the qbe backend, I really can't wait anymore
 pub fn parse_expr<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
     let mut left = parse_unary(backend);
 
