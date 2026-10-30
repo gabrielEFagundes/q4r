@@ -2,10 +2,7 @@ use ecow::EcoString;
 use rustc_hash::FxHashMap;
 
 use crate::{
-    backend::Backend,
-    expdesc::{AssignOpStmt, AssignStmt, ExpType, StmtType},
-    internals::{q4r_expressions, q4r_functions, q4r_statements, q4r_variables},
-    signature::Signature,
+    backend::Backend, errors::error::QError, expdesc::{AssignOpStmt, AssignStmt, ExpType, StmtType}, internals::{q4r_expressions, q4r_functions, q4r_statements, q4r_variables}, signature::Signature,
 };
 
 /// Trait used by the support modules that generate code
@@ -50,5 +47,5 @@ pub trait Codegen<'a> {
 
     fn generate_headers(&mut self, signatures: &FxHashMap<EcoString, Signature>) -> &mut Self;
 
-    fn generate(&mut self, backend: &mut Backend<'a>) -> Vec<u8>;
+    fn generate(&mut self, backend: &mut Backend<'a>) -> (Vec<u8>, Vec<QError>);
 }

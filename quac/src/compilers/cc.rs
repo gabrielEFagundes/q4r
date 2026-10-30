@@ -1,7 +1,7 @@
 use std::fs;
 
 use quac_doctor;
-use quaoar_c::compiler::CCompiler;
+use quaoar_c::emitter::CCompiler;
 use quac_core::{
     backend::Backend, 
     codegen::Codegen, 
@@ -26,6 +26,7 @@ pub fn compile(conf: Config){
         quac_doctor::diagnose(t.1, s, sourcemap, path);
         return;
     }
+    println!("{:#?}", t.0);
 
     let mut binding = SignatureMounter::new(s.as_slice(), t.0.as_slice());
     let signatures = binding.mount();
@@ -37,13 +38,13 @@ pub fn compile(conf: Config){
         .generate_headers(&c_compiler.signatures)
         .generate(&mut c_compiler);
 
-    if !c_compiler.errors.is_empty(){
+    if !bytes.1.is_empty(){
         quac_doctor::diagnose(c_compiler.errors, s, sourcemap, path);
         return;
     }
 
-    for i in &bytes{
+    for i in &bytes.0{
         print!("{}", *i as char);
     }
-    quaoar_c::exec(&bytes);
+    quaoar_c::exec(&bytes.0, conf.out);
 }

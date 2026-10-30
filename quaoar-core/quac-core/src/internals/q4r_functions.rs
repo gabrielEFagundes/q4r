@@ -13,19 +13,19 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtTy
     expect(VoidstarTokenTypes::Ident, backend);
 
     let ident =
-        &backend.source[backend.tokens[backend.cursor].start()..backend.tokens[backend.cursor].end()];
+        &backend.source[current(backend).start()..current(backend).end()];
 
     expect(VoidstarTokenTypes::OpenParents, backend);
     let mut params: Vec<Parameter> = Vec::new();
 
     advance(1, backend);
-    while backend.tokens[backend.cursor].token_type != VoidstarTokenTypes::CloseParents {
+    while current(backend).token_type != VoidstarTokenTypes::CloseParents {
         params.push(q4r_parameters::declare_parameter(backend))
     }
 
     let returns = if Type::has(helpers::lookahead(backend).token_type) {
         advance(1, backend);
-        Type::map(backend.tokens[backend.cursor].token_type)
+        Type::map(current(backend).token_type)
     } else {
         Type::Void
     };
@@ -41,7 +41,7 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtTy
 
 pub fn fun_call<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
     let ident =
-        &backend.source[backend.tokens[backend.cursor].start()..backend.tokens[backend.cursor].end()];
+        &backend.source[current(backend).start()..current(backend).end()];
     expect(VoidstarTokenTypes::OpenParents, backend);
 
     let mut params: Vec<ExpType<'a>> = Vec::new();
@@ -53,5 +53,5 @@ pub fn fun_call<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
     }
 
     advance(1, backend);
-    ExpType::CallExp { ident, params }
+    ExpType::call_exp(ident, params)
 }

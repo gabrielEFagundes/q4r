@@ -1,7 +1,6 @@
 tests/
 *.exe
-*/q4rzig
-*/q4rgcc
+.quaoar
 
 _*.qo
 

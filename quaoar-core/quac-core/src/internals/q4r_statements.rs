@@ -1,7 +1,20 @@
 use crate::{
-    backend::Backend, errors::error::QError, expdesc::{AssignOpStmt, AssignStmt, StmtType}, internals::{
-        helpers::{self, advance, current, expect, lookahead, matches}, q4r_expressions, q4r_values,
-    }, signature::{DecKind, Operator}, tokens::VoidstarTokenTypes,
+    backend::Backend, 
+    expdesc::{AssignOpStmt, AssignStmt, StmtType}, 
+    internals::{
+        helpers::{
+            self, 
+            advance, 
+            current, 
+            expect, 
+            lookahead, 
+            matches
+        }, 
+        q4r_expressions, 
+        q4r_values,
+    }, 
+    signature::{DecKind, Operator}, 
+    tokens::VoidstarTokenTypes,
 };
 
 pub fn relational_statement<'a>(backend: &mut Backend<'a>) -> StmtType<'a> {
@@ -32,13 +45,7 @@ pub fn loop_statement<'a>(backend: &mut Backend<'a>) -> StmtType<'a> {
 
         StmtType::loop_stmt(DecKind::For, initializer, exp, incrementer)
     } else {
-        let current = current(backend);
-        backend.errors.push(QError{
-            span: current.span,
-            msg: "unknown statement found here".to_string()
-        });
-        helpers::goto_safety(backend);
-        
+        helpers::add_error("unknown statement found here", backend);        
         StmtType::BadStmt
     }
 }

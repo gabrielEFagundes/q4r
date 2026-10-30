@@ -20,6 +20,7 @@ impl QuacArgs{
         self.opts.optflag("h", "help", "shows the usage of quac");
         self.opts.optflag("d", "debug", "whether debug mode is active or not, debug mode will add rust's backtrace on top of q4r's default error messages");
         self.opts.optopt("", "backend", "change the backend of the compiler", "<qbe/c>");
+        self.opts.optopt("o", "out", "changes the output path for the compiled file", "<your_output/target>");
         self
     }
 

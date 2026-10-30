@@ -1,5 +1,10 @@
 use crate::{
-    backend::Backend, errors::error::QError, tokens::{VoidstarToken, VoidstarTokenTypes},
+    backend::Backend, 
+    errors::error::QError, 
+    tokens::{
+        VoidstarToken, 
+        VoidstarTokenTypes
+    },
 };
 
 pub fn lookahead<'a>(backend: &mut Backend<'a>) -> VoidstarToken {
@@ -15,21 +20,17 @@ pub fn current<'a>(backend: &mut Backend<'a>) -> VoidstarToken {
 }
 
 #[inline]
-pub fn advance<'a>(amount: usize, backend: &mut Backend<'a>) -> VoidstarToken {
+pub fn advance<'a>(amount: usize, backend: &mut Backend<'a>) {
     backend.cursor += amount;
-    current(backend)
 }
 
 /// Advances past the current token and compares with the expected.
 pub fn expect<'a>(expected: VoidstarTokenTypes, backend: &mut Backend<'a>) {
     backend.cursor += 1;
     if backend.cursor < backend.tokens.len()
-        && backend.tokens[backend.cursor].token_type != expected
+        && current(backend).token_type != expected
     {
-        panic!(
-            "found {:#?} instead of {:#?}",
-            backend.tokens[backend.cursor].token_type, expected
-        )
+        add_error(format!("found {:#?} instead of {:#?}", current(backend).token_type, expected).as_str(), backend);
     }
 }
 
@@ -93,9 +94,26 @@ pub fn skip_if_comma<'a>(backend: &mut Backend<'a>) {
     }
 }
 
+// maybe use closures here instead of if statements?
+#[inline]
+pub fn add_error<'a>(msg: &str, backend: &mut Backend<'a>){
+    let current = current(backend);
+    backend.errors.push(QError { span: current.span, msg: msg.to_string() });
+    goto_safety(backend);
+}
+
+#[inline]
+pub fn ok_or_report<'a, T>(backend: &mut Backend<'a>, r: Result<T, &str>) -> Option<T>{
+    r.map_err(|msg| add_error(msg, backend)).ok()
+}
+
 pub fn goto_safety<'a>(backend: &mut Backend<'a>){
-    while current(backend).token_type != VoidstarTokenTypes::SemiColon{
-        backend.cursor += 1;
+    while !end(backend)
+        && current(backend).token_type != VoidstarTokenTypes::SemiColon
+        && current(backend).token_type != VoidstarTokenTypes::CloseParents
+        && current(backend).token_type != VoidstarTokenTypes::CloseBraces
+    {
+        advance(1, backend);
     }
 }
 

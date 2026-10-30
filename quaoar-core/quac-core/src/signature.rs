@@ -1,11 +1,9 @@
 use ecow::EcoString;
 
 use crate::{
-    expdesc::Parameter,
-    signature::Literal::{
-        BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, StringLiteral, VarLiteral,
-    },
-    tokens::VoidstarTokenTypes,
+    expdesc::Parameter, signature::Literal::{
+        BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, Invalid, StringLiteral, VarLiteral,
+    }, tokens::VoidstarTokenTypes,
 };
 
 const INT_DEF: isize = 0;
@@ -22,6 +20,8 @@ pub enum Type {
     Char,
     Bool,
     Pointer(Box<Type>),
+
+    Invalid
 }
 
 impl Type {
@@ -33,7 +33,7 @@ impl Type {
             VoidstarTokenTypes::Float => Self::Float,
             VoidstarTokenTypes::Char => Self::Char,
             VoidstarTokenTypes::Bool => Self::Bool,
-            _ => panic!("invalid data type `{:#?}`", token_type),
+            _ => Self::Invalid,
         }
     }
 
@@ -41,7 +41,11 @@ impl Type {
         Self::Pointer(Box::new(self))
     }
 
-    pub fn to_byte_span(&self) -> Vec<u8> {
+    pub fn is_invalid(&self) -> bool{
+        *self == Type::Invalid
+    }
+
+    pub fn to_byte_span(&self) -> Result<Vec<u8>, &str> {
         let mut vec = Vec::new();
         match self {
             Type::Void => vec.extend_from_slice(b"void"),
@@ -50,11 +54,12 @@ impl Type {
             Type::Char => vec.extend_from_slice(b"char"),
             Type::Bool => vec.extend_from_slice(b"bool"),
             Type::Pointer(val) => {
-                vec.extend_from_slice(val.to_byte_span().as_slice());
+                vec.extend_from_slice(&val.to_byte_span()?);
                 vec.extend_from_slice(b"*");
-            }
-        }
-        vec
+            },
+            _ => return Err("unknown type found here"),
+        };
+        Ok(vec)
     }
 
     /// Returns `true` if the `VoidstarTokenTypes` type is valid inside `Type`, false otherwise
@@ -69,14 +74,15 @@ impl Type {
         )
     }
 
-    pub fn as_token_type(&self) -> VoidstarTokenTypes {
+    pub fn as_token_type(&self) -> Result<VoidstarTokenTypes, &str> {
         match self {
-            Type::Void => VoidstarTokenTypes::Void,
-            Type::Int => VoidstarTokenTypes::Int,
-            Type::Float => VoidstarTokenTypes::Float,
-            Type::Char => VoidstarTokenTypes::Char,
-            Type::Bool => VoidstarTokenTypes::Bool,
-            Type::Pointer(val) => val.as_token_type(),
+            Type::Void => Ok(VoidstarTokenTypes::Void),
+            Type::Int => Ok(VoidstarTokenTypes::Int),
+            Type::Float => Ok(VoidstarTokenTypes::Float),
+            Type::Char => Ok(VoidstarTokenTypes::Char),
+            Type::Bool => Ok(VoidstarTokenTypes::Bool),
+            Type::Pointer(val) => Ok(val.as_token_type()?),
+            Type::Invalid => Err("unknown type found here")
         }
     }
 
@@ -88,7 +94,7 @@ impl Type {
             Type::Bool => Literal::BoolLiteral(BOOL_DEF),
             Type::Pointer(val) => Literal::PointerLiteral(Box::new(val.default_literal())),
             // default_literal() is only called on values (literals), that's why this is valid
-            _ => panic!("invalid syntax: `{:#?}` on variable type", self),
+            _ => Literal::Invalid,
         }
     }
 }
@@ -104,20 +110,25 @@ pub enum Literal {
 
     /// Used only on v0.1 snapshot, completely unstable in terms of updates
     VarLiteral(Vec<u8>),
+
+    Invalid
 }
 
 impl Literal {
     /// Funny enough, this function is ALWAYS the source of most problems
     /// I've been finding so far
-    pub fn to_byte_span(&self) -> Vec<u8> {
+    /// 
+    /// Certainly won't be used on v0.2
+    pub fn to_byte_span(&self) -> Result<Vec<u8>, &str> {
         match self {
-            Literal::IntLiteral(v) => v.to_string().into_bytes(),
-            Literal::FloatLiteral(v) => v.to_string().into_bytes(),
-            Literal::CharLiteral(v) => Vec::from([*v as u8]),
-            Literal::BoolLiteral(v) => v.to_string().into_bytes(),
-            Literal::PointerLiteral(v) => v.to_byte_span(),
-            Literal::StringLiteral(v) => v.as_bytes().to_vec(),
-            Literal::VarLiteral(v) => v.to_vec(),
+            Literal::IntLiteral(v) => Ok(v.to_string().into_bytes()),
+            Literal::FloatLiteral(v) => Ok(v.to_string().into_bytes()),
+            Literal::CharLiteral(v) => Ok(Vec::from([*v as u8])),
+            Literal::BoolLiteral(v) => Ok(v.to_string().into_bytes()),
+            Literal::PointerLiteral(v) => Ok(v.to_byte_span()?),
+            Literal::StringLiteral(v) => Ok(v.as_bytes().to_vec()),
+            Literal::VarLiteral(v) => Ok(v.to_vec()),
+            Invalid => Err("invalid literal found here")
         }
     }
 
@@ -139,7 +150,7 @@ impl Literal {
             VoidstarTokenTypes::CharLiteral => CharLiteral(Self::parse_char(bytes)),
             VoidstarTokenTypes::BoolLiteral => BoolLiteral(Self::parse_bool(bytes)),
             VoidstarTokenTypes::StringLiteral => StringLiteral(Self::parse_str(bytes)),
-            _ => panic!("invalid syntax: `{:#?}` on variable type", ty),
+            _ => Invalid
         }
     }
 
@@ -151,7 +162,7 @@ impl Literal {
             BoolLiteral(_) => VoidstarTokenTypes::BoolLiteral,
             StringLiteral(_) => VoidstarTokenTypes::StringLiteral,
             VarLiteral(_) => VoidstarTokenTypes::Ident,
-            Literal::PointerLiteral(_) => panic!("can't parse a literal pointer as a token"),
+            _ => VoidstarTokenTypes::Halt
         }
     }
 
@@ -161,7 +172,7 @@ impl Literal {
             VoidstarTokenTypes::FloatLiteral => VoidstarTokenTypes::Float,
             VoidstarTokenTypes::BoolLiteral => VoidstarTokenTypes::Bool,
             VoidstarTokenTypes::CharLiteral => VoidstarTokenTypes::Char,
-            _ => panic!("can't map from `{:#?}` to non-literal", ty),
+            _ => VoidstarTokenTypes::Halt,
         }
     }
 
@@ -214,6 +225,8 @@ pub enum Operator {
     And,
     Or,
     Not,
+
+    Invalid
 }
 
 impl Operator {
@@ -236,29 +249,30 @@ impl Operator {
             VoidstarTokenTypes::And => Operator::And,
             VoidstarTokenTypes::Or => Operator::Or,
             VoidstarTokenTypes::Not => Operator::Not,
-            _ => panic!("invalid operator type `{:#?}`", token_type),
+            _ => Operator::Invalid,
         }
     }
 
-    pub fn to_byte_span(&self) -> &'static [u8] {
+    pub fn to_byte_span(&self) -> Result<&'static [u8], &str> {
         match self {
-            Operator::EqualsEquals => b"==",
-            Operator::Different => b"!=",
-            Operator::Greater => b">",
-            Operator::GreaterEq => b">=",
-            Operator::Lesser => b"<",
-            Operator::LesserEq => b"<=",
-            Operator::Plus => b"+",
-            Operator::Minus => b"-",
-            Operator::Multiplication => b"*",
-            Operator::Division => b"/",
-            Operator::Increment => b"+=",
-            Operator::Decrement => b"-=",
-            Operator::Multiply => b"*=",
-            Operator::Divide => b"/=",
-            Operator::And => b"&&",
-            Operator::Or => b"||",
-            Operator::Not => b"!",
+            Operator::EqualsEquals => Ok(b"=="),
+            Operator::Different => Ok(b"!="),
+            Operator::Greater => Ok(b">"),
+            Operator::GreaterEq => Ok(b">="),
+            Operator::Lesser => Ok(b"<"),
+            Operator::LesserEq => Ok(b"<="),
+            Operator::Plus => Ok(b"+"),
+            Operator::Minus => Ok(b"-"),
+            Operator::Multiplication => Ok(b"*"),
+            Operator::Division => Ok(b"/"),
+            Operator::Increment => Ok(b"+="),
+            Operator::Decrement => Ok(b"-="),
+            Operator::Multiply => Ok(b"*="),
+            Operator::Divide => Ok(b"/="),
+            Operator::And => Ok(b"&&"),
+            Operator::Or => Ok(b"||"),
+            Operator::Not => Ok(b"!"),
+            _ => Err("unknown operator found here")
         }
     }
 
@@ -316,6 +330,8 @@ pub enum DecKind {
     If,
     For,
     While,
+    
+    Invalid
 }
 
 impl DecKind {
@@ -323,15 +339,16 @@ impl DecKind {
         match token_type {
             VoidstarTokenTypes::If => Self::If,
             VoidstarTokenTypes::For => Self::For,
-            _ => panic!("invalid declaration kind `{:#?}`", token_type),
+            _ => Self::Invalid,
         }
     }
 
-    pub fn to_byte_span(&self) -> &'static [u8] {
+    pub fn to_byte_span(&self) -> Result<&'static [u8], &str> {
         match self {
-            DecKind::If => b"if",
-            DecKind::For => b"for",
-            DecKind::While => b"while",
+            DecKind::If => Ok(b"if"),
+            DecKind::For => Ok(b"for"),
+            DecKind::While => Ok(b"while"),
+            _ => Err("unknown declaration type found here")
         }
     }
 }
@@ -361,13 +378,13 @@ impl<'a> Signature<'a> {
         {
             return (returns, params, is_extern);
         }
-        panic!("bad call of `destructure_fun`")
+        panic!("rust: bad call of `destructure_fun`") // internal
     }
 
     pub fn destructure_glob(v: &'a Signature) -> (&'a Type, &'a Vec<u8>) {
         if let Signature::Global { ty, value } = v {
             return (ty, value);
         }
-        panic!("bad call of `destructure_glob`")
+        panic!("rust: bad call of `destructure_glob`") // internal
     }
 }

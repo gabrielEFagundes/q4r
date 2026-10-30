@@ -1,19 +1,21 @@
 use crate::{
-    backend::Backend, errors::error::QError, expdesc::Parameter, internals::helpers::{self, advance}, signature::Type, tokens::VoidstarTokenTypes,
+    backend::Backend, 
+    expdesc::Parameter, 
+    internals::helpers::{self, advance, current}, 
+    signature::Type, 
+    tokens::VoidstarTokenTypes,
 };
 
 pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Parameter<'a> {
-    let mut current = backend.tokens[backend.cursor];
-    match current.token_type {
+    match current(backend).token_type {
         VoidstarTokenTypes::Asterisk => {
             helpers::expect_type(backend);
 
-            let ty = Type::map(current.token_type).map_pointer();
+            let ty = Type::map(current(backend).token_type).map_pointer();
 
             helpers::expect(VoidstarTokenTypes::Ident, backend);
 
-            current = backend.tokens[backend.cursor];
-            let ident = &backend.source[current.start()..current.end()];
+            let ident = &backend.source[current(backend).start()..current(backend).end()];
             advance(1, backend);
 
             Parameter {
@@ -27,12 +29,11 @@ pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Parameter<'a> {
         | VoidstarTokenTypes::Float
         | VoidstarTokenTypes::Char
         | VoidstarTokenTypes::Bool => {
-            let ty = Type::map(current.token_type);
+            let ty = Type::map(current(backend).token_type);
 
             helpers::expect(VoidstarTokenTypes::Ident, backend);
 
-            current = backend.tokens[backend.cursor];
-            let ident = &backend.source[current.start()..current.end()];
+            let ident = &backend.source[current(backend).start()..current(backend).end()];
             advance(1, backend);
 
             Parameter {
@@ -58,12 +59,7 @@ pub fn declare_parameter<'a>(backend: &mut Backend<'a>) -> Parameter<'a> {
         }
 
         _ => {
-            QError{
-                span: current.span,
-                msg: "Unknown symbol found here".to_string()
-            };
-            helpers::goto_safety(backend);
-            
+            helpers::add_error("unknown symbol found here", backend);
             Parameter::default()
         }
     }

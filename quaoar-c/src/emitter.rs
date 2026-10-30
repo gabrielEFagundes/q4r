@@ -1,192 +1,294 @@
+use crate::r#impl::AppendTo;
 use ecow::EcoString;
 use quac_core::{
-    backend::Backend, codegen::Codegen, errors::error::QError, expdesc::StmtType,
-    internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
+    backend::Backend, codegen::Codegen, expdesc::{
+        AssignOpStmt, 
+        AssignStmt, 
+        BinaryExp, 
+        CallExp, 
+        ExpType, 
+        FunStmt, 
+        LiteralExp, 
+        LoopStmt, 
+        RelationalStmt, 
+        VarStmt,
+    }, signature::{Signature, Type}, tokens::VoidstarTokenTypes,
 };
 use rustc_hash::FxHashMap;
 
-use crate::{TERMINATORS, compiler::CCompiler};
+use crate::emit;
 
-impl<'a> Codegen<'a> for CCompiler {
-    fn generate_headers(&mut self, signatures: &FxHashMap<EcoString, Signature>) -> &mut Self {
-        self.gen_signature_headers(signatures);
-        self
+/// The `quaoar-c` compiler generates a source bytespan
+/// and parses it to the first gcc compiler Q4r finds on PATH.
+///
+/// `gcc -x c -o <prog_name> <<< '<code_str>'`
+///
+/// Quac adapts to each available compiler at the time.
+///
+/// ## Available Compilers
+/// Currently, Q4r supports the following C compilers:
+/// - zig cc
+/// - gcc
+///
+/// Those are the ones that were tested.
+pub struct CCompiler {
+    pub(crate) c_src: Vec<u8>,
+}
+
+#[allow(unused)]
+impl Default for CCompiler {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<'a> CCompiler {
+    pub fn new() -> Self {
+        Self { c_src: Vec::new() }
     }
 
-    fn generate(&mut self, backend: &mut Backend<'a>) -> Vec<u8> {
-        while !helpers::end(backend) {
-            match backend.tokens[backend.cursor].token_type() {
-                // asterisks located HERE on Q4r will always mean it's a pointer
-                // expressions consume the multiplication asterisks as they parse.
-                VoidstarTokenTypes::Asterisk => {
-                    helpers::advance(1, backend);
-                    match helpers::current(backend).token_type() {
-                        VoidstarTokenTypes::Int
-                        | VoidstarTokenTypes::Float
-                        | VoidstarTokenTypes::Bool
-                        | VoidstarTokenTypes::Char
-                        | VoidstarTokenTypes::Void => {
-                            let dec = Self::var_statement(backend, true);
-                            self.emit_var_decl(dec);
-                        }
+    pub(crate) fn gen_signature_headers(&mut self, signatures: &FxHashMap<EcoString, Signature>) {
+        for i in signatures {
+            match i.1 {
+                Signature::Function {
+                    returns,
+                    params,
+                    is_extern,
+                } => {
+                    if *is_extern {
+                        self.emit_simple(b"extern ");
+                    }
+                    
+                    emit!(
+                        &mut self.c_src,
+                        returns.to_byte_span().unwrap_or_default().as_slice(),
+                        b' ',
+                        i.0.as_bytes(),
+                        b'('
+                    );
 
-                        VoidstarTokenTypes::Ident => {
-                            let next = helpers::lookahead(backend);
-                            match next.token_type() {
-                                VoidstarTokenTypes::OpenParents => {
-                                    self.emit_branch_expression(Self::parse_expr(backend));
-                                }
+                    for i in 0..params.len() {
+                        if params[i].is_etc {
+                            self.emit_simple(b"...");
+                        } else {
+                            emit!(&mut self.c_src, params[i].ty.to_byte_span().unwrap_or_default().as_slice());
 
-                                VoidstarTokenTypes::Equals => {
-                                    self.emit_simple(b"*");
-                                    self.emit_assign_stmt(Self::assign_statement(backend));
-                                }
-
-                                VoidstarTokenTypes::Increment
-                                | VoidstarTokenTypes::Decrement
-                                | VoidstarTokenTypes::Multiply
-                                | VoidstarTokenTypes::Divide => {
-                                    self.emit_op_assign_stmt(Self::assign_op_statement(backend));
-                                }
-
-                                _ => {
-                                    let current = helpers::current(backend);
-                                    backend.errors.push(
-                                        QError { 
-                                            span: current.span(),
-                                            msg: "unexpected token found here".to_string()
-                                        }
-                                    )
-                                }
+                            if i != params.len() - 1 {
+                                emit!(&mut self.c_src, b',');
                             }
                         }
-                        _ => panic!("bad usage of asterisk at the beggining of statement"),
                     }
+
+                    emit!(&mut self.c_src, b')', b';');
                 }
+                Signature::Global { ty, value: _ } => {
+                    let fintype = if ty.eq(&Type::Bool) { &Type::Int } else { ty };
 
-                VoidstarTokenTypes::Int
-                | VoidstarTokenTypes::Float
-                | VoidstarTokenTypes::Bool
-                | VoidstarTokenTypes::Char
-                | VoidstarTokenTypes::Void => {
-                    let dec = Self::var_statement(backend, false);
-                    self.emit_var_decl(dec);
+                    emit!(
+                        &mut self.c_src,
+                        fintype.to_byte_span().unwrap_or_default().as_slice(),
+                        b' ',
+                        i.0.as_bytes(),
+                        b';'
+                    );
                 }
+            }
+        }
+    }
 
-                VoidstarTokenTypes::If => {
-                    let cmp = Self::relational_statement(backend);
-                    backend.cursor += 1;
+    #[inline]
+    pub(crate) fn emit_simple(&mut self, to_emit: &'a [u8]) {
+        emit!(&mut self.c_src, to_emit);
+    }
 
-                    self.emit_conditional(cmp, backend);
+    pub(crate) fn emit_branch_expression(&mut self, expression: ExpType<'a>) {
+        match expression {
+            ExpType::BinaryExp(exp) => {
+                self.emit_operator_expression(exp)
+            }
+            ExpType::LiteralExp(exp) => {
+                self.emit_literal_expression(exp)
+            }
+            ExpType::CallExp(exp) => {
+                self.emit_fun_call(exp)
+            }
+            ExpType::AddressExp(exp) => {
+                emit!(&mut self.c_src, b'&');
+                self.emit_branch_expression(*exp.val);
+            }
+            ExpType::SignedExp(exp) => {
+                emit!(&mut self.c_src, exp.op.to_byte_span().unwrap_or_default());
+                self.emit_branch_expression(*exp.val);
+            },
+            ExpType::BadExp => { /* nothing to do, it'll never get here, the c runtime takes care of any runtime errors */ }
+        }
+    }
+
+    pub(crate) fn emit_literal_expression(&mut self, exp: LiteralExp) {
+        // e.g. (literal)
+        if exp.val.from_literal() == VoidstarTokenTypes::CharLiteral {
+            emit!(
+                &mut self.c_src,
+                b'(',
+                b'\'',
+                exp.val.to_byte_span().unwrap_or_default().as_slice(),
+                b'\'',
+                b')'
+            );
+        } else if exp.val.from_literal() == VoidstarTokenTypes::StringLiteral {
+            emit!(
+                &mut self.c_src,
+                b'(',
+                b'"',
+                exp.val.to_byte_span().unwrap_or_default().as_slice(),
+                b'"',
+                b')'
+            );
+        } else {
+            emit!(&mut self.c_src, b'(', exp.val.to_byte_span().unwrap_or_default().as_slice(), b')');
+        }
+    }
+
+    pub(crate) fn emit_operator_expression(&mut self, exp: BinaryExp) {
+        // e.g. ((left)==(right)) or ((left)+(right))
+        emit!(&mut self.c_src, b'(', b'(');
+
+        self.emit_branch_expression(*exp.left);
+
+        emit!(&mut self.c_src, b')', exp.operator.to_byte_span().unwrap_or_default(), b'(');
+
+        self.emit_branch_expression(*exp.right);
+
+        emit!(&mut self.c_src, b')', b')');
+    }
+
+    pub(crate) fn emit_conditional(&mut self, stmt: RelationalStmt, backend: &mut Backend<'a>) {
+        // e.g. if expression{} or while expression{}
+        emit!(&mut self.c_src, stmt.kind.to_byte_span().unwrap_or_default(), b' ');
+        self.emit_branch_expression(stmt.exp);
+
+        emit!(&mut self.c_src, b'{');
+        self.generate(backend);
+        emit!(&mut self.c_src, b'}');
+    }
+
+    pub fn emit_for_loop(&mut self, stmt: LoopStmt, backend: &mut Backend<'a>) {
+        emit!(
+            &mut self.c_src,
+            stmt.kind.to_byte_span().unwrap_or_default(),
+            b'(',
+            &b"int "[..]
+        );
+
+        let identifier = stmt.initializer.ident;
+        self.emit_assign_stmt(stmt.initializer);
+        self.emit_branch_expression(stmt.exp);
+
+        emit!(
+            &mut self.c_src,
+            b';',
+            identifier,
+            b'+',
+            b'=',
+            stmt.incrementer.to_byte_span().unwrap_or_default().as_slice(),
+            b')',
+            b'{'
+        );
+        self.generate(backend);
+        emit!(&mut self.c_src, b'}');
+    }
+
+    pub(crate) fn emit_else(&mut self, backend: &mut Backend<'a>) {
+        emit!(&mut self.c_src, &b"else"[..], b'{');
+        self.generate(backend);
+        emit!(&mut self.c_src, b'}');
+    }
+
+    pub(crate) fn emit_var_decl(&mut self, stmt: VarStmt) {
+        // e.g. type var = value;
+        emit!(
+            &mut self.c_src,
+            stmt.ty.to_byte_span().unwrap_or_default().as_slice(),
+            b' ',
+            stmt.ident,
+            b'='
+        );
+        self.emit_branch_expression(stmt.val);
+        emit!(&mut self.c_src, b';');
+    }
+
+    pub(crate) fn emit_assign_stmt(&mut self, statement: AssignStmt<'a>) {
+        emit!(&mut self.c_src, statement.ident, b'=');
+        self.emit_branch_expression(statement.val);
+        emit!(&mut self.c_src, b';')
+    }
+
+    pub(crate) fn emit_op_assign_stmt(&mut self, statement: AssignOpStmt<'a>) {
+        emit!(
+            &mut self.c_src,
+            statement.ident,
+            statement.op.to_byte_span().unwrap_or_default()
+        );
+        self.emit_branch_expression(statement.val);
+        emit!(&mut self.c_src, b';')
+    }
+
+    pub(crate) fn emit_fun_decl(&mut self, stmt: FunStmt, backend: &mut Backend<'a>) {
+        // int function(int p1, int p2){ }
+        if stmt.is_extern {
+            self.emit_simple(b"extern ");
+        }
+
+        emit!(
+            &mut self.c_src,
+            stmt.returns.to_byte_span().unwrap_or_default().as_slice(),
+            b' ',
+            stmt.ident,
+            b'('
+        );
+
+        for i in 0..stmt.params.len() {
+            let current = &stmt.params[i];
+
+            if current.is_etc {
+                emit!(&mut self.c_src, current.ident);
+            } else {
+                emit!(
+                    &mut self.c_src,
+                    current.ty.to_byte_span().unwrap_or_default().as_slice(),
+                    b' ',
+                    current.ident
+                );
+
+                if i != stmt.params.len() - 1 {
+                    emit!(&mut self.c_src, b',');
                 }
-
-                VoidstarTokenTypes::For => {
-                    let loops = Self::loop_statement(backend);
-                    match loops {
-                        StmtType::LoopStmt(_) => self.emit_for_loop(loops, backend),
-
-                        StmtType::RelationalStmt(_) => self.emit_conditional(loops, backend),
-
-                        _ => {
-                            let current = helpers::current(backend);
-                            backend.errors.push(
-                                QError { 
-                                    span: current.span(),
-                                    msg: "unexpected token found here".to_string()
-                                }
-                            );
-                        }
-                    }
-                }
-
-                VoidstarTokenTypes::Else => {
-                    backend.cursor += 1;
-                    let current = backend.tokens[backend.cursor];
-
-                    if current.token_type() == VoidstarTokenTypes::If {
-                        self.emit_simple(b"else ");
-                        let cmp = Self::relational_statement(backend);
-                        self.emit_conditional(cmp, backend);
-                    } else {
-                        self.emit_else(backend);
-                    }
-                }
-
-                // on the C compiler's case, it's pointless to define the extern function twice, since it's
-                // already defined when generating the table of signatures. That's why we skip it here.
-                VoidstarTokenTypes::Extern => {
-                    backend.cursor += 1;
-                    if backend.tokens[backend.cursor].token_type() == VoidstarTokenTypes::OpenBraces
-                    {
-                        while backend.tokens[backend.cursor].token_type()
-                            != VoidstarTokenTypes::CloseBraces
-                        {
-                            backend.cursor += 1;
-                        }
-                    } else {
-                        while backend.tokens[backend.cursor].token_type()
-                            != VoidstarTokenTypes::CloseParents
-                        {
-                            backend.cursor += 1;
-                        }
-                    }
-                    backend.cursor += 1;
-                }
-
-                VoidstarTokenTypes::Function => {
-                    let fun = Self::fun_declaration(backend, false);
-                    self.emit_fun_decl(fun, backend);
-                }
-
-                VoidstarTokenTypes::Ident => {
-                    let next = helpers::lookahead(backend);
-                    match next.token_type() {
-                        VoidstarTokenTypes::OpenParents => {
-                            self.emit_fun_call(Self::parse_expr(backend));
-                            self.emit_simple(b";");
-                        }
-
-                        VoidstarTokenTypes::Equals => {
-                            self.emit_assign_stmt(Self::assign_statement(backend));
-                        }
-
-                        VoidstarTokenTypes::Increment
-                        | VoidstarTokenTypes::Decrement
-                        | VoidstarTokenTypes::Multiply
-                        | VoidstarTokenTypes::Divide => {
-                            self.emit_op_assign_stmt(Self::assign_op_statement(backend));
-                        }
-
-                        _ => {
-                            let current = helpers::current(backend);
-                            backend.errors.push(
-                                QError {
-                                    span: current.span(),
-                                    msg: "unexpected token found here".to_string()
-                                }
-                            );
-                        },
-                    }
-                }
-
-                VoidstarTokenTypes::Return => {
-                    backend.cursor += 1;
-
-                    self.emit_return(Self::parse_expr(backend));
-
-                    helpers::matches_any(&TERMINATORS, backend);
-                }
-
-                VoidstarTokenTypes::OpenBraces => backend.cursor += 1,
-                VoidstarTokenTypes::CloseBraces => {
-                    backend.cursor += 1;
-                    break;
-                }
-
-                _ => backend.cursor += 1,
             }
         }
 
-        self.c_src.clone()
+        emit!(&mut self.c_src, b')', b'{');
+        self.generate(backend);
+        emit!(&mut self.c_src, b'}');
+    }
+
+    pub(crate) fn emit_fun_call(&mut self, call: CallExp<'a>) {
+        emit!(&mut self.c_src, b'(', call.ident, b'(');
+        let params_len = call.params.len();
+        for i in call.params {
+            self.emit_branch_expression(i);
+            self.emit_simple(b",");
+        }
+        // if there are parameters, remove the last trailing comma
+        if params_len > 0 {
+            self.c_src.pop();
+        }
+
+        emit!(&mut self.c_src, b')', b')');
+    }
+
+    pub(crate) fn emit_return(&mut self, expression: ExpType<'a>) {
+        emit!(&mut self.c_src, &b"return"[..]);
+        self.emit_branch_expression(expression);
+        emit!(&mut self.c_src, b';');
     }
 }

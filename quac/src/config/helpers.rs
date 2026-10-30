@@ -30,6 +30,7 @@ pub fn treat_optflag<'a>(quargs: &'a QuacArgs, conf: &'a mut Config, m: Matches)
     };
 
     if let Some(b) = &m.opt_str("backend") { conf.backend = Backend::map(b) }
+    if let Some(p) = &m.opt_str("out") { conf.out = PathBuf::from(p) }
 }
 
 #[inline]

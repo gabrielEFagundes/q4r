@@ -1,0 +1,21 @@
+extern f printf(*char fmt, ...)
+
+f main() int{
+    float a = 0.0
+    float i = 1.5
+    for i > -1.5{
+        float x = -1.5
+        for x < 1.5{
+            a = x*x + i*i - 1.0
+            if a*a*a < x*x*i*i*i{
+                printf("@")
+            }else{
+                printf(" ")
+            }
+            x += 0.07
+        }
+        printf("\n")
+        i -= 0.15
+    }
+    return 0
+}

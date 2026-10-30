@@ -83,7 +83,7 @@ pub enum VoidstarTokenTypes {
     Halt,
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct Span{
     /// Starting byte position
     pub start: usize,
@@ -94,7 +94,7 @@ pub struct Span{
 }
 
 /// The `Token` struct used by Q4r
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct VoidstarToken {
     pub(crate) token_type: VoidstarTokenTypes,
     pub(crate) span: Span,

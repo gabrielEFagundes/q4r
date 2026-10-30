@@ -27,3 +27,8 @@ Commits on the repo must follow a very simple rule, to keep things organized and
 - Always make tests if you're implementing a new feature, tests are located at `tests/` at each module level and they all must pass before the maintainer accepts your PR 
     - You can write your tests following the existing ones, just make sure it passes both in a real life test and on the test itself.
 - For overall patches, doc updates, etc, You can open the PR and the maintainer will merge it.
+
+## Overall Design Structure
+
+- NEVER call `panic!` on problematic Quaoar code, these errors must be added to their respective `Vec<QError>`, which you find everywhere they're necessary.
+- You may call `panic!` on internal compiler errors, always with the `"rust: "` prefix.
