@@ -20,7 +20,8 @@ impl QuacArgs{
         self.opts.optflag("h", "help", "shows the usage of quac");
         self.opts.optflag("d", "debug", "whether debug mode is active or not, debug mode will add rust's backtrace on top of q4r's default error messages");
         self.opts.optopt("", "backend", "change the backend of the compiler", "<qbe/c>");
-        self.opts.optopt("o", "out", "changes the output path for the compiled file", "<your_output/target>");
+        self.opts.optopt("o", "output", "changes the output path for the compiled file", "<your_output/target>");
+        self.opts.optopt("", "out", "changes the output path for the compiled file", "<your_output/target>");
         self
     }
 
@@ -32,5 +33,35 @@ impl QuacArgs{
 
         helpers::treat_optflag(self, &mut conf, matches);
         conf
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_output_flag_short() {
+        let args = vec!["quac".into(), "main.qo".into(), "-o".into(), "custom_out".into()];
+        let quac_args = QuacArgs::new(args).init();
+        let config = quac_args.extract_opts(Config::default());
+        assert_eq!(config.out, PathBuf::from("custom_out"));
+    }
+
+    #[test]
+    fn test_output_flag_long_output() {
+        let args = vec!["quac".into(), "main.qo".into(), "--output".into(), "custom_out".into()];
+        let quac_args = QuacArgs::new(args).init();
+        let config = quac_args.extract_opts(Config::default());
+        assert_eq!(config.out, PathBuf::from("custom_out"));
+    }
+
+    #[test]
+    fn test_output_flag_long_out() {
+        let args = vec!["quac".into(), "main.qo".into(), "--out".into(), "custom_out".into()];
+        let quac_args = QuacArgs::new(args).init();
+        let config = quac_args.extract_opts(Config::default());
+        assert_eq!(config.out, PathBuf::from("custom_out"));
     }
 }

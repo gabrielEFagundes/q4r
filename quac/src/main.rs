@@ -11,9 +11,9 @@ fn main() {
 
     config = args.extract_opts(config);
     helpers::validate_path(&config);
-    match output::create_dir_if_not_exists(&config.out){
-        Ok(_) => {},
-        Err(msg) => panic!("rust: couldn't create output dir: {}", msg)
+    config.out = match output::verify_and_prepare_output(&config.out, &config.path) {
+        Ok(path) => path,
+        Err(msg) => panic!("rust: couldn't prepare output path: {}", msg),
     };
 
     match config.backend{
