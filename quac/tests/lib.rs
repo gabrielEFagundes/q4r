@@ -1,5 +1,4 @@
 #[cfg(test)]
 mod test_lex;
-
-#[cfg(test)]
+mod test_headers;
 mod test_pipeline;

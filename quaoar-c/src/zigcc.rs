@@ -26,3 +26,16 @@ pub fn mount_and_exec(bytes: &[u8], out: PathBuf, main_name: &str) -> Option<boo
 pub fn exists() -> bool {
     Command::new("zigcc").arg("--version").status().is_ok()
 }
+
+pub fn test_and_exec(bytes: &[u8]) -> bool{
+    let mut child = Command::new("zigcc")
+        .args([TARGET, "c", "-std=c23", "--fsyntax-only", "-"])
+        .stdin(Stdio::piped())
+        .spawn().unwrap();
+
+    let _ = child.stdin.as_ref().unwrap().write_all(bytes);
+    let success = child.wait().unwrap().success();
+    
+    if success { return true }
+    false
+}

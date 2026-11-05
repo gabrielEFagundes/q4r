@@ -22,4 +22,3 @@ Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.
   ```
 - [ ] Implement colors on the error renderer (`ViewRenderer`)
 - [ ] Enhance `quac-doctor`'s module code focusing on performance
-- [ ] Add verifications on the compiler output (if it's a file, etc.)

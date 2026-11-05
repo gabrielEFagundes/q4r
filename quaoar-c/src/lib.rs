@@ -38,3 +38,10 @@ pub fn exec(bytes: &[u8], out_path: PathBuf, main_name: &str) {
         Compilers::Zig => zigcc::mount_and_exec(bytes, out_path, main_name),
     };
 }
+
+pub fn exec_test(bytes: &[u8]) -> bool{
+    match search_compiler() {
+        Compilers::Gcc => gcc::test_and_exec(bytes),
+        Compilers::Zig => zigcc::test_and_exec(bytes)
+    }
+}

@@ -1,4 +1,5 @@
-use quac_core::{backend::Backend, header::SignatureMounter, lexer::Lexer};
+use quac_core::{backend::Backend, codegen::Codegen, header::SignatureMounter, lexer::Lexer};
+use quaoar_c::emitter::CCompiler;
 
 const INPUT: &[u8] = br#"
     /*
@@ -186,17 +187,21 @@ const INPUT: &[u8] = br#"
 
 #[test]
 pub fn stress_test_pipeline(){
-    let t = Lexer::new(INPUT.to_vec()).lexerize();
+    let (tokens, errors) = Lexer::new(INPUT.to_vec()).lexerize();
+    assert!(errors.is_empty());
 
-    let mut binding = SignatureMounter::new(INPUT, t.0.as_slice());
+    let mut binding = SignatureMounter::new(INPUT, tokens.as_slice());
     let signatures = binding.mount();
 
     let mut backend = CCompiler::new();
-    let mut c_compiler: Backend<'_> = Backend::new(INPUT, &t.0, signatures, false);
+    let mut c_compiler: Backend<'_> = Backend::new(INPUT, &tokens, signatures, false);
 
-    let bytes = backend
+    let (bytes, errors) = backend
         .generate_headers(&c_compiler.signatures)
         .generate(&mut c_compiler);
 
-    
+    assert!(errors.is_empty());
+    assert!(bytes[bytes.len()-1] == b'}');
+
+    assert!(quaoar_c::exec_test(&bytes))
 }
