@@ -16,18 +16,6 @@ The Quaoar core itself has NO external deps, be it the compiler written in Rust 
 
 Dependencies on external projects that involve the compiler are allowed. E.g. Weywot, the future package manager for Q4r, will (most likely) have external deps.
 
-## Git (commits, versioning)
-
-The main repository for the Quaoar compiler is [q4r](https://github.com/gabrielEFagundes/q4r).
-
-Commits on the repo must follow a very simple rule, to keep things organized and beautiful:
-
-- Always follow the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) rules
-- Don't open a PR straight to main, never. Always open your PRs targeting the `dev` branch!
-- Always make tests if you're implementing a new feature, tests are located at `tests/` at each module level and they all must pass before the maintainer accepts your PR 
-    - You can write your tests following the existing ones, just make sure it passes both in a real life test and on the test itself.
-- For overall patches, doc updates, etc, You can open the PR and the maintainer will merge it.
-
 ## Overall Design Structure
 
 - NEVER call `panic!` on problematic Quaoar code, these errors must be added to their respective `Vec<QError>`, which you find everywhere they're necessary.

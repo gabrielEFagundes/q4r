@@ -19,7 +19,7 @@ dependencies = [
 
 [[package]]
 name = "quac"
-version = "0.1.2"
+version = "0.1.1"
 dependencies = [
  "getopts",
  "quac-core",
@@ -29,7 +29,7 @@ dependencies = [
 
 [[package]]
 name = "quac-core"
-version = "0.1.2"
+version = "0.1.1"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -37,7 +37,7 @@ dependencies = [
 
 [[package]]
 name = "quac-doctor"
-version = "0.1.2"
+version = "0.1.1"
 dependencies = [
  "ecow",
  "quac-core",
@@ -45,7 +45,7 @@ dependencies = [
 
 [[package]]
 name = "quaoar-c"
-version = "0.1.2"
+version = "0.1.1"
 dependencies = [
  "ecow",
  "quac-core",

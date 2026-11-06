@@ -21,3 +21,7 @@ Each stage of development will be a beta release up until Q4r reaches the last m
 Please feel free to open Pull Requests and Issues.
 
 All contributions must follow a basic code of conduct, such as being polite, direct and, obviously, make sense.
+
+Check out [CONTRIBUTING](/CONTRIBUTING.md) for more info.
+
+<!-- ## Quaoar Contributors (will add soon) -->

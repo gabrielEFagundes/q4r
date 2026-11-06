@@ -12,7 +12,3 @@ pub fn get_file_name(path: &PathBuf) -> &str{
         .to_str()
         .expect("rust: internal error when converting from os_str to str")
 }
-
-pub fn get_file_utils(path: &PathBuf) -> (PathBuf, &str){
-    (get_absolute_path(path), get_file_name(path))
-}

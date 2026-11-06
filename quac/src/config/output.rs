@@ -107,7 +107,7 @@ mod tests {
     #[test]
     fn test_verify_and_prepare_output_directory() {
         let temp_dir = std::env::temp_dir().join("q4r_test_out_dir/nested/");
-        let source = Path::new("examples/statements.qo");
+        let source = Path::new("examples/statements.qua");
 
         let prepared = verify_and_prepare_output(&temp_dir, source).unwrap();
         assert_eq!(prepared, temp_dir.join("statements"));
@@ -120,7 +120,7 @@ mod tests {
     fn test_verify_and_prepare_output_file() {
         let temp_dir = std::env::temp_dir().join("q4r_test_out_file/nested");
         let file_path = temp_dir.join("my_binary");
-        let source = Path::new("examples/statements.qo");
+        let source = Path::new("examples/statements.qua");
 
         let prepared = verify_and_prepare_output(&file_path, source).unwrap();
         assert_eq!(prepared, file_path);

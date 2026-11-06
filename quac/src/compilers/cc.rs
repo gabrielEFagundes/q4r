@@ -18,12 +18,10 @@ pub fn compile(conf: Config){
         Ok(_) => source.unwrap(),
         Err(reason) => panic!("{}", reason),
     };
-    let (path, filename) = helpers::get_file_utils(&conf.path);
+    let path = helpers::get_absolute_path(&conf.path);
     let sourcemap = feed_lines(&s);
 
     let t = Lexer::new(s.clone()).lexerize();
-    println!("{:#?}", t.0);
-
     if !t.1.is_empty(){
         quac_doctor::diagnose(t.1, s, sourcemap, path);
         return;
@@ -44,5 +42,6 @@ pub fn compile(conf: Config){
         return;
     }
 
-    quaoar_c::exec(&bytes.0, conf.out, filename);
+    dbg!(&conf.out);
+    quaoar_c::exec(&bytes.0, conf.out);
 }

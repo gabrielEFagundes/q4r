@@ -32,10 +32,10 @@ fn search_compiler() -> Compilers {
     panic!("no C compiler found on PATH\navailable compilers: `gcc`, `zigcc`")
 }
 
-pub fn exec(bytes: &[u8], out_path: PathBuf, main_name: &str) {
+pub fn exec(bytes: &[u8], out_path: PathBuf) {
     match search_compiler() {
-        Compilers::Gcc => gcc::mount_and_exec(bytes, out_path, main_name),
-        Compilers::Zig => zigcc::mount_and_exec(bytes, out_path, main_name),
+        Compilers::Gcc => gcc::mount_and_exec(bytes, out_path),
+        Compilers::Zig => zigcc::mount_and_exec(bytes, out_path),
     };
 }
 
