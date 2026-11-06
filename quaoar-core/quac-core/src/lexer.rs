@@ -343,9 +343,11 @@ impl Lexer {
     }
 
     pub fn jump_to_safety(&mut self){
-        while self.current != CLOSE_PAREN ||
-              self.current != CLOSE_BRACE{
-            if self.end(){ return; }
+        while !self.end()
+            && self.current != LINE_FEED
+            && self.current != CLOSE_PAREN
+            && self.current != CLOSE_BRACE
+        {
             self.advance();
         }
     }

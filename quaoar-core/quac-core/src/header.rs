@@ -53,10 +53,11 @@ impl<'a> SignatureMounter<'a> {
         map: &mut FxHashMap<EcoString, Signature<'a>>,
         is_function_extern: bool,
     ) {
+        self.forward(1);
         let ident = &self.source[self.current_token.start()..self.current_token.end()];
         let mut params: Vec<Parameter> = Vec::new();
 
-        // fucking mess
+        // messy, I don't pretend on maintaining this for much longer
         self.forward(2);
         while self.current_token.token_type != VoidstarTokenTypes::CloseParents {
             if self.current_token.token_type == VoidstarTokenTypes::Comma {
@@ -127,7 +128,6 @@ impl<'a> SignatureMounter<'a> {
                         }
 
                         VoidstarTokenTypes::Function => {
-                            self.forward(1);
                             self.mount_function(&mut map, true);
                         }
 
@@ -136,7 +136,6 @@ impl<'a> SignatureMounter<'a> {
                 }
 
                 VoidstarTokenTypes::Function => {
-                    self.forward(1);
                     self.mount_function(&mut map, false);
 
                     // Don't take any scoped variables inside the function.

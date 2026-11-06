@@ -19,7 +19,7 @@ pub fn diagnose(errors: Vec<QError>, source: Vec<u8>, sourcemap: SourceMap, path
 
         match ViewRenderer::new(e.msg, path.clone(), line_span, problematic_start, problematic_end)
             .render(){
-                Ok(_) => return,
+                Ok(_) => continue,
                 Err(_) => die!("rust: error when trying to render Quaoar's error message."),
             }
     }

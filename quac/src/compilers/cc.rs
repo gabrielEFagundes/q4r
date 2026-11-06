@@ -18,15 +18,16 @@ pub fn compile(conf: Config){
         Ok(_) => source.unwrap(),
         Err(reason) => panic!("{}", reason),
     };
-    let path = helpers::get_absolute_path(&conf.path);
+    let (path, filename) = helpers::get_file_utils(&conf.path);
     let sourcemap = feed_lines(&s);
 
     let t = Lexer::new(s.clone()).lexerize();
+    println!("{:#?}", t.0);
+
     if !t.1.is_empty(){
         quac_doctor::diagnose(t.1, s, sourcemap, path);
         return;
     }
-    println!("{:#?}", t.0);
 
     let mut binding = SignatureMounter::new(s.as_slice(), t.0.as_slice());
     let signatures = binding.mount();
@@ -43,8 +44,5 @@ pub fn compile(conf: Config){
         return;
     }
 
-    for i in &bytes.0{
-        print!("{}", *i as char);
-    }
-    quaoar_c::exec(&bytes.0, conf.out);
+    quaoar_c::exec(&bytes.0, conf.out, filename);
 }

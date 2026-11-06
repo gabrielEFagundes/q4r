@@ -2,7 +2,11 @@ use ecow::EcoString;
 use rustc_hash::FxHashMap;
 
 use crate::{
-    backend::Backend, errors::error::QError, expdesc::{AssignOpStmt, AssignStmt, ExpType, StmtType}, internals::{q4r_expressions, q4r_functions, q4r_statements, q4r_variables}, signature::Signature,
+    backend::Backend, 
+    errors::error::QError, 
+    expdesc::{AssignOpStmt, AssignStmt, ExpType, StmtType}, 
+    internals::{q4r_expressions, q4r_functions, q4r_statements, q4r_variables}, 
+    signature::Signature,
 };
 
 /// Trait used by the support modules that generate code

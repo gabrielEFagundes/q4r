@@ -75,16 +75,16 @@ impl ViewRenderer{
         let path = self.path.as_os_str();
         let line = &self.problematic.line;
         let line_string = String::from_utf8(line.line_bytes.to_vec()).unwrap();
-        let suggestion = "PLACEHOLDER UNTIL IMPLEMENTED";
+        // let suggestion = "PLACEHOLDER UNTIL IMPLEMENTED"; will do soon enough
 
         write!(writer, "
 Error on {:?}, line {}:
 
     {}
     {} {}
-
-{}
-        ", path, line.line_number, line_string, self.render_problematic_squeazy(), self.msg, suggestion)?;
+    
+---
+        ", path, line.line_number, line_string, self.render_problematic_squeazy(), self.msg)?;
 
         writer.flush()?;
         Ok(())
