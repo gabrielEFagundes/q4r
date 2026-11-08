@@ -1,18 +1,11 @@
 use crate::{
-    backend::Backend, 
-    expdesc::ExpType, 
+    backend::Backend,
+    expdesc::ExpType,
     internals::{
-        helpers::{
-            self, 
-            advance, 
-            current, 
-            expect_any, 
-            lookahead, 
-            matches
-        }, 
+        helpers::{self, advance, current, expect_any, lookahead, matches},
         q4r_functions,
-    }, 
-    signature::{Literal, Operator}, 
+    },
+    signature::{Literal, Operator},
     tokens::VoidstarTokenTypes,
 };
 
@@ -26,12 +19,10 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
             let current = current(backend);
             advance(1, backend);
 
-            ExpType::literal_exp(
-                Literal::to_literal(
-                    &backend.source[current.start()..current.end()],
-                    current.token_type,
-                )
-            )
+            ExpType::literal_exp(Literal::to_literal(
+                &backend.source[current.start()..current.end()],
+                current.token_type,
+            ))
         }
 
         VoidstarTokenTypes::Ident => {
@@ -44,12 +35,10 @@ pub fn parse_primary<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
             let current = current(backend);
             advance(1, backend);
 
-            ExpType::literal_exp(
-                Literal::to_literal(
-                    &backend.source[current.start()..current.end()],
-                    current.token_type,
-                )
-            )
+            ExpType::literal_exp(Literal::to_literal(
+                &backend.source[current.start()..current.end()],
+                current.token_type,
+            ))
         }
 
         VoidstarTokenTypes::OpenParents => {
@@ -116,9 +105,7 @@ pub fn parse_expr<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
         } else {
             parse_unary(backend)
         };
-        left = ExpType::binary_exp(
-            Box::new(left), operator, Box::new(right)
-        );
+        left = ExpType::binary_exp(Box::new(left), operator, Box::new(right));
     }
 
     left

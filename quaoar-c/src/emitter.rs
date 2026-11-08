@@ -1,18 +1,14 @@
 use crate::r#impl::AppendTo;
 use ecow::EcoString;
 use quac_core::{
-    backend::Backend, codegen::Codegen, expdesc::{
-        AssignOpStmt, 
-        AssignStmt, 
-        BinaryExp, 
-        CallExp, 
-        ExpType, 
-        FunStmt, 
-        LiteralExp, 
-        LoopStmt, 
-        RelationalStmt, 
-        VarStmt,
-    }, signature::{Signature, Type}, tokens::VoidstarTokenTypes,
+    backend::Backend,
+    codegen::Codegen,
+    expdesc::{
+        AssignOpStmt, AssignStmt, BinaryExp, CallExp, ExpType, FunStmt, LiteralExp, LoopStmt,
+        RelationalStmt, VarStmt,
+    },
+    signature::{Signature, Type},
+    tokens::VoidstarTokenTypes,
 };
 use rustc_hash::FxHashMap;
 
@@ -58,7 +54,7 @@ impl<'a> CCompiler {
                     if *is_extern {
                         self.emit_simple(b"extern ");
                     }
-                    
+
                     emit!(
                         &mut self.c_src,
                         returns.to_byte_span().unwrap_or_default().as_slice(),
@@ -71,7 +67,10 @@ impl<'a> CCompiler {
                         if params[i].is_etc {
                             self.emit_simple(b"...");
                         } else {
-                            emit!(&mut self.c_src, params[i].ty.to_byte_span().unwrap_or_default().as_slice());
+                            emit!(
+                                &mut self.c_src,
+                                params[i].ty.to_byte_span().unwrap_or_default().as_slice()
+                            );
 
                             if i != params.len() - 1 {
                                 emit!(&mut self.c_src, b',');
@@ -103,15 +102,9 @@ impl<'a> CCompiler {
 
     pub(crate) fn emit_branch_expression(&mut self, expression: ExpType<'a>) {
         match expression {
-            ExpType::BinaryExp(exp) => {
-                self.emit_operator_expression(exp)
-            }
-            ExpType::LiteralExp(exp) => {
-                self.emit_literal_expression(exp)
-            }
-            ExpType::CallExp(exp) => {
-                self.emit_fun_call(exp)
-            }
+            ExpType::BinaryExp(exp) => self.emit_operator_expression(exp),
+            ExpType::LiteralExp(exp) => self.emit_literal_expression(exp),
+            ExpType::CallExp(exp) => self.emit_fun_call(exp),
             ExpType::AddressExp(exp) => {
                 emit!(&mut self.c_src, b'&');
                 self.emit_branch_expression(*exp.val);
@@ -119,8 +112,9 @@ impl<'a> CCompiler {
             ExpType::SignedExp(exp) => {
                 emit!(&mut self.c_src, exp.op.to_byte_span().unwrap_or_default());
                 self.emit_branch_expression(*exp.val);
-            },
-            ExpType::BadExp => { /* nothing to do, it'll never get here, the c runtime takes care of any runtime errors */ }
+            }
+            ExpType::BadExp => { /* nothing to do, it'll never get here, the c runtime takes care of any runtime errors */
+            }
         }
     }
 
@@ -145,7 +139,12 @@ impl<'a> CCompiler {
                 b')'
             );
         } else {
-            emit!(&mut self.c_src, b'(', exp.val.to_byte_span().unwrap_or_default().as_slice(), b')');
+            emit!(
+                &mut self.c_src,
+                b'(',
+                exp.val.to_byte_span().unwrap_or_default().as_slice(),
+                b')'
+            );
         }
     }
 
@@ -155,7 +154,12 @@ impl<'a> CCompiler {
 
         self.emit_branch_expression(*exp.left);
 
-        emit!(&mut self.c_src, b')', exp.operator.to_byte_span().unwrap_or_default(), b'(');
+        emit!(
+            &mut self.c_src,
+            b')',
+            exp.operator.to_byte_span().unwrap_or_default(),
+            b'('
+        );
 
         self.emit_branch_expression(*exp.right);
 
@@ -164,7 +168,11 @@ impl<'a> CCompiler {
 
     pub(crate) fn emit_conditional(&mut self, stmt: RelationalStmt, backend: &mut Backend<'a>) {
         // e.g. if expression{} or while expression{}
-        emit!(&mut self.c_src, stmt.kind.to_byte_span().unwrap_or_default(), b' ');
+        emit!(
+            &mut self.c_src,
+            stmt.kind.to_byte_span().unwrap_or_default(),
+            b' '
+        );
         self.emit_branch_expression(stmt.exp);
 
         emit!(&mut self.c_src, b'{');
@@ -190,7 +198,10 @@ impl<'a> CCompiler {
             identifier,
             b'+',
             b'=',
-            stmt.incrementer.to_byte_span().unwrap_or_default().as_slice(),
+            stmt.incrementer
+                .to_byte_span()
+                .unwrap_or_default()
+                .as_slice(),
             b')',
             b'{'
         );

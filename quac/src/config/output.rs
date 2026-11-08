@@ -26,7 +26,10 @@ pub fn determine_path_type<P: AsRef<Path>>(path: P) -> PathType {
     }
 
     let path_str = path.to_string_lossy();
-    if path_str.ends_with('/') || path_str.ends_with('\\') || path_str.ends_with(std::path::MAIN_SEPARATOR) {
+    if path_str.ends_with('/')
+        || path_str.ends_with('\\')
+        || path_str.ends_with(std::path::MAIN_SEPARATOR)
+    {
         PathType::Directory
     } else {
         PathType::File

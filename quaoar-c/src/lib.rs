@@ -4,8 +4,8 @@ use quac_core::tokens::VoidstarTokenTypes;
 
 use crate::Compilers::{Gcc, Zig};
 
-pub mod emitter;
 pub mod compiler;
+pub mod emitter;
 pub mod gcc;
 pub mod r#impl;
 pub mod macros;
@@ -39,9 +39,9 @@ pub fn exec(bytes: &[u8], out_path: PathBuf) {
     };
 }
 
-pub fn exec_test(bytes: &[u8]) -> bool{
+pub fn exec_test(bytes: &[u8]) -> bool {
     match search_compiler() {
         Compilers::Gcc => gcc::test_and_exec(bytes),
-        Compilers::Zig => zigcc::test_and_exec(bytes)
+        Compilers::Zig => zigcc::test_and_exec(bytes),
     }
 }

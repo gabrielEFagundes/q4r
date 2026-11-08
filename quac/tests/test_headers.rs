@@ -40,7 +40,7 @@ const EXTERNS: &[u8] = b"
 ";
 
 #[test]
-pub fn test_table_mounter(){
+pub fn test_table_mounter() {
     let (tokens, _) = Lexer::new(INPUT.to_vec()).lexerize();
 
     let mut binding = SignatureMounter::new(INPUT, &tokens);
@@ -54,21 +54,33 @@ pub fn test_table_mounter(){
 }
 
 #[test]
-pub fn test_extern_headers(){
+pub fn test_extern_headers() {
     let (tokens, _) = Lexer::new(EXTERNS.to_vec()).lexerize();
 
     let mut binding = SignatureMounter::new(EXTERNS, &tokens);
     let signatures = binding.mount();
 
-    assert!(signatures.get_key_value("exit").is_some_and(|s|{ is_signature_extern(s.1) }));
+    assert!(
+        signatures
+            .get_key_value("exit")
+            .is_some_and(|s| { is_signature_extern(s.1) })
+    );
     assert!(signatures.get_key_value("printf").is_some());
     assert!(signatures.get_key_value("scanf").is_some());
 
-    assert!(signatures.get_key_value("main").is_some_and(|s|{ !is_signature_extern(s.1) }))
+    assert!(
+        signatures
+            .get_key_value("main")
+            .is_some_and(|s| { !is_signature_extern(s.1) })
+    )
 }
 
-fn is_signature_extern(signature: &Signature) -> bool{
-    if let Signature::Function { returns: _, params: _, is_extern } = signature
+fn is_signature_extern(signature: &Signature) -> bool {
+    if let Signature::Function {
+        returns: _,
+        params: _,
+        is_extern,
+    } = signature
         && *is_extern
     {
         return true;

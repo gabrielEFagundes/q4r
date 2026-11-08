@@ -11,53 +11,61 @@ pub enum ExpType<'a> {
 
     SignedExp(SignedExp<'a>),
 
-    BadExp
+    BadExp,
 }
 
-impl<'a> ExpType<'a>{
-    pub fn binary_exp(left: Box<ExpType<'a>>, operator: Operator, right: Box<ExpType<'a>>) -> ExpType<'a>{
-        Self::BinaryExp(BinaryExp { left, operator, right })
+impl<'a> ExpType<'a> {
+    pub fn binary_exp(
+        left: Box<ExpType<'a>>,
+        operator: Operator,
+        right: Box<ExpType<'a>>,
+    ) -> ExpType<'a> {
+        Self::BinaryExp(BinaryExp {
+            left,
+            operator,
+            right,
+        })
     }
 
-    pub fn literal_exp(val: Literal) -> ExpType<'a>{
+    pub fn literal_exp(val: Literal) -> ExpType<'a> {
         Self::LiteralExp(LiteralExp { val })
     }
 
-    pub fn call_exp(ident: &'a[u8], params: Vec<ExpType<'a>>) -> ExpType<'a>{
+    pub fn call_exp(ident: &'a [u8], params: Vec<ExpType<'a>>) -> ExpType<'a> {
         Self::CallExp(CallExp { ident, params })
     }
 
-    pub fn address_exp(val: Box<ExpType<'a>>) -> ExpType<'a>{
+    pub fn address_exp(val: Box<ExpType<'a>>) -> ExpType<'a> {
         Self::AddressExp(AddressExp { val })
     }
 
-    pub fn signed_exp(op: Operator, val: Box<ExpType<'a>>) -> ExpType<'a>{
+    pub fn signed_exp(op: Operator, val: Box<ExpType<'a>>) -> ExpType<'a> {
         Self::SignedExp(SignedExp { op, val })
     }
 }
 
-pub struct BinaryExp<'a>{
+pub struct BinaryExp<'a> {
     pub left: Box<ExpType<'a>>,
     pub operator: Operator,
     pub right: Box<ExpType<'a>>,
 }
 
-pub struct LiteralExp{
-    pub val: Literal
+pub struct LiteralExp {
+    pub val: Literal,
 }
 
-pub struct CallExp<'a>{
-    pub ident: &'a[u8],
-    pub params: Vec<ExpType<'a>>
+pub struct CallExp<'a> {
+    pub ident: &'a [u8],
+    pub params: Vec<ExpType<'a>>,
 }
 
-pub struct AddressExp<'a>{
-    pub val: Box<ExpType<'a>>
+pub struct AddressExp<'a> {
+    pub val: Box<ExpType<'a>>,
 }
 
-pub struct SignedExp<'a>{
+pub struct SignedExp<'a> {
     pub op: Operator,
-    pub val: Box<ExpType<'a>>
+    pub val: Box<ExpType<'a>>,
 }
 
 pub enum StmtType<'a> {
@@ -73,7 +81,7 @@ pub enum StmtType<'a> {
 
     RelationalStmt(RelationalStmt<'a>),
 
-    BadStmt
+    BadStmt,
 }
 
 impl<'a> StmtType<'a> {

@@ -1,9 +1,11 @@
 use ecow::EcoString;
 
 use crate::{
-    expdesc::Parameter, signature::Literal::{
+    expdesc::Parameter,
+    signature::Literal::{
         BoolLiteral, CharLiteral, FloatLiteral, IntLiteral, Invalid, StringLiteral, VarLiteral,
-    }, tokens::VoidstarTokenTypes,
+    },
+    tokens::VoidstarTokenTypes,
 };
 
 const INT_DEF: isize = 0;
@@ -14,14 +16,15 @@ const BOOL_DEF: bool = false;
 /// Usable types
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
 pub enum Type {
-    #[default] Void,
+    #[default]
+    Void,
     Int,
     Float,
     Char,
     Bool,
     Pointer(Box<Type>),
 
-    Invalid
+    Invalid,
 }
 
 impl Type {
@@ -41,7 +44,7 @@ impl Type {
         Self::Pointer(Box::new(self))
     }
 
-    pub fn is_invalid(&self) -> bool{
+    pub fn is_invalid(&self) -> bool {
         *self == Type::Invalid
     }
 
@@ -56,7 +59,7 @@ impl Type {
             Type::Pointer(val) => {
                 vec.extend_from_slice(&val.to_byte_span()?);
                 vec.extend_from_slice(b"*");
-            },
+            }
             _ => return Err("unknown type found here"),
         };
         Ok(vec)
@@ -82,7 +85,7 @@ impl Type {
             Type::Char => Ok(VoidstarTokenTypes::Char),
             Type::Bool => Ok(VoidstarTokenTypes::Bool),
             Type::Pointer(val) => Ok(val.as_token_type()?),
-            Type::Invalid => Err("unknown type found here")
+            Type::Invalid => Err("unknown type found here"),
         }
     }
 
@@ -111,13 +114,13 @@ pub enum Literal {
     /// Used only on v0.1 snapshot, completely unstable in terms of updates
     VarLiteral(Vec<u8>),
 
-    Invalid
+    Invalid,
 }
 
 impl Literal {
     /// Funny enough, this function is ALWAYS the source of most problems
     /// I've been finding so far
-    /// 
+    ///
     /// Certainly won't be used on v0.2
     pub fn to_byte_span(&self) -> Result<Vec<u8>, &str> {
         match self {
@@ -128,7 +131,7 @@ impl Literal {
             Literal::PointerLiteral(v) => Ok(v.to_byte_span()?),
             Literal::StringLiteral(v) => Ok(v.as_bytes().to_vec()),
             Literal::VarLiteral(v) => Ok(v.to_vec()),
-            Invalid => Err("invalid literal found here")
+            Invalid => Err("invalid literal found here"),
         }
     }
 
@@ -150,7 +153,7 @@ impl Literal {
             VoidstarTokenTypes::CharLiteral => CharLiteral(Self::parse_char(bytes)),
             VoidstarTokenTypes::BoolLiteral => BoolLiteral(Self::parse_bool(bytes)),
             VoidstarTokenTypes::StringLiteral => StringLiteral(Self::parse_str(bytes)),
-            _ => Invalid
+            _ => Invalid,
         }
     }
 
@@ -162,7 +165,7 @@ impl Literal {
             BoolLiteral(_) => VoidstarTokenTypes::BoolLiteral,
             StringLiteral(_) => VoidstarTokenTypes::StringLiteral,
             VarLiteral(_) => VoidstarTokenTypes::Ident,
-            _ => VoidstarTokenTypes::Halt
+            _ => VoidstarTokenTypes::Halt,
         }
     }
 
@@ -226,7 +229,7 @@ pub enum Operator {
     Or,
     Not,
 
-    Invalid
+    Invalid,
 }
 
 impl Operator {
@@ -272,7 +275,7 @@ impl Operator {
             Operator::And => Ok(b"&&"),
             Operator::Or => Ok(b"||"),
             Operator::Not => Ok(b"!"),
-            _ => Err("unknown operator found here")
+            _ => Err("unknown operator found here"),
         }
     }
 
@@ -330,8 +333,8 @@ pub enum DecKind {
     If,
     For,
     While,
-    
-    Invalid
+
+    Invalid,
 }
 
 impl DecKind {
@@ -348,7 +351,7 @@ impl DecKind {
             DecKind::If => Ok(b"if"),
             DecKind::For => Ok(b"for"),
             DecKind::While => Ok(b"while"),
-            _ => Err("unknown declaration type found here")
+            _ => Err("unknown declaration type found here"),
         }
     }
 }

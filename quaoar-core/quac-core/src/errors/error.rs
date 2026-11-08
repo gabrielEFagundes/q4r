@@ -1,4 +1,7 @@
-use crate::{errors::{lexer_err::LexerErrOpts, parser_err::ParserErrOpts}, tokens::Span};
+use crate::{
+    errors::{lexer_err::LexerErrOpts, parser_err::ParserErrOpts},
+    tokens::Span,
+};
 
 /// Encompasses every and any type of deviation a Q4r program might have.
 ///
@@ -26,5 +29,5 @@ pub enum QErrorTypes {
 #[derive(Clone)]
 pub struct QError {
     pub span: Span,
-    pub msg: String
+    pub msg: String,
 }

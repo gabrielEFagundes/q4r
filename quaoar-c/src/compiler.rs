@@ -1,6 +1,12 @@
 use ecow::EcoString;
 use quac_core::{
-    backend::Backend, codegen::Codegen, errors::error::QError, expdesc::{ExpType, StmtType}, internals::helpers, signature::Signature, tokens::VoidstarTokenTypes,
+    backend::Backend,
+    codegen::Codegen,
+    errors::error::QError,
+    expdesc::{ExpType, StmtType},
+    internals::helpers,
+    signature::Signature,
+    tokens::VoidstarTokenTypes,
 };
 use rustc_hash::FxHashMap;
 
@@ -25,7 +31,10 @@ impl<'a> Codegen<'a> for CCompiler {
                         | VoidstarTokenTypes::Void => {
                             let dec = Self::var_statement(backend, true);
                             let StmtType::VarStmt(stmt) = dec else {
-                                helpers::add_error("this is found to not be a variable declaration", backend);
+                                helpers::add_error(
+                                    "this is found to not be a variable declaration",
+                                    backend,
+                                );
                                 continue;
                             };
 
@@ -51,7 +60,7 @@ impl<'a> Codegen<'a> for CCompiler {
                                     self.emit_op_assign_stmt(Self::assign_op_statement(backend));
                                 }
 
-                                _ => helpers::add_error("unexpected token found here", backend)
+                                _ => helpers::add_error("unexpected token found here", backend),
                             }
                         }
                         _ => panic!("bad usage of asterisk at the beggining of statement"),
@@ -65,7 +74,10 @@ impl<'a> Codegen<'a> for CCompiler {
                 | VoidstarTokenTypes::Void => {
                     let dec = Self::var_statement(backend, false);
                     let StmtType::VarStmt(stmt) = dec else {
-                        helpers::add_error("this is found to not be a variable declaration", backend);
+                        helpers::add_error(
+                            "this is found to not be a variable declaration",
+                            backend,
+                        );
                         continue;
                     };
                     self.emit_var_decl(stmt);
@@ -87,9 +99,14 @@ impl<'a> Codegen<'a> for CCompiler {
                     match loops {
                         StmtType::LoopStmt(for_stmt) => self.emit_for_loop(for_stmt, backend),
 
-                        StmtType::RelationalStmt(while_stmt) => self.emit_conditional(while_stmt, backend),
+                        StmtType::RelationalStmt(while_stmt) => {
+                            self.emit_conditional(while_stmt, backend)
+                        }
 
-                        _ => helpers::add_error("unexpected token found here, check out the for loop syntax, both for and while loops use the 'for' keyword", backend)
+                        _ => helpers::add_error(
+                            "unexpected token found here, check out the for loop syntax, both for and while loops use the 'for' keyword",
+                            backend,
+                        ),
                     }
                 }
 
@@ -135,7 +152,10 @@ impl<'a> Codegen<'a> for CCompiler {
                 VoidstarTokenTypes::Function => {
                     let fun = Self::fun_declaration(backend, false);
                     let StmtType::FunStmt(stmt) = fun else {
-                        helpers::add_error("this is found to not be a function declaration", backend);
+                        helpers::add_error(
+                            "this is found to not be a function declaration",
+                            backend,
+                        );
                         continue;
                     };
 
@@ -147,7 +167,10 @@ impl<'a> Codegen<'a> for CCompiler {
                     match next.token_type() {
                         VoidstarTokenTypes::OpenParents => {
                             let ExpType::CallExp(exp) = Self::parse_expr(backend) else {
-                                helpers::add_error("this is found not to be a function declaration", backend);
+                                helpers::add_error(
+                                    "this is found not to be a function declaration",
+                                    backend,
+                                );
                                 continue;
                             };
 
@@ -178,13 +201,17 @@ impl<'a> Codegen<'a> for CCompiler {
                     helpers::matches_any(&TERMINATORS, backend);
                 }
 
-                VoidstarTokenTypes::OpenBraces => { helpers::advance(1, backend); },
+                VoidstarTokenTypes::OpenBraces => {
+                    helpers::advance(1, backend);
+                }
                 VoidstarTokenTypes::CloseBraces => {
                     helpers::advance(1, backend);
                     break;
                 }
 
-                _ => { helpers::advance(1, backend); },
+                _ => {
+                    helpers::advance(1, backend);
+                }
             }
         }
 

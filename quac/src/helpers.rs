@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-pub fn get_absolute_path(path: &PathBuf) -> PathBuf{
+pub fn get_absolute_path(path: &PathBuf) -> PathBuf {
     let path = std::path::absolute(path);
 
     path.expect("rust: internal error when getting absolute path")
 }
 
-pub fn get_file_name(path: &PathBuf) -> &str{
+pub fn get_file_name(path: &PathBuf) -> &str {
     path.file_stem()
         .expect("rust: internal error when getting file name")
         .to_str()

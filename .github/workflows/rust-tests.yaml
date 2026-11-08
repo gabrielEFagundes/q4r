@@ -2,9 +2,9 @@ name: Rust Unit Tests
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: ["dev"]
   pull_request:
-    branches: [ "main", "dev" ]
+    branches: ["main", "dev"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,15 +14,55 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read   # the push below uses the app token, not this one
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      # pushes made with GITHUB_TOKEN don't trigger workflows; pushes made as an app do,
+      # so the formatting commit gets its own CI run
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_KEY }}
+          permission-contents: write
+
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}   # the branch itself, not the PR merge ref, so we can push to it
+          token: ${{ steps.app-token.outputs.token }}
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+
       - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all --check
+
+      - name: Check formatting (auto-fix and push if it fails)
+        id: fmt
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          if cargo fmt --all --check; then
+            exit 0
+          fi
+          cargo fmt --all
+          USER_ID=$(gh api "/users/${APP_SLUG}[bot]" --jq .id)
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${USER_ID}+${APP_SLUG}[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "style: cargo fmt"
+          git push origin HEAD
+          echo "fixed=true" >> "$GITHUB_OUTPUT"
+
+      # if we just pushed a fix, the new commit triggers a fresh run; skip the rest here
       - run: cargo clippy --all-targets --all-features -- -D warnings
+        if: steps.fmt.outputs.fixed != 'true'
+
       - run: cargo test --all-features --verbose
+        if: steps.fmt.outputs.fixed != 'true'

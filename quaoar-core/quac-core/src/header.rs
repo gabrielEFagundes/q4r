@@ -6,7 +6,9 @@ use ecow::{EcoString, string::ToEcoString};
 use rustc_hash::FxHashMap;
 
 use crate::{
-    expdesc::Parameter, signature::{Signature, Type}, tokens::{VoidstarToken, VoidstarTokenTypes},
+    expdesc::Parameter,
+    signature::{Signature, Type},
+    tokens::{VoidstarToken, VoidstarTokenTypes},
 };
 
 /// Main struct used for mounting the table that holds the signatures
@@ -23,7 +25,7 @@ impl<'a> SignatureMounter<'a> {
             source,
             tokens,
             cursor: 0,
-            current_token: VoidstarToken::default()
+            current_token: VoidstarToken::default(),
         }
     }
 
@@ -161,7 +163,8 @@ impl<'a> SignatureMounter<'a> {
 
                     if self.peekaboo().token_type == VoidstarTokenTypes::Equals {
                         self.forward(2);
-                        value = self.source[self.current_token.start()..self.current_token.end()].to_vec();
+                        value = self.source[self.current_token.start()..self.current_token.end()]
+                            .to_vec();
                     }
 
                     map.insert(

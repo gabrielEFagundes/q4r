@@ -1,5 +1,5 @@
 use std::{
-    io::Write, 
+    io::Write,
     path::PathBuf,
     process::{Command, Stdio},
 };
@@ -27,15 +27,18 @@ pub fn exists() -> bool {
     Command::new("gcc").arg("--version").status().is_ok()
 }
 
-pub fn test_and_exec(bytes: &[u8]) -> bool{
+pub fn test_and_exec(bytes: &[u8]) -> bool {
     let mut child = Command::new("gcc")
         .args([TARGET, "c", "-std=c23", "-fsyntax-only", "-"])
         .stdin(Stdio::piped())
-        .spawn().unwrap();
+        .spawn()
+        .unwrap();
 
     let _ = child.stdin.as_ref().unwrap().write_all(bytes);
     let success = child.wait().unwrap().success();
-    
-    if success{ return true }
+
+    if success {
+        return true;
+    }
     false
 }

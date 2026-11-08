@@ -12,8 +12,7 @@ use crate::{
 pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtType<'a> {
     expect(VoidstarTokenTypes::Ident, backend);
 
-    let ident =
-        &backend.source[current(backend).start()..current(backend).end()];
+    let ident = &backend.source[current(backend).start()..current(backend).end()];
 
     expect(VoidstarTokenTypes::OpenParents, backend);
     let mut params: Vec<Parameter> = Vec::new();
@@ -40,8 +39,7 @@ pub fn fun_declaration<'a>(backend: &mut Backend<'a>, is_extern: bool) -> StmtTy
 }
 
 pub fn fun_call<'a>(backend: &mut Backend<'a>) -> ExpType<'a> {
-    let ident =
-        &backend.source[current(backend).start()..current(backend).end()];
+    let ident = &backend.source[current(backend).start()..current(backend).end()];
     expect(VoidstarTokenTypes::OpenParents, backend);
 
     let mut params: Vec<ExpType<'a>> = Vec::new();

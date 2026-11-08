@@ -13,17 +13,20 @@ const PROBLEMATIC_INPUT: &[u8] = b"
 ";
 
 #[test]
-pub fn test_basic_tokenizer(){
+pub fn test_basic_tokenizer() {
     let (output, _) = lexer::Lexer::new(INPUT.to_vec()).lexerize();
 
     assert!(output.len() == 11);
 
     assert_eq!(output[0].token_type(), VoidstarTokenTypes::Function);
-    assert_eq!(output[output.len()-1].token_type(), VoidstarTokenTypes::SemiColon);
+    assert_eq!(
+        output[output.len() - 1].token_type(),
+        VoidstarTokenTypes::SemiColon
+    );
 }
 
 #[test]
-pub fn test_errors(){
+pub fn test_errors() {
     let (output, errors) = lexer::Lexer::new(PROBLEMATIC_INPUT.to_vec()).lexerize();
 
     assert!(output.len() == 9);

@@ -2,7 +2,9 @@ use ecow::EcoString;
 use rustc_hash::FxHashMap;
 
 use crate::{
-    errors::error::QError, signature::{Signature, Type}, tokens::VoidstarToken,
+    errors::error::QError,
+    signature::{Signature, Type},
+    tokens::VoidstarToken,
 };
 
 pub struct Backend<'a> {

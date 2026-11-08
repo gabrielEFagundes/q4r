@@ -7,9 +7,9 @@ pub mod expdesc;
 pub mod header;
 pub mod internals;
 pub mod lexer;
+pub mod linefeeder;
 pub mod prelude;
 pub mod signature;
-pub mod linefeeder;
 pub mod tokens;
 
 const OPEN_PAREN: u8 = b'(';

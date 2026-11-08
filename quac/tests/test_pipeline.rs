@@ -186,7 +186,7 @@ const INPUT: &[u8] = br#"
 "#;
 
 #[test]
-pub fn stress_test_pipeline(){
+pub fn stress_test_pipeline() {
     let (tokens, errors) = Lexer::new(INPUT.to_vec()).lexerize();
     assert!(errors.is_empty());
 
@@ -201,7 +201,7 @@ pub fn stress_test_pipeline(){
         .generate(&mut c_compiler);
 
     assert!(errors.is_empty());
-    assert!(bytes[bytes.len()-1] == b'}');
+    assert!(bytes[bytes.len() - 1] == b'}');
 
     assert!(quaoar_c::exec_test(&bytes))
 }

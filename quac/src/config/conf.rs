@@ -1,21 +1,21 @@
 use std::path::PathBuf;
 
-pub enum Backend{
+pub enum Backend {
     QBE,
     C,
 }
 
-impl Backend{
-    pub fn map(s: &str) -> Self{
-        match s{
+impl Backend {
+    pub fn map(s: &str) -> Self {
+        match s {
             "qbe" => Self::QBE,
             "c" => Self::C,
-            _ => panic!("unknown backend flag value: {}", s)
+            _ => panic!("unknown backend flag value: {}", s),
         }
     }
 }
 
-pub struct Config{
+pub struct Config {
     pub path: PathBuf,
     pub out: PathBuf,
     pub debug_mode: bool,
@@ -25,10 +25,20 @@ pub struct Config{
 
 impl Default for Config {
     fn default() -> Self {
-        Self { path: PathBuf::new(), out: PathBuf::from(".quaoar/"), debug_mode: false, backend: Backend::QBE, version: build_version_string() }
+        Self {
+            path: PathBuf::new(),
+            out: PathBuf::from(".quaoar/"),
+            debug_mode: false,
+            backend: Backend::QBE,
+            version: build_version_string(),
+        }
     }
 }
 
-fn build_version_string() -> String{
-    return format!("v{} - quac ({})", env!("CARGO_PKG_VERSION"), env!("CARGO_PKG_LICENSE"))
+fn build_version_string() -> String {
+    return format!(
+        "v{} - quac ({})",
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_PKG_LICENSE")
+    );
 }
