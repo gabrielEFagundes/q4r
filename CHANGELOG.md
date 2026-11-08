@@ -1,3 +1,33 @@
+## v0.1.2 - 2026-11-08
+
+### Features
+- complete rework of quac (quaoar-cli, quaoar-compiler, you name it)
+- diagnoser implemented everywhere I could think of
+- add verifications on compiler output and nested dirs
+
+### Fixes
+- fix release workflow and remove unnecessary version file
+- change old types to more performant ones
+- fix output flag and compiled file name
+- run cargo fmt and update workflow
+
+### Other changes
+- doc: update some of the documentation to keep track of current work
+- chore: reorganize folders and start design decisions document
+- doc: change license on both cargo and repo
+- chore: start quaoar diagnoser (finally)
+- chore: starting renderer and diagnoser itself
+- chore: error diagnosis done, pending heavy loads
+- doc: add agents.md for contributions
+- doc: changes to agents.md and developing.md
+- chore: start testing and fixing diagnoser
+- doc: changes on existing docs, including licensing-software, roadmap and current
+- doc: upd current.md and parse_expr problem
+- chore: start tests and change quaoar files to .qua
+- chore: add unit tests and fix header table mounter
+- chore: small changes on cli, ext and docs
+- doc: add contributors and change quaoar's fav-icon
+
 ## v0.1.0 - 2026-10-04
 
 ### Features
