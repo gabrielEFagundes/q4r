@@ -13,7 +13,7 @@
       {
         "id": "quaoar",
         "aliases": ["Quaoar", "quaoar"],
-        "extensions": [".qo", ".qoa", ".qua"],
+        "extensions": [".qua"],
         "configuration": "./language-configuration.json",
         "icon": {"light": "./fav-light.svg", "dark": "./fav-dark.svg"}
       }

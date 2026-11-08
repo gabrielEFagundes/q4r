@@ -3,7 +3,7 @@
 ## Pipeline
 
 ```
-source.qo
+source.qua
     │
     ▼
 Lexer (runs ONCE)

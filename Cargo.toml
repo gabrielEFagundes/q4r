@@ -1,10 +1,11 @@
 [workspace]
 members = [
     "quaoar-c",
-    "quaoar-cli",
-    "quaoar-core"
-]
+    "quac",
+    "quaoar-core/quac-core"
+, "quaoar-core/quac-doctor"]
 resolver = "2"
 
 [workspace.package]
-license = "MIT OR Apache-2.0"
+license = "MPL-2.0"
+version = "0.1.1"

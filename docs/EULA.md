@@ -1,0 +1,15 @@
+# Licenses
+
+Quaoar utilizes the MPL-2.0 license. The license grants all rights to everyone that uses the Q4r project, meaning you are allowed to build, fork and distribute the project, comercially or not.
+
+MPL-2.0 applies to each file that's part of the core of Q4r, including `quac`, `quaoar-core` and all the backends (`quaoar-c` and `quaoar-qbe`). This means that any changes inside these files **must** be open-source.
+
+As the project matures, I won't be able to keep track of every fork of Q4r, so please, keep the source of the project open to everyone.
+
+## Your responsabilities
+
+You are completely free to contribute, discuss and idealize new features and use the Quaoar project.
+
+You can build on top of Q4r freely, however, you have the obligation to leave the source code open, with your own changes or not. Your changes may not be open-source, but Q4r is and will always be!
+
+For more info about the license, check out [LICENSE](/LICENSE)

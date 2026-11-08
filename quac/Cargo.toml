@@ -1,0 +1,12 @@
+[package]
+name = "quac"
+edition = "2024"
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+quac-core = { path="../quaoar-core/quac-core" }
+quac-doctor = { path="../quaoar-core/quac-doctor" }
+quaoar-c = { path="../quaoar-c" }
+
+getopts = "0.2"

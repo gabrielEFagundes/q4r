@@ -1,0 +1,10 @@
+[package]
+name = "quac-doctor"
+edition = "2024"
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+quac-core = { path = "../quac-core" }
+
+ecow = "0.3.1"

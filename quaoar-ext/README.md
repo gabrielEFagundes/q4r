@@ -2,7 +2,7 @@
 
 Extension pack for the Quaoar programming language.
 
-This extension pack is currently in development and not stable for public usage, keep that in mind before using.
+This extension pack is currently for development and not stable for public usage, it only provides syntax highlighting.
 
 ## For contributors
 
