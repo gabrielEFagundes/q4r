@@ -59,6 +59,6 @@ Thank you so much for every contributor that helped on the development of Quaoar
 Every contributor is added here by hand.
 
 <div>
-      <img src="https://github.com/gabrielEFagundes.png" width="50rem">
-      <img src="https://github.com/arifrhm.png" width="50rem">
+      <a href="https://github.com/gabrielEFagundes"><img src="https://github.com/gabrielEFagundes.png" width="50rem"></a>
+      <a href="https://github.com/arifrhm"><img src="https://github.com/arifrhm.png" width="50rem"></a>
 </div>
