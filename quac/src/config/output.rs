@@ -75,10 +75,9 @@ pub fn verify_and_prepare_output<P: AsRef<Path>, S: AsRef<Path>>(
             Ok(out.join(file_name))
         }
         PathType::File => {
-            if let Some(parent) = out.parent() {
-                if !parent.as_os_str().is_empty() {
+            if let Some(parent) = out.parent() 
+                && !parent.as_os_str().is_empty() {
                     create_dir_if_not_exists(parent)?;
-                }
             }
             Ok(out.to_path_buf())
         }

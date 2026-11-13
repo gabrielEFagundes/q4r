@@ -12,7 +12,7 @@ pub fn mount_and_exec(bytes: &[u8], out: PathBuf) -> Option<bool> {
     let fmt_out_path = out.as_os_str().to_str()?;
 
     let child = Command::new("zigcc")
-        .args([TARGET, "c", "-std=c23", OBJFILE, &fmt_out_path, "-"])
+        .args([TARGET, "c", "-std=c23", OBJFILE, fmt_out_path, "-"])
         .stdin(Stdio::piped())
         .spawn()
         .ok()?;

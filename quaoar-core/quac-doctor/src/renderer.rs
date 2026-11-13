@@ -58,7 +58,7 @@ impl ViewRenderer {
             b.push(b' ');
         }
 
-        return String::from_utf8(b.to_vec()).unwrap();
+        String::from_utf8(b.to_vec()).unwrap()
     }
 
     /// Renders the error message in a beautiful way.

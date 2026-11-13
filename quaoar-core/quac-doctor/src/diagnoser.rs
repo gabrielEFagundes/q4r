@@ -52,7 +52,7 @@ pub fn diagnose(errors: Vec<QError>, source: Vec<u8>, sourcemap: SourceMap, path
 pub fn extract_line(
     sourcemap: &SourceMap,
     span: Span,
-    source: &Vec<u8>,
+    source: &[u8],
 ) -> (EcoVec<u8>, usize, usize) {
     let this_line_pos = sourcemap.lines[span.line - 1]; // line always comes as 1 or more, so this never fails
 

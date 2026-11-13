@@ -36,9 +36,9 @@ impl Default for Config {
 }
 
 fn build_version_string() -> String {
-    return format!(
+    format!(
         "v{} - quac ({})",
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_PKG_LICENSE")
-    );
+    )
 }

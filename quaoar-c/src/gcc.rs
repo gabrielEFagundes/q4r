@@ -12,7 +12,7 @@ pub fn mount_and_exec(bytes: &[u8], out_path: PathBuf) -> Option<bool> {
     let fmt_out_path = out_path.as_os_str().to_str()?;
 
     let child = Command::new("gcc")
-        .args([TARGET, "c", "-std=c23", OBJFILE, &fmt_out_path, "-"])
+        .args([TARGET, "c", "-std=c23", OBJFILE, fmt_out_path, "-"])
         .stdin(Stdio::piped())
         .spawn()
         .ok()?;

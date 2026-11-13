@@ -169,7 +169,7 @@ impl<'a> SignatureMounter<'a> {
 
                     map.insert(
                         unsafe { str::from_utf8_unchecked(ident).to_eco_string() },
-                        Signature::Global { ty, value: value },
+                        Signature::Global { ty, value },
                     );
                 }
                 _ => self.forward(1),
