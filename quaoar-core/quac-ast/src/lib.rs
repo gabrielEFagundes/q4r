@@ -2,6 +2,7 @@ use quac_core::tokens::Span;
 
 use crate::{expressions::BinaryExpression, statements::{BlockStatement, ConditionalStatement, IncrementalStatement, ParamStatement, VarStatement}};
 
+pub mod ast;
 pub mod statements;
 pub mod expressions;
 pub mod operators;

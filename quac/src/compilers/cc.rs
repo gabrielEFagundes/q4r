@@ -18,17 +18,17 @@ pub fn compile(conf: Config) {
     let path = helpers::get_absolute_path(&conf.path);
     let sourcemap = feed_lines(&s);
 
-    let t = Lexer::new(s.clone()).lexerize();
-    if !t.1.is_empty() {
-        quac_doctor::diagnose(t.1, s, sourcemap, path);
+    let (t, err) = Lexer::new(s.clone()).lexerize();
+    if !err.is_empty() {
+        quac_doctor::diagnose(err, s, sourcemap, path);
         return;
     }
 
-    let mut binding = SignatureMounter::new(s.as_slice(), t.0.as_slice());
+    let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
     let signatures = binding.mount();
 
     let mut backend = CCompiler::new();
-    let mut c_compiler: Backend<'_> = Backend::new(&s, &t.0, signatures, conf.debug_mode);
+    let mut c_compiler: Backend<'_> = Backend::new(&s, &t, signatures, conf.debug_mode);
 
     let bytes = backend
         .generate_headers(&c_compiler.signatures)

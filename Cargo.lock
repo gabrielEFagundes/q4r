@@ -22,8 +22,10 @@ name = "quac"
 version = "0.1.1"
 dependencies = [
  "getopts",
+ "quac-ast",
  "quac-core",
  "quac-doctor",
+ "quac-parser",
  "quaoar-c",
 ]
 
@@ -48,6 +50,14 @@ name = "quac-doctor"
 version = "0.1.1"
 dependencies = [
  "ecow",
+ "quac-core",
+]
+
+[[package]]
+name = "quac-parser"
+version = "0.1.1"
+dependencies = [
+ "quac-ast",
  "quac-core",
 ]
 

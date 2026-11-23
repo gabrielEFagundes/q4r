@@ -1,0 +1,9 @@
+[package]
+name = "quac-parser"
+edition = "2024"
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+quac-core = { path="../quac-core" }
+quac-ast = { path="../quac-ast" }

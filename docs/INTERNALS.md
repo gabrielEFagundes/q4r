@@ -16,6 +16,26 @@ The Quaoar core itself has NO external deps, be it the compiler written in Rust 
 
 Dependencies on external projects that involve the compiler are allowed. E.g. Weywot, the future package manager for Q4r, will (most likely) have external deps.
 
+```
+          ┌───────────┐
+          │    cli    │  (Wires lexer -> parser -> core -> backend)
+          └─────┬─────┘
+        ┌───────┼───────┐
+        ▼       ▼       ▼
+   ┌────────┐ ┌───┐ ┌───────┐
+   │ parser │ │ast│ │ utils │  (Depend on core)
+   └────┬───┘ └─┬─┘ └───┬───┘
+        │       │       │
+        └───┬───┴───┬───┘
+            ▼       ▼
+          ┌───────────┐
+          │   core    │  (Zero dependencies)
+          └───────────┘
+
+```
+
+> The actual structure of the project is currently undergoing a few changes on v0.2, but the crates may remain the same, with the only difference being where they're located.
+
 ## Overall Design Structure
 
 - NEVER call `panic!` on problematic Quaoar code, these errors must be added to their respective `Vec<QError>`, which you find everywhere they're necessary.

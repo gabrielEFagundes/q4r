@@ -7,6 +7,8 @@ version.workspace = true
 [dependencies]
 quac-core = { path="../quaoar-core/quac-core" }
 quac-doctor = { path="../quaoar-core/quac-doctor" }
+quac-parser = { path="../quaoar-core/quac-parser" }
+quac-ast = { path="../quaoar-core/quac-ast" }
 quaoar-c = { path="../quaoar-c" }
 
 getopts = "0.2"

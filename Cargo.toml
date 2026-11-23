@@ -4,7 +4,7 @@ members = [
     "quac",
     "quaoar-core/quac-core", 
     "quaoar-core/quac-doctor", 
-    "quaoar-core/quac-ast"]
+    "quaoar-core/quac-ast", "quaoar-core/quac-parser"]
 resolver = "2"
 
 [workspace.package]
