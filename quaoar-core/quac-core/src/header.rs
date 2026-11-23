@@ -44,10 +44,7 @@ impl<'a> SignatureMounter<'a> {
     }
 
     fn is_pointer(&mut self) -> bool {
-        if self.current_token.token_type == VoidstarTokenTypes::Asterisk {
-            return true;
-        }
-        false
+        self.current_token.token_type == VoidstarTokenTypes::Asterisk
     }
 
     fn mount_function(

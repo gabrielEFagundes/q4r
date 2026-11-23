@@ -1,10 +1,10 @@
 ## On the roadmap
 
-`2026/10/30` 
-  |- I finished an intial version of the diagnoser, I'll now focus on v0.2
+`2026/11/23` 
+  |- The QBE update will bring patches that will fix most of the compiler's pipeline, so files will change a **lot**.
   |-
 
-  |- The QBE update will bring patches that will fix most of the compiler's pipeline, so files will change a **lot**!
+  |- Instead of boxes, I use Arena Allocation for the AST, returning the expression ID (their index on the AST's vec), which eases the traversal for the parser and is more efficient.
   |-
 
 Check [ROADMAP.md](./ROADMAP.md) for a longer vision of Q4r's roadmap.

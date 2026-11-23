@@ -28,6 +28,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "quac-ast"
+version = "0.1.1"
+dependencies = [
+ "ecow",
+ "quac-core",
+]
+
+[[package]]
 name = "quac-core"
 version = "0.1.1"
 dependencies = [
