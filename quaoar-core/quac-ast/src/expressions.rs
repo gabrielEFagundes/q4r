@@ -1,3 +1,5 @@
+use quac_core::tokens::Span;
+
 use crate::{ExprId, operators::Operator};
 
 /// Binary Expressions can be one of two things:
@@ -13,4 +15,9 @@ pub struct BinaryExpression{
     pub left: ExprId,
     pub operator: Operator,
     pub right: ExprId
+}
+
+pub struct UnaryExpression{
+    pub operator: Span,
+    pub expression: ExprId
 }

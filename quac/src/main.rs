@@ -16,7 +16,7 @@ fn main() {
     };
 
     match config.backend {
-        quac::config::conf::Backend::QBE => todo!("qbe backend on v0.2!"),
+        quac::config::conf::Backend::QBE => compilers::qbe::compile(config),
         quac::config::conf::Backend::C => compilers::cc::compile(config),
     }
 }

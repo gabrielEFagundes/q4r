@@ -27,18 +27,17 @@ pub fn compile(conf: Config) {
     let mut binding = SignatureMounter::new(s.as_slice(), t.as_slice());
     let signatures = binding.mount();
 
-    let mut backend = CCompiler::new();
-    let mut c_compiler: Backend<'_> = Backend::new(&s, &t, signatures, conf.debug_mode);
+    let mut c_compiler = CCompiler::new();
+    let mut backend: Backend<'_> = Backend::new(&s, &t, signatures, conf.debug_mode);
 
-    let bytes = backend
-        .generate_headers(&c_compiler.signatures)
-        .generate(&mut c_compiler);
+    let bytes = c_compiler
+        .generate_headers(&backend.signatures)
+        .generate(&mut backend);
 
     if !bytes.1.is_empty() {
-        quac_doctor::diagnose(c_compiler.errors, s, sourcemap, path);
+        quac_doctor::diagnose(backend.errors, s, sourcemap, path);
         return;
     }
 
-    dbg!(&conf.out);
     quaoar_c::exec(&bytes.0, conf.out);
 }

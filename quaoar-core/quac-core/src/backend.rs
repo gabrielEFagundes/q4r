@@ -7,6 +7,16 @@ use crate::{
     tokens::VoidstarToken,
 };
 
+/// Used by the second stage of each backend (expdesc for C and the parser for QBE)
+/// 
+/// ## For the C backend
+/// The C backend is a single-pass compiler, which means it does not mount a
+/// traditional AST like the QBE backend does, it mounts "expression descriptions" (or `expdesc`),
+/// which is what's used by the emitter to emit C code.
+/// 
+/// ## For the QBE backend
+/// The QBE backend is a traditional compiler, with an AST and a parser,
+/// the Backend struct is mostly used to access the source, tokens, cursor and errors.
 pub struct Backend<'a> {
     pub source: &'a [u8],
     pub tokens: &'a [VoidstarToken],

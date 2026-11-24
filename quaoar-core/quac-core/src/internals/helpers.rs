@@ -4,6 +4,9 @@ use crate::{
     tokens::{VoidstarToken, VoidstarTokenTypes},
 };
 
+/// Looks ahead of the current token, and returns it.
+/// 
+/// If it's already the last token on the source, returns the current one.
 pub fn lookahead<'a>(backend: &mut Backend<'a>) -> VoidstarToken {
     if backend.cursor + 1 < backend.tokens.len() {
         return backend.tokens[backend.cursor + 1];
@@ -11,11 +14,17 @@ pub fn lookahead<'a>(backend: &mut Backend<'a>) -> VoidstarToken {
     backend.tokens[backend.cursor]
 }
 
+/// Takes the current token based on the cursor.
+/// 
+/// Inline function.
 #[inline]
 pub fn current<'a>(backend: &mut Backend<'a>) -> VoidstarToken {
     backend.tokens[backend.cursor]
 }
 
+/// Advances the cursor the desired amount.
+/// 
+/// Inline function.
 #[inline]
 pub fn advance<'a>(amount: usize, backend: &mut Backend<'a>) {
     backend.cursor += amount;
@@ -50,7 +59,12 @@ pub fn matches<'a>(expected: VoidstarTokenTypes, backend: &mut Backend<'a>) {
     advance(1, backend);
 }
 
-pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>) {
+/// Expects either token based on the next token and adds an error if none of them match.
+/// 
+/// This method advances the cursor, even if no matches are found.
+/// 
+/// Returns the next token type, no matter if it matches or not.
+pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>) -> VoidstarTokenTypes {
     advance(1, backend);
     if !expected
         .iter()
@@ -66,8 +80,10 @@ pub fn expect_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>
             .to_string(),
         });
     }
+    current(backend).token_type
 }
 
+/// Matches either token based on the current token and an error if none of them match.
 pub fn matches_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a>) {
     if !expected
         .iter()
@@ -86,6 +102,7 @@ pub fn matches_any<'a>(expected: &[VoidstarTokenTypes], backend: &mut Backend<'a
     advance(1, backend);
 }
 
+/// Expects either type based on the next token.
 #[inline]
 pub fn expect_type<'a>(backend: &mut Backend<'a>) {
     expect_any(
@@ -99,13 +116,17 @@ pub fn expect_type<'a>(backend: &mut Backend<'a>) {
     );
 }
 
+/// Skips the current token if it's a comma.
 pub fn skip_if_comma<'a>(backend: &mut Backend<'a>) {
     if current(backend).token_type == VoidstarTokenTypes::Comma {
         backend.cursor += 1;
     }
 }
 
-// maybe use closures here instead of if statements?
+// maybe use closures here instead of if statements where this method is called?
+/// Adds an error to the error vector inside the Backend struct.
+/// 
+/// Inline function.
 #[inline]
 pub fn add_error<'a>(msg: &str, backend: &mut Backend<'a>) {
     let current = current(backend);
@@ -121,6 +142,7 @@ pub fn ok_or_report<'a, T>(backend: &mut Backend<'a>, r: Result<T, &str>) -> Opt
     r.map_err(|msg| add_error(msg, backend)).ok()
 }
 
+/// Goes to a safe token on the source, so it can continue compilation until the next step.
 pub fn goto_safety<'a>(backend: &mut Backend<'a>) {
     while !end(backend)
         && current(backend).token_type != VoidstarTokenTypes::SemiColon
@@ -131,6 +153,8 @@ pub fn goto_safety<'a>(backend: &mut Backend<'a>) {
     }
 }
 
+/// Checks either the position of the cursor is at the end of the tokens vector. If so, returns true, false otherwise.
+#[inline]
 pub fn end<'a>(backend: &mut Backend<'a>) -> bool {
     backend.cursor >= backend.tokens.len()
 }

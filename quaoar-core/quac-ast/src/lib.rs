@@ -1,6 +1,6 @@
 use quac_core::tokens::Span;
 
-use crate::{expressions::BinaryExpression, statements::{BlockStatement, ConditionalStatement, IncrementalStatement, ParamStatement, VarStatement}};
+use crate::{expressions::{BinaryExpression, UnaryExpression}, statements::{BlockStatement, ConditionalStatement, IncrementalStatement, ParamStatement, VarStatement}};
 
 pub mod ast;
 pub mod statements;
@@ -27,6 +27,7 @@ pub enum Statement{
 /// Expressions are the third level of the AST, and they are the base for most operations.
 pub enum Expression{
     LiteralExpression(Span),
+    UnaryExpression(UnaryExpression),
     BinaryExpression(BinaryExpression),
 
     BadExpression
