@@ -11,12 +11,15 @@ use crate::{ExprId, operators::Operator};
 /// 
 /// Using a single expression type for both boolean and algebraic expressions
 /// helps organize the ast, and lowers overhead of nodes.
+
+#[derive(Clone)]
 pub struct BinaryExpression{
     pub left: ExprId,
     pub operator: Operator,
     pub right: ExprId
 }
 
+#[derive(Clone)]
 pub struct UnaryExpression{
     pub operator: Span,
     pub expression: ExprId

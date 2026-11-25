@@ -1,3 +1,4 @@
+use ecow::EcoVec;
 use quac_ast::ast::Ast;
 use quac_core::backend::Backend;
 
@@ -11,7 +12,8 @@ impl<'a> QuacParser<'a>{
         QuacParser { 
             backend,
             ast: Ast { 
-                nodes: Vec::new() 
+                exprs: EcoVec::new(),
+                nodes: EcoVec::new() 
             }
         }
     }

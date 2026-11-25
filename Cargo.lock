@@ -57,6 +57,7 @@ dependencies = [
 name = "quac-parser"
 version = "0.1.1"
 dependencies = [
+ "ecow",
  "quac-ast",
  "quac-core",
 ]

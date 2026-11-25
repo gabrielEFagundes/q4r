@@ -25,6 +25,7 @@ pub enum Statement{
 }
 
 /// Expressions are the third level of the AST, and they are the base for most operations.
+#[derive(Clone)]
 pub enum Expression{
     LiteralExpression(Span),
     UnaryExpression(UnaryExpression),
